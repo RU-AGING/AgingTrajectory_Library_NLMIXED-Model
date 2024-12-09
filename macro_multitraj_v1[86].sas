@@ -1,3 +1,5 @@
+/*This is the macro used to fit the group-based trajectory model with joint trajectories and dynamic upper bounds for truncated normal data */
+/* Author: Weiyi Xia */
 
 /* Test use
 %Let T=12;
@@ -532,7 +534,7 @@ run;
 
 /**=========================================== Ref ===================================================**/
 /* 
-Jones, B. L., & Nagin, D. S. (2007). Advances in Group-Based Trajectory Modeling and an SAS Procedure for Estimating Them. Sociological Methods & Research, 35(4), 542–571. https://doi.org/10.1177/0049124106292364
+Jones, B. L., & Nagin, D. S. (2007). Advances in Group-Based Trajectory Modeling and an SAS Procedure for Estimating Them. Sociological Methods & Research, 35(4), 542Â–571. https://doi.org/10.1177/0049124106292364
 Extension 4
 */
 

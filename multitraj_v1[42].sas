@@ -1,28 +1,8 @@
-/*This is the macro used to fit the group-based trajectory model with joint trajectories and dynamic upper bounds for truncated normal data */
-/* Author: Weiyi Xia */
-/* The following code is used to call the macro and do the data analysis.*/
-/* A plot of predicted vs observed longitudinal measurement will be produced to evaluate the model fitting */
-
-/* Test use
-%Let T=12;
-%Let LC=2;
-%Let order=3;
-%Let Y=1;
-%Let equal_sigma=T;
-PROC IMPORT OUT= WORK.base_file_srs 
-            DATAFILE= "D:\Research\Lin\R33\2y\data_plot.csv" 
-            DBMS=CSV REPLACE;
-     GETNAMES=YES;
-     DATAROW=2; 
-RUN;
-*/
 
 
 /*==============================Step 0: Load macros================================*/
 
 %include 'D:\Research\Lin\R33\2y\macro_multitraj_v1.sas';
-
-
 
 /*=================================Step 1: Load hyper parameter========================================*/
 %let class_all = A, B, C, D, E, F, G, H, I, J, K; /* Name of each class. (Don't change) */
@@ -33,7 +13,7 @@ RUN;
 
 /*==============================Step 2: Run the model for each outcome================================*/
 /* Model 1 for HH */
-%nlmixed_1(T=12,LC=&class.,	Y=1,
+%nlmixed_1(T=12,LC=&class.,Y=1,
 			/*Assign starting value or use existing parameter datafile, the content in starting= will be added after parms in nlmixed*/
 			starting=%starting_value_alpha(class=&class.)
 					%starting_value_beta_sigma(class=&class.,outcome=1,order=&order_model.,equal_sigma=&equal.),
@@ -47,6 +27,7 @@ RUN;
 		output=nlm_fix_INP&class.,order=&order_model.,equal_sigma=&equal.);
 
 /*==============================Step 3: Run the model for multitraj model================================*/
+*Combines results from the two individual models, excluding alpha parameters, to initialize the multitrajectory model;
 /* 3.1 Generate starting value for multitraj model*/
 data work.nlm_2y_starting;
  set nlm_fix_HH&class. nlm_fix_INP&class. ;
@@ -55,15 +36,14 @@ data work.nlm_2y_starting;
 
  /* 3.2 Run the multitraj model*/
  /*logLik= sum_t P(X=t)*P(Y1|X=t)*P(Y2|X=t) */
+ * Fits a multitrajectory model using starting values derived from earlier models;
 %nlmixed_MultiTraj(T=12,LC=&class.,
 			/*Assign starting value or use existing parameter datafile, the content in starting= will be added after parms in nlmixed*/
 			starting=%starting_value_alpha(class=&class.)/data=nlm_2y_starting,
 			output=nlm_fix_HH_INP&class.,order=&order_model.,equal_sigma=&equal.);
 /* 3.3 Plot */
+*Prepares data for visualization of the multitrajectory results;
 %plot_prep(T=12,LC=&class.,result=nlm_fix_HH_INP&class.,order=&order_model.,equal_sigma=&equal.);
-
-
-
 
 /**=========================================== Ref ===================================================**/
 /* 

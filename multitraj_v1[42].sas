@@ -2,9 +2,9 @@
 * Community Health and Aging Outcome (CHAO) Lab - Rutgers, The State University of New Jersey                                           *
 * Title: Group-Based Trajectory Modeling using NLMIX                                                                                    *
 * Purpose: This code implements group-based trajectory modeling with joint trajectories for two outcomes (T1 and T2) using the          *
-*          SAS NLMIXED procedure. It includes single-outcome models, a multitrajectory model, and a plotting macro for visualization.   *
+*          SAS NLMIXED procedure. It includes single-outcome models, a multi-trajectory model, and a plotting macro for visualization.   *
 * Data Sources: Simulation or real-world longitudinal datasets containing repeated measures for multiple time points (e.g., Q=12).      *
-* Cohort: Individuals with repeated measures data for two outcomes  over N time periods.                                   		*
+* Cohort: Individuals with repeated measures data for two outcomes over N time periods.                                   		*
 * Outputs:                                                                                                                              *
 *   1. Single-outcome trajectory model results: nlm_fix_T1&class. and nlm_fix_T2&class.                                                 *
 *   2. Multitrajectory model results: nlm_fix_T1_T2&class.                                                                              *

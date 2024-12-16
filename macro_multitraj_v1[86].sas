@@ -1,28 +1,12 @@
 /*This is the macro used to fit the group-based trajectory model with joint trajectories and dynamic upper bounds for truncated normal data */
 /* Author: Weiyi Xia */
-
-/* Test use
-%Let T=12;
-%Let LC=2;
-%Let order=3;
-%Let Y=1;
-%Let equal_sigma=T;
-PROC IMPORT OUT= WORK.base_file_srs 
-            DATAFILE= "D:\Research\Lin\R33\2y\data_plot.csv" 
-            DBMS=CSV REPLACE;
-     GETNAMES=YES;
-     DATAROW=2; 
-RUN;
-*/
-
-
 /*==============================Step 0: Load macros================================*/
-
 %let class_all = A, B, C, D, E, F, G, H, I, J, K;
 
 %macro starting_value_alpha(class);   
 %local s;  
-/*alpha*/
+
+*Loop through latent classes starting from the second one (class 2 to class N);
 %do s=2 %to &class.;
 %let class_=%scan("&class_all.", &s, ", ");
 alpha0_&class_.=0 
@@ -111,9 +95,6 @@ mu&class_.&outcome.[I]=beta&outcome._&class_.0
 %end;%str(;)
 %end;
 %mend model;
-*  %put   %model( pattern=X[I]**order*betaoutcome_classorder ,order=3,class=1,outcome=2);
-*  %put   %model( pattern=X[I]**order*betaoutcome_classorder ,order=3,class=1,outcome=2);
-
 
 %macro residual(class,outcome);   
 %local i; 
@@ -123,8 +104,6 @@ mu&class_.&outcome.[I]=beta&outcome._&class_.0
 e&outcome._&class_.=Y&outcome.[I]-mu&class_.&outcome.[I] %str(;)
 %end;
 %mend residual;
-*  %put   %residual( class=1,outcome=2);
-*  %put   %residual( class=1,outcome=2);
 
 %macro float_control(float,class,outcome,equal_sigma);   
 %local s; 
@@ -136,8 +115,6 @@ if e&outcome._&class_. lt -&float.*sigma&outcome._&class2_. then e&outcome._&cla
 if e&outcome._&class_. gt &float.*sigma&outcome._&class2_. then e&outcome._&class_.=&float.*sigma&outcome._&class2_.%str(;)
 %end;
 %mend float_control;
-*  %put   %float_control( float=8 ,class=1,outcome=2,equal_sigma=F);
-*  %put   %float_control( float=8 ,class=1,outcome=2,equal_sigma=T);
 
 %macro Prob_cnorm(class,outcome,equal_sigma);   
 %local s; 
@@ -155,8 +132,6 @@ end%str(;)
 PROD&class_.&outcome.=PROD&class_.&outcome.+PI&class_.&outcome.[I]%str(;)
 %end;
 %mend Prob_cnorm;
-*  %put   %Prob_cnorm(class=2,outcome=2,equal_sigma=F);;
-*  %put   %Prob_cnorm(class=2,outcome=2,equal_sigma=T);;
 
 %macro Class_Membership(class);   
 %local s; 
@@ -174,7 +149,6 @@ pinumer_&class_. = exp(alpha0_&class_.)%str(;)
 pie_&class_. = pinumer_&class_./pideno%str(;)
 %end;
 %mend Class_Membership;
-*  %put %Class_Membership( class=4);;
 
 %macro LogLike(class,outcome);   
 %local s; l_latclass = pie_A*exp(PRODA&outcome.)
@@ -183,7 +157,6 @@ pie_&class_. = pinumer_&class_./pideno%str(;)
 +pie_&class_.*exp(PROD&class_.&outcome.)
 %end;%str(;)
 %mend LogLike;
-*  %put %LogLike( class=4,outcome=2);;
 
 %macro LogLike_multi(class);   
 %local s;(pie_A*exp(PRODA1)*exp(PRODA2)
@@ -192,7 +165,6 @@ pie_&class_. = pinumer_&class_./pideno%str(;)
 +pie_&class_.*exp(PROD&class_.1)*exp(PROD&class_.2)
 %end;)%str(;)
 %mend LogLike_multi;
-*  %put %LogLike_multi( class=4);;
 
 %macro Posterior(class); 
 %local s;
@@ -206,7 +178,6 @@ keep  %do s=1 %to &class.;
 post_&class_.
 %end;%str(;)
 %mend Posterior;
-*  %put %Posterior(class=4);;
 
 
 %macro initiation_pred(T,class,outcome);   
@@ -221,7 +192,6 @@ post_&class_.
 PROD&class_.&outcome.=0%str(;)
 %end;
 %mend initiation_pred;
-*  %put   %initiation_pred(T=12, class=4,outcome=2);;
 
 %macro Pred_cnorm(class,outcome,equal_sigma);   
 %local s; 
@@ -233,7 +203,7 @@ PROD&class_.&outcome.=0%str(;)
 temp=(exp(logcdf('normal',(MAX[I]-mu&class_.&outcome.[I])/sigma&outcome._&class2_.))-
             exp(logcdf('normal',(0-mu&class_.&outcome.[I])/sigma&outcome._&class2_.)))%str(;)
 if temp = 0 then temp=0.000001 %str(;)
-/*Pred&class_.&outcome.[I] = (logpdf('NORMAL',e&outcome._&class_./sigma&outcome._&class2_.))-log(sigma&outcome._&class2_.)%str(;)*/
+
 Pred&class_.&outcome.[I] =0+(exp(logcdf('NORMAL',(MAX[I]-mu&class_.&outcome.[I])/sigma&outcome._&class2_.))-
 exp(logcdf('NORMAL',(0-mu&class_.&outcome.[I])/sigma&outcome._&class2_.)))*
 (mu&class_.&outcome.[I]+sigma&outcome._&class2_.*(exp(logpdf('normal',-mu&class_.&outcome.[I]/sigma&outcome._&class2_.))-
@@ -244,10 +214,6 @@ MAX[I]*exp(logcdf('normal',(-MAX[i]+mu&class_.&outcome.[I])/sigma&outcome._&clas
 
 %end;%str(;)
 %mend Pred_cnorm;
-*  %put   %Pred_cnorm(class=2,outcome=2,equal_sigma=F);;
-*  %put   %Pred_cnorm(class=2,outcome=2,equal_sigma=T);;
-
-
 
 %macro plot_prep(T,LC,result,order,equal_sigma);
 data parameter;set &result. ;keep  parameter estimate;run;
@@ -528,8 +494,6 @@ model ll_latclass ~ general(ll_latclass);
 ods output ParameterEstimates=work.&output.; 
 run; 
 %mend nlmixed_MultiTraj;
-
-
 
 
 /**=========================================== Ref ===================================================**/

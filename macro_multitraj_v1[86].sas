@@ -15,68 +15,73 @@
 *****************************************************************************************************************************************/;
 
 /*==============================Step 0: Load macros================================*/
-%let class_all = A, B, C, D, E, F, G, H, I, J, K;
+%let class_all = A, B, C, D, E, F, G, H, I, J, K; /* Define all latent class labels. */
 
+/* Macro to initialize starting values for alpha parameters across classes */
 %macro starting_value_alpha(class);   
 %local s;  
-
-*Loop through latent classes starting from the second one (class 2 to class N);
+* Loop through latent classes starting from the second (class 2 to class N); 
 %do s=2 %to &class.;
-%let class_=%scan("&class_all.", &s, ", ");
-alpha0_&class_.=0 
+%let class_=%scan("&class_all.", &s, ", "); /* Extract the class name. */
+alpha0_&class_.=0 /* Set the initial value for alpha for each class. */
 %end;
 %mend starting_value_alpha;
-* %put %starting_value_alpha(class=3);;
 
+
+/* Macro to initialize starting values for beta and sigma parameters */
 %macro starting_value_beta_sigma(class,outcome,order,equal_sigma);   
 %local s;  
-/*sigma*/ 
-%if &equal_sigma. eq T %then %do; sigma&outcome._=30
-%let class2_=%str();%end;
+/* Initialize sigma parameters. If equal variances, set one global sigma; otherwise, per class. */
+%if &equal_sigma. eq T %then %do; sigma&outcome._=30 %let class2_=%str(); %end;
 %else %do;
-sigma&outcome._A=30
-%do s=2 %to &class.;
+sigma&outcome._A=30 /* Assign sigma for the first class. */
+%do s=2 %to &class.; /* Loop for remaining classes. */
 %let class_=%scan("&class_all.", &s, ", ");
-%let class2_=&class_.; 
-  sigma&outcome._&class2_.=30
-%end;%end;
-/*beta*/
+%let class2_=&class_.;
+sigma&outcome._&class2_.=30
+%end;
+%end;
+/* Initialize beta coefficients for the polynomial terms. */
 %do s=1 %to &class.;
 %let class_=%scan("&class_all.", &s, ", ");
 %do i=2 %to &order.;
-  beta&outcome._&class_.&i.=0
+beta&outcome._&class_.&i.=0
 %end;
 %end;
-
 %mend starting_value_beta_sigma;
 
+/* Macro to set bounds for alpha parameters */
 %macro bounds_alpha(bounds_alpha,class);   
-%local s; -&bounds_alpha.<alpha0_B<&bounds_alpha.
+%local s;
+-&bounds_alpha.<alpha0_B<&bounds_alpha. /* Set bounds for the second class. */
 %do s=3 %to (&class.);
 %let class_=%scan("&class_all.", &s, ", ");
-,-&bounds_alpha.<alpha0_&class_.<&bounds_alpha.
+,-&bounds_alpha.<alpha0_&class_.<&bounds_alpha. /* Set bounds for remaining classes. */
 %end;
-
 %mend bounds_alpha;
 
+/* Macro to set bounds for sigma parameters */
 %macro bounds_sigma(bounds_sigma,class,outcome,equal_sigma);   
-%local s;
-%local class2_;
-%if &equal_sigma. eq T %then %do; sigma&outcome._>&bounds_sigma. %end; %else %do;
-sigma&outcome._A>&bounds_sigma. 
-%do s=2 %to &class.;
-%let class_=%scan("&class_all.", &s, ", "); %let class2_=&class_.;
-,sigma&outcome._&class2_.>&bounds_sigma. 
+%local s; %local class2_;
+%if &equal_sigma. eq T %then %do; sigma&outcome._>&bounds_sigma.; %end;
+%else %do;
+sigma&outcome._A>&bounds_sigma. /* Set bounds for the first class. */
+%do s=2 %to &class.; /* Loop for remaining classes. */
+%let class_=%scan("&class_all.", &s, ", ");
+%let class2_=&class_.;
+,sigma&outcome._&class2_.>&bounds_sigma.
 %end;
 %end;
 %mend bounds_sigma;
 
+/* Macro to initialize universal arrays */
 %macro initiation_universal(T);   
 %str(ARRAY) X[&T.] quar1-quar&T.%str(;)
-%str(ARRAY) Y1[&T.] Q1HH Q2HH Q3HH Q4HH Q5HH Q6HH Q7HH Q8HH Q9HH Q10HH Q11HH Q12HH%str(;)
-%str(ARRAY) Y2[&T.] QINP1-QINP&T.%str(;)
+%str(ARRAY) Y1[&T.] /*OUTCOME 1 Variable*/%str(;)
+%str(ARRAY) Y2[&T.] /*OUTCOME 2 Variable*/&T.%str(;)
 %mend initiation_universal;
 
+/* Macro to initialize arrays specific to classes and outcomes */
 %macro initiation(T,class,outcome);   
 %local s; 
 %do s=1 %to &class;
@@ -90,6 +95,7 @@ PROD&class_.&outcome.=0%str(;)
 %end;
 %mend initiation;
 
+/* Macro for constructing the model equation for each class and outcome */
 %macro model(pattern,order,class,outcome);   
 %local i; 
 %local s; 
@@ -102,6 +108,7 @@ mu&class_.&outcome.[I]=beta&outcome._&class_.0
 %end;
 %mend model;
 
+/* Macro to calculate residuals */
 %macro residual(class,outcome);   
 %local i; 
 %local s; 
@@ -111,6 +118,7 @@ e&outcome._&class_.=Y&outcome.[I]-mu&class_.&outcome.[I] %str(;)
 %end;
 %mend residual;
 
+/* Macro to apply floating control on residuals */
 %macro float_control(float,class,outcome,equal_sigma);   
 %local s; 
 %local class2_;
@@ -122,6 +130,7 @@ if e&outcome._&class_. gt &float.*sigma&outcome._&class2_. then e&outcome._&clas
 %end;
 %mend float_control;
 
+/* Macro for calculating log-probabilities for normal distributions */
 %macro Prob_cnorm(class,outcome,equal_sigma);   
 %local s; 
 %local class2_;
@@ -139,6 +148,7 @@ PROD&class_.&outcome.=PROD&class_.&outcome.+PI&class_.&outcome.[I]%str(;)
 %end;
 %mend Prob_cnorm;
 
+/* Macro for calculating class membership*/
 %macro Class_Membership(class);   
 %local s; 
 alpha0_A=0%str(;)
@@ -156,6 +166,7 @@ pie_&class_. = pinumer_&class_./pideno%str(;)
 %end;
 %mend Class_Membership;
 
+/* Macro for calculating log likelihood */
 %macro LogLike(class,outcome);   
 %local s; l_latclass = pie_A*exp(PRODA&outcome.)
 %do s=2 %to &class;
@@ -257,7 +268,7 @@ end;
 run; 
 
 data y_1;
-set base_file_srs (keep= Q1HH Q2HH Q3HH Q4HH Q5HH Q6HH Q7HH Q8HH Q9HH Q10HH Q11HH Q12HH);
+set base_file_srs;
 run;
 
 proc iml;
@@ -295,18 +306,7 @@ quit;
 data long;set &result. ;keep  parameter estimate;run;
 
 proc transpose data=long out=wide;id parameter;run;
-data wide; set wide;quar1=1;
-quar2=2;
-quar3=3;
-quar4=4;
-quar5=5;
-quar6=6;
-quar7=7;
-quar8=8;
-quar9=9;
-quar10=10;
-quar11=11;
-quar12=12;
+data wide; set wide;quar1=1;quar2=2;quar3=3;quar4=4;quar5=5;quar6=6;quar7=7;quar8=8;quar9=9;quar10=10;quar11=11;quar12=12;
 run;
 
 data wide; set wide;
@@ -426,9 +426,6 @@ proc nlmixed data= base_file_srs  itdetails  qpoints=40 noad maxiter=1000 tech=d
  bounds 	%bounds_alpha(bounds_alpha=3,class=&LC.),
 		%bounds_sigma(bounds_sigma=0,class=&LC.,outcome=&Y.,equal_sigma=&equal_sigma.);
 parms 	&starting.
-/*%starting_value_alpha(class=&LC.)
-		%starting_value_beta_sigma(class=&LC.,outcome=&Y.,order=&order.,equal_sigma=&equal_sigma.)*/
-		/*use the previous result as starting point*/;
 
 /*Create arrays*/
 %initiation_universal(T=&T.);;
@@ -501,10 +498,4 @@ ods output ParameterEstimates=work.&output.;
 run; 
 %mend nlmixed_MultiTraj;
 
-
-/**=========================================== Ref ===================================================**/
-/* 
-Jones, B. L., & Nagin, D. S. (2007). Advances in Group-Based Trajectory Modeling and an SAS Procedure for Estimating Them. Sociological Methods & Research, 35(4), 542571. https://doi.org/10.1177/0049124106292364
-Extension 4
-*/
 

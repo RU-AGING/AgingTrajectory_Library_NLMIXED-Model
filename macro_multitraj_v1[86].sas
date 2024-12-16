@@ -1,5 +1,19 @@
-/*This is the macro used to fit the group-based trajectory model with joint trajectories and dynamic upper bounds for truncated normal data */
-/* Author: Weiyi Xia */
+/*****************************************************************************************************************************************
+* Community Health and Aging Outcome (CHAO) Lab - Rutgers, The State University of New Jersey                                           *
+* Title: Group-Based Trajectory Modeling using NLMIX                                                                                    *
+* Purpose: This code implements group-based trajectory modeling with joint trajectories for two outcomes (T1 and T2) using the          *
+*          SAS NLMIXED procedure. It includes single-outcome models, a multi-trajectory model, and a plotting macro for visualization.   *
+* Data Sources: Simulation or real-world longitudinal datasets containing repeated measures for multiple time points (e.g., Q=12).      *
+* Cohort: Individuals with repeated measures data for two outcomes over N time periods.                                   		*
+* Outputs:                                                                                                                              *
+*   1. Single-outcome trajectory model results: nlm_fix_T1&class. and nlm_fix_T2&class.                                                 *
+*   2. Multitrajectory model results: nlm_fix_T1_T2&class.                                                                              *
+*   3. Visualizations of predicted vs. observed trajectories and averaged posterior class memberships.                                  *
+* Author: Weiyi Xia                                                                                                                     *
+* Ref: Jones, B. L., & Nagin, D. S. (2007). Advances in Group-Based Trajectory Modeling and an SAS Procedure for Estimating Them.       *
+*      Sociological Methods & Research, 35(4), 542–571. https://doi.org/10.1177/0049124106292364                                        *
+*****************************************************************************************************************************************/;
+
 /*==============================Step 0: Load macros================================*/
 %let class_all = A, B, C, D, E, F, G, H, I, J, K;
 
@@ -35,9 +49,6 @@ sigma&outcome._A=30
 %end;
 
 %mend starting_value_beta_sigma;
-*  %put %starting_value_beta_sigma(class=3,outcome=2,order=3,equal_sigma=F);;
-*  %put %starting_value_beta_sigma(class=3,outcome=2,order=3,equal_sigma=T);;
-
 
 %macro bounds_alpha(bounds_alpha,class);   
 %local s; -&bounds_alpha.<alpha0_B<&bounds_alpha.
@@ -47,7 +58,6 @@ sigma&outcome._A=30
 %end;
 
 %mend bounds_alpha;
-*  %put  %bounds_alpha(bounds_alpha=8,class=3);
 
 %macro bounds_sigma(bounds_sigma,class,outcome,equal_sigma);   
 %local s;
@@ -60,15 +70,12 @@ sigma&outcome._A>&bounds_sigma.
 %end;
 %end;
 %mend bounds_sigma;
-*  %put   %bounds_sigma(bounds_sigma=0,class=3,outcome=2,equal_sigma=T);
-*  %put   %bounds_sigma(bounds_sigma=0,class=4,outcome=2,equal_sigma=F);
 
 %macro initiation_universal(T);   
 %str(ARRAY) X[&T.] quar1-quar&T.%str(;)
 %str(ARRAY) Y1[&T.] Q1HH Q2HH Q3HH Q4HH Q5HH Q6HH Q7HH Q8HH Q9HH Q10HH Q11HH Q12HH%str(;)
 %str(ARRAY) Y2[&T.] QINP1-QINP&T.%str(;)
 %mend initiation_universal;
-*  %put   %initiation_universal(T=12);;
 
 %macro initiation(T,class,outcome);   
 %local s; 
@@ -82,7 +89,6 @@ sigma&outcome._A>&bounds_sigma.
 PROD&class_.&outcome.=0%str(;)
 %end;
 %mend initiation;
-*  %put   %initiation(T=12, class=4,outcome=2);;
 
 %macro model(pattern,order,class,outcome);   
 %local i; 

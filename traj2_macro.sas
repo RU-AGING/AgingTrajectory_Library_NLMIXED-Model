@@ -168,6 +168,44 @@ PROD&class_.&outcome.=PROD&class_.&outcome.+PI&class_.&outcome.[I]%str(;)
 %end;
 %mend Prob_cnorm;
 
+/* Macro for calculating log-probabilities for Poisson distributions */
+%macro Prob_pois(class,outcome);   
+%local s; 
+%do s=1 %to &class;
+    %let class_=%scan("&class_all.", &s, ", ");
+    /* Poisson log PMF per time point */
+    PI&class_.&outcome.[I] = logpdf('POISSON', Y&outcome.[I], mu&class_.&outcome.[I]);
+    /* accumulate across time */
+    PROD&class_.&outcome.=PROD&class_.&outcome.+PI&class_.&outcome.[I];
+%end;
+%mend Prob_pois;
+
+/* Macro for calculating log-probabilities for Zero-Inflated Poisson */
+%macro Prob_zip(class,outcome);   
+%local s; 
+%do s=1 %to &class;
+    %let class_=%scan("&class_all.", &s, ", ");
+    
+    /* Zero inflation probability for this class */
+    p&class_.&outcome. = logistic(gamma&outcome._&class_.);
+
+    if Y&outcome.[I]=0 then do;
+        PI&class_.&outcome.[I] = log(
+            p&class_.&outcome. + (1 - p&class_.&outcome.)*pdf('POISSON',0,mu&class_.&outcome.[I])
+        );
+    end;
+    else do;
+        PI&class_.&outcome.[I] = log(
+            (1 - p&class_.&outcome.) * pdf('POISSON',Y&outcome.[I], mu&class_.&outcome.[I])
+        );
+    end;
+
+    PROD&class_.&outcome.=PROD&class_.&outcome.+PI&class_.&outcome.[I];
+%end;
+%mend Prob_zip;
+
+
+
 /* Macro for calculating class membership*/
 %macro Class_Membership(class);   
 %local s; 
@@ -230,6 +268,7 @@ PROD&class_.&outcome.=0%str(;)
 %end;
 %mend initiation_pred;
 
+
 %macro Pred_cnorm(class,outcome,equal_sigma);   
 %local s; 
 
@@ -252,7 +291,28 @@ MAX[I]*exp(logcdf('normal',(-MAX[i]+mu&class_.&outcome.[I])/sigma&outcome._&clas
 %end;%str(;)
 %mend Pred_cnorm;
 
-%macro plot_prep(T,LC,result,order,equal_sigma);
+%macro Pred_pois(class,outcome);   
+%local s; 
+%do s=1 %to &class;
+    %let class_=%scan("&class_all.", &s, ", ");
+    /* Predicted mean is just µ for Poisson */
+    Pred&class_.&outcome.[I] = mu&class_.&outcome.[I];
+%end;
+%mend Pred_pois;
+
+%macro Pred_zip(class,outcome);   
+%local s; 
+%do s=1 %to &class;
+    %let class_=%scan("&class_all.", &s, ", ");
+    p&class_.&outcome. = logistic(gamma&outcome._&class_.);
+    Pred&class_.&outcome.[I] = (1 - p&class_.&outcome.)*mu&class_.&outcome.[I];
+%end;
+%mend Pred_zip;
+
+
+%macro plot_prep(T,LC,result,order,equal_sigma,dist);
+
+
 data parameter;set &result. ;keep  parameter estimate;run;
 
 proc transpose data=parameter out=parameter;id parameter;run;
@@ -273,11 +333,11 @@ DO I=1 TO &T.;
 %model( pattern=X[I]**order*betaoutcome_classorder ,order=&order.,class=&LC.,outcome=1);
 %residual( class=&LC.,outcome=1)
 %float_control( float=8 ,class=&LC.,outcome=1,equal_sigma=&equal_sigma.);
-%Prob_cnorm( class=&LC.,outcome=1,equal_sigma=&equal_sigma.);;
+%Prob_dispatch(dist=&dist., class=&LC., outcome=1, equal_sigma=&equal_sigma.);
 %model( pattern=X[I]**order*betaoutcome_classorder ,order=&order.,class=&LC.,outcome=2);
 %residual( class=&LC.,outcome=2)
 %float_control( float=8 ,class=&LC.,outcome=2,equal_sigma=&equal_sigma.);
-%Prob_cnorm( class=&LC.,outcome=2,equal_sigma=&equal_sigma.);;
+%Prob_dispatch(dist=&dist., class=&LC., outcome=2, equal_sigma=&equal_sigma.);
 end;
 
 /*Class Memebership P(X=t)*/
@@ -340,8 +400,9 @@ DO I=1 TO 12 ;
 %model( pattern=X[I]**order*betaoutcome_classorder ,order=&order.,class=&LC.,outcome=1);
 %model( pattern=X[I]**order*betaoutcome_classorder ,order=&order.,class=&LC.,outcome=2);
 
-%Pred_cnorm(class=&LC.,outcome=1,equal_sigma=&equal_sigma.);
-%Pred_cnorm(class=&LC.,outcome=2,equal_sigma=&equal_sigma.);
+%Pred_dispatch(dist=&dist., class=&LC., outcome=1, equal_sigma=&equal_sigma.);
+%Pred_dispatch(dist=&dist., class=&LC., outcome=2, equal_sigma=&equal_sigma.);
+
 end;
 run;
 
@@ -440,7 +501,7 @@ title ;
 %mend plot_prep;
 
 
-%macro nlmixed_1(T,LC,Y,starting,output,order,equal_sigma);
+%macro nlmixed_1_cnorm(T,LC,Y,starting,output,order,equal_sigma);
 
 proc nlmixed data= base_file_srs  itdetails  qpoints=40 noad maxiter=1000 tech=dbldog ;
  bounds 	%bounds_alpha(bounds_alpha=3,class=&LC.),
@@ -473,10 +534,10 @@ model ll_latclass ~ general(ll_latclass);
 ods output ParameterEstimates=work.&output.; 
 run; 
 
-%mend nlmixed_1;
+%mend nlmixed_1_cnorm;
 
 
-%macro nlmixed_MultiTraj(T,LC,starting,output,order,equal_sigma);
+%macro nlmixed_MultiTraj_cnorm(T,LC,starting,output,order,equal_sigma);
 
 proc nlmixed data= base_file_srs  itdetails  qpoints=40 noad maxiter=1000 tech=dbldog ;
  bounds  %bounds_alpha(bounds_alpha=3,class=&LC.) ,
@@ -516,6 +577,204 @@ ll_latclass=log(l_latclass);
 model ll_latclass ~ general(ll_latclass);
 ods output ParameterEstimates=work.&output.; 
 run; 
-%mend nlmixed_MultiTraj;
+%mend nlmixed_MultiTraj_cnorm;
 
+
+
+%macro nlmixed_1_pois(T,LC,Y,starting,output,order);
+
+proc nlmixed data= base_file_srs itdetails qpoints=40 noad maxiter=1000 tech=dbldog;
+    bounds %bounds_alpha(bounds_alpha=3,class=&LC.);
+    parms &starting.;
+
+    /* Create arrays */
+    %initiation_universal(T=&T.);
+    %initiation(T=&T., class=&LC.,outcome=&Y.);
+
+    /* Fit trajectory model */
+    DO I=1 TO &T.;
+        %model(pattern=X[I]**order*betaoutcome_classorder , order=&order.,class=&LC.,outcome=&Y.);
+        %Prob_pois(class=&LC.,outcome=&Y.);
+    END;
+
+    /* Class membership */
+    %Class_Membership(class=&LC.);
+
+    /* Likelihood */
+    %LogLike(class=&LC.,outcome=&Y.);
+
+    ll_latclass = log(l_latclass);
+    model ll_latclass ~ general(ll_latclass);
+
+    ods output ParameterEstimates=work.&output.; 
+run; 
+
+%mend nlmixed_1_pois;
+
+%macro nlmixed_MultiTraj_pois(T,LC,starting,output,order);
+
+proc nlmixed data= base_file_srs itdetails qpoints=40 noad maxiter=1000 tech=dbldog;
+    bounds %bounds_alpha(bounds_alpha=3,class=&LC.);
+    parms &starting.;
+
+    /* Create arrays */
+    %initiation_universal(T=&T.);
+    %initiation(T=&T., class=&LC.,outcome=1);
+    %initiation(T=&T., class=&LC.,outcome=2);
+
+    DO I=1 TO &T.;
+        %model(pattern=X[I]**order*betaoutcome_classorder , order=&order.,class=&LC.,outcome=1);
+        %Prob_pois(class=&LC.,outcome=1);
+
+        %model(pattern=X[I]**order*betaoutcome_classorder , order=&order.,class=&LC.,outcome=2);
+        %Prob_pois(class=&LC.,outcome=2);
+    END;
+
+    /* Class membership */
+    %Class_Membership(class=&LC.);
+
+    /* Multi-trajectory likelihood */
+    l_latclass = %LogLike_multi(class=&LC.);
+
+    ll_latclass=log(l_latclass);
+    model ll_latclass ~ general(ll_latclass);
+
+    ods output ParameterEstimates=work.&output.; 
+run; 
+
+%mend nlmixed_MultiTraj_pois;
+
+%macro nlmixed_1_zip(T,LC,Y,starting,output,order);
+
+proc nlmixed data= base_file_srs itdetails qpoints=40 noad maxiter=1000 tech=dbldog;
+    bounds %bounds_alpha(bounds_alpha=3,class=&LC.);
+    parms &starting.;
+    
+    /* Create arrays */
+    %initiation_universal(T=&T.);
+    %initiation(T=&T., class=&LC.,outcome=&Y.);
+    
+    DO I=1 TO &T.;
+        %model(pattern=X[I]**order*betaoutcome_classorder , order=&order.,class=&LC.,outcome=&Y.);
+        %Prob_zip(class=&LC.,outcome=&Y.);
+    END;
+
+    %Class_Membership(class=&LC.);
+    %LogLike(class=&LC.,outcome=&Y.);
+
+    ll_latclass = log(l_latclass);
+    model ll_latclass ~ general(ll_latclass);
+
+    ods output ParameterEstimates=work.&output.; 
+run; 
+
+%mend nlmixed_1_zip;
+%macro nlmixed_MultiTraj_zip(T,LC,starting,output,order);
+
+proc nlmixed data= base_file_srs itdetails qpoints=40 noad maxiter=1000 tech=dbldog;
+    bounds %bounds_alpha(bounds_alpha=3,class=&LC.);
+    parms &starting.;
+    
+    %initiation_universal(T=&T.);
+    %initiation(T=&T., class=&LC.,outcome=1);
+    %initiation(T=&T., class=&LC.,outcome=2);
+
+    DO I=1 TO &T.;
+        %model(pattern=X[I]**order*betaoutcome_classorder , order=&order.,class=&LC.,outcome=1);
+        %Prob_zip(class=&LC.,outcome=1);
+
+        %model(pattern=X[I]**order*betaoutcome_classorder , order=&order.,class=&LC.,outcome=2);
+        %Prob_zip(class=&LC.,outcome=2);
+    END;
+
+    %Class_Membership(class=&LC.);
+    l_latclass = %LogLike_multi(class=&LC.);
+
+    ll_latclass=log(l_latclass);
+    model ll_latclass ~ general(ll_latclass);
+
+    ods output ParameterEstimates=work.&output.; 
+run; 
+
+%mend nlmixed_MultiTraj_zip;
+
+/* Choose probability generator based on DIST */
+%macro Prob_dispatch(dist,class,outcome,equal_sigma);
+    %if &dist=normal %then %do;
+        %Prob_cnorm(class=&class.,outcome=&outcome.,equal_sigma=&equal_sigma.);
+    %end;
+    %else %if &dist=poisson %then %do;
+        %Prob_pois(class=&class.,outcome=&outcome.);
+    %end;
+    %else %if &dist=zip %then %do;
+        %Prob_zip(class=&class.,outcome=&outcome.);
+    %end;
+%mend Prob_dispatch;
+
+/* Choose prediction generator based on DIST */
+%macro Pred_dispatch(dist,class,outcome,equal_sigma);
+    %if &dist=normal %then %do;
+        %Pred_cnorm(class=&class.,outcome=&outcome.,equal_sigma=&equal_sigma.);
+    %end;
+    %else %if &dist=poisson %then %do;
+        %Pred_pois(class=&class.,outcome=&outcome.);
+    %end;
+    %else %if &dist=zip %then %do;
+        %Pred_zip(class=&class.,outcome=&outcome.);
+    %end;
+%mend Pred_dispatch;
+
+%macro nlmixed_1(T,LC,Y,starting,output,order,equal_sigma,dist);
+
+proc nlmixed data= base_file_srs itdetails qpoints=40 noad maxiter=1000 tech=dbldog;
+    bounds %bounds_alpha(bounds_alpha=3,class=&LC.);
+    parms &starting.;
+
+    %initiation_universal(T=&T.);
+    %initiation(T=&T., class=&LC.,outcome=&Y.);
+
+    DO I=1 TO &T.;
+        %model(pattern=X[I]**order*betaoutcome_classorder, order=&order.,class=&LC.,outcome=&Y.);
+        %Prob_dispatch(dist=&dist., class=&LC., outcome=&Y., equal_sigma=&equal_sigma.);
+    END;
+
+    %Class_Membership(class=&LC.);
+    %LogLike(class=&LC.,outcome=&Y.);
+
+    ll_latclass=log(l_latclass);
+    model ll_latclass ~ general(ll_latclass);
+
+    ods output ParameterEstimates=work.&output.; 
+run;
+
+%mend nlmixed_1;
+
+%macro nlmixed_MultiTraj(T,LC,starting,output,order,equal_sigma,dist);
+
+proc nlmixed data= base_file_srs itdetails qpoints=40 noad maxiter=1000 tech=dbldog;
+    bounds %bounds_alpha(bounds_alpha=3,class=&LC.);
+    parms &starting.;
+
+    %initiation_universal(T=&T.);
+    %initiation(T=&T., class=&LC.,outcome=1);
+    %initiation(T=&T., class=&LC.,outcome=2);
+
+    DO I=1 TO &T.;
+        %model(pattern=X[I]**order*betaoutcome_classorder , order=&order.,class=&LC.,outcome=1);
+        %Prob_dispatch(dist=&dist., class=&LC., outcome=1, equal_sigma=&equal_sigma.);
+
+        %model(pattern=X[I]**order*betaoutcome_classorder , order=&order.,class=&LC.,outcome=2);
+        %Prob_dispatch(dist=&dist., class=&LC., outcome=2, equal_sigma=&equal_sigma.);
+    END;
+
+    %Class_Membership(class=&LC.);
+    l_latclass = %LogLike_multi(class=&LC.);
+
+    ll_latclass=log(l_latclass);
+    model ll_latclass ~ general(ll_latclass);
+
+    ods output ParameterEstimates=work.&output.; 
+run;
+
+%mend nlmixed_MultiTraj;
 

@@ -49,26 +49,51 @@ alpha0_&class_.=0 /* Set the initial value for alpha for each class. */
 %mend starting_value_alpha;
 
 
-/* Macro to initialize starting values for beta and sigma parameters */
-%macro starting_value_beta_sigma(class,outcome,order,equal_sigma);   
+/* Macro to initialize starting values for beta, sigma (if Normal), 
+   gamma (if ZIP), and theta (if NB). */
+%macro starting_value_beta_sigma(class,outcome,order,equal_sigma,dist);   
 %local s;  
-/* Initialize sigma parameters. If equal variances, set one global sigma; otherwise, per class. */
-%if &equal_sigma. eq T %then %do; sigma&outcome._=30 %let class2_=%str(); %end;
-%else %do;
-sigma&outcome._A=30 /* Assign sigma for the first class. */
-%do s=2 %to &class.; /* Loop for remaining classes. */
-%let class_=%scan("&class_all.", &s, ", ");
-%let class2_=&class_.;
-sigma&outcome._&class2_.=30
+
+/* Normal-specific: initialize variance parameters */
+%if &dist=normal %then %do;
+    %if &equal_sigma. eq T %then %do; 
+        sigma&outcome._=30 
+        %let class2_=%str(); 
+    %end;
+    %else %do;
+        sigma&outcome._A=30
+        %do s=2 %to &class.; 
+            %let class_=%scan("&class_all.", &s, ", ");
+            %let class2_=&class_.;
+            sigma&outcome._&class2_.=30
+        %end;
+    %end;
 %end;
+
+/* ZIP-specific: initialize zero-inflation parameters gamma ~ logit(p0) */
+%if &dist=zip %then %do;
+    %do s=1 %to &class.;
+        %let class_=%scan("&class_all.", &s, ", ");
+        gamma&outcome._&class_.=0   /* logit scale, starts at 0 → p≈0.5 */
+    %end;
 %end;
-/* Initialize beta coefficients for the polynomial terms. */
+
+/* NB-specific: initialize dispersion theta */
+%if &dist=nb %then %do;
+    %do s=1 %to &class.;
+        %let class_=%scan("&class_all.", &s, ", ");
+        theta&outcome._&class_.=0   /* exp(theta)=1 → modest dispersion */
+    %end;
+%end;
+
+/* Initialize beta polynomial coefficients across all outcomes & classes */
 %do s=1 %to &class.;
-%let class_=%scan("&class_all.", &s, ", ");
-%do i=2 %to &order.;
-beta&outcome._&class_.&i.=0
+    %let class_=%scan("&class_all.", &s, ", ");
+    %do i=2 %to &order.;
+        beta&outcome._&class_.&i.=0
+    %end;
 %end;
-%end;
+
 %mend starting_value_beta_sigma;
 
 /* Macro to set bounds for alpha parameters */
@@ -204,6 +229,23 @@ PROD&class_.&outcome.=PROD&class_.&outcome.+PI&class_.&outcome.[I]%str(;)
 %end;
 %mend Prob_zip;
 
+/* Macro for calculating log-probabilities for Negative Binomial */
+%macro Prob_nb(class,outcome);   
+%local s; 
+%do s=1 %to &class;
+    %let class_=%scan("&class_all.", &s, ", ");
+
+    /* Class-specific dispersion parameter */
+    kappa&outcome._&class_. = exp(theta&outcome._&class_.); /* theta in log-scale for positivity */
+
+    p&class_.&outcome. = kappa&outcome._&class_. / (kappa&outcome._&class_. + mu&class_.&outcome.[I]);
+
+    PI&class_.&outcome.[I] = logpdf('NEGBINOMIAL', Y&outcome.[I], p&class_.&outcome., kappa&outcome._&class_.);
+
+    PROD&class_.&outcome.=PROD&class_.&outcome.+PI&class_.&outcome.[I];
+%end;
+%mend Prob_nb;
+
 
 
 /* Macro for calculating class membership*/
@@ -308,6 +350,14 @@ MAX[I]*exp(logcdf('normal',(-MAX[i]+mu&class_.&outcome.[I])/sigma&outcome._&clas
     Pred&class_.&outcome.[I] = (1 - p&class_.&outcome.)*mu&class_.&outcome.[I];
 %end;
 %mend Pred_zip;
+
+%macro Pred_nb(class,outcome);   
+%local s; 
+%do s=1 %to &class;
+    %let class_=%scan("&class_all.", &s, ", ");
+    Pred&class_.&outcome.[I] = mu&class_.&outcome.[I];
+%end;
+%mend Pred_nb;
 
 
 %macro plot_prep(T,LC,result,order,equal_sigma,dist);
@@ -709,7 +759,11 @@ run;
     %else %if &dist=zip %then %do;
         %Prob_zip(class=&class.,outcome=&outcome.);
     %end;
+    %else %if &dist=nb %then %do;
+        %Prob_nb(class=&class.,outcome=&outcome.);
+    %end;
 %mend Prob_dispatch;
+
 
 /* Choose prediction generator based on DIST */
 %macro Pred_dispatch(dist,class,outcome,equal_sigma);
@@ -722,7 +776,11 @@ run;
     %else %if &dist=zip %then %do;
         %Pred_zip(class=&class.,outcome=&outcome.);
     %end;
+    %else %if &dist=nb %then %do;
+        %Pred_nb(class=&class.,outcome=&outcome.);
+    %end;
 %mend Pred_dispatch;
+
 
 %macro nlmixed_1(T,LC,Y,starting,output,order,equal_sigma,dist);
 
@@ -777,4 +835,5 @@ proc nlmixed data= base_file_srs itdetails qpoints=40 noad maxiter=1000 tech=dbl
 run;
 
 %mend nlmixed_MultiTraj;
+
 

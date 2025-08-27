@@ -42,42 +42,31 @@ libname DUA_SPECIFIC "/sas/vrdc/data/dua/DUA_SPECIFIC/source";
 *******************************************************************************************************************************************;
 
 /*=========================================================Step 1: Load hyper parameter====================================================*/
-%Let class= ; /*Assign number of latent class*/
-%Let order_model=3; /*the degree of the polynomial in the model. 1 - linear, 2 - quadratic, 3 - cubic*/
+%Let class=3 ; /*Assign number of latent class*/
+%Let order_model=2; /*the degree of the polynomial in the model. 1 - linear, 2 - quadratic, 3 - cubic*/
 %Let equal=T; /*Equal variance for each outcome across different classes, input T or F*/
+%let dist=zip;            /* distribution: normal | poisson | zip */
 
-/*=========================================================Step 2: Run the model for each outcome=============================================*/
-/* Model 1 for Outcome 1 */
+/*=========================================================Step 2: Run Models=============================================*/
+
+/* Fit models */
 %nlmixed_1(T=12,LC=&class.,Y=1,
-			/*Assign starting value or use existing parameter datafile, the content in starting= will be added after parms in nlmixed*/
-			starting=%starting_value_alpha(class=&class.)
-					%starting_value_beta_sigma(class=&class.,outcome=1,order=&order_model.,equal_sigma=&equal.),
-			/*Define output file name*/
-			output=nlm_fix_T1&class.,order=&order_model.,equal_sigma=&equal.);
+           starting=%starting_value_alpha(class=&class.)
+                    %starting_value_beta_sigma(class=&class.,outcome=1,order=&order_model.,equal_sigma=&equal.),
+           output=nlm_fix_T1&class.,order=&order_model.,equal_sigma=&equal.,dist=&dist.);
 
-/* Model 2 for Outcome 2 */
-%nlmixed_1(T=12,LC=&class.,	Y=2,
-			starting=%starting_value_alpha(class=&class.)
-					%starting_value_beta_sigma(class=&class.,outcome=2,order=&order_model.,equal_sigma=&equal.),
-		output=nlm_fix_T2&class.,order=&order_model.,equal_sigma=&equal.);
+%nlmixed_1(T=12,LC=&class.,Y=2,
+           starting=%starting_value_alpha(class=&class.)
+                    %starting_value_beta_sigma(class=&class.,outcome=2,order=&order_model.,equal_sigma=&equal.),
+           output=nlm_fix_T2&class.,order=&order_model.,equal_sigma=&equal.,dist=&dist.);
 
-/*=========================================================Step 3: Run the model for multitraj model=============================================*/
-*Combines results from the two individual models, excluding alpha parameters, to initialize the multitrajectory model;
-/* 3.1 Generate starting value for multitraj model*/
-data work.nlm_2y_starting;
- set nlm_fix_T1&class. nlm_fix_T2&class. ;
- if parameter =: 'alpha' then delete ;
- run;
-
- /* 3.2 Run the multitraj model*/
- * Fits a multitrajectory model using starting values derived from earlier models;
 %nlmixed_MultiTraj(T=12,LC=&class.,
-			/*Assign starting value or use existing parameter datafile, the content in starting= will be added after parms in nlmixed*/
-			starting=%starting_value_alpha(class=&class.)/data=nlm_2y_starting,
-			output=nlm_fix_T1_T2&class.,order=&order_model.,equal_sigma=&equal.);
-/* 3.3 Plot */
-*Prepares data for visualization of the multitrajectory results;
-%plot_prep(T=12,LC=&class.,result=nlm_fix_T1_T2&class.,order=&order_model.,equal_sigma=&equal.);
+           starting=%starting_value_alpha(class=&class.)/data=nlm_2y_starting,
+           output=nlm_fix_T1_T2&class.,order=&order_model.,equal_sigma=&equal.,dist=&dist.);
+
+%plot_prep(T=12,LC=&class.,result=nlm_fix_T1_T2&class.,order=&order_model.,equal_sigma=&equal.,dist=&dist.);
+
+
 
 
 

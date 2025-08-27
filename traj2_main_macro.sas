@@ -39,17 +39,22 @@ RUTGERS, THE STATE UNIVERSITY OF NEW JERSEY
 options fullstimer;
 run;
 libname DUA_SPECIFIC "/sas/vrdc/data/dua/DUA_SPECIFIC/source";
+%include "01_Framework/gbtm_framework.sas";
 *******************************************************************************************************************************************;
 
-/*=========================================================Step 1: Load hyper parameter====================================================*/
-%Let class=3 ; /*Assign number of latent class*/
-%Let order_model=2; /*the degree of the polynomial in the model. 1 - linear, 2 - quadratic, 3 - cubic*/
-%Let equal=T; /*Equal variance for each outcome across different classes, input T or F*/
-%let dist=zip;            /* distribution: normal | poisson | zip */
+/*=========================================================Step 1: Generate Data=============================================*/
+%sim_data(dist=poisson,                        /* distribution: normal|poisson|zip|nb|zinb */
+           class=2,                            /* # latent classes */
+           n=200,                              /* sample size */
+           T=12,                               /* # time points */   
+           seed=123, 
+           miss_pattern=balanced,              /* miss_pattern = balanced | unbalanced */
+           p_obs_min=0.6                       /* minimum fraction of timepoints observed in unbalanced case */
+);
 
+%prep_gbtm_data
 /*=========================================================Step 2: Run Models=============================================*/
 
-/* Fit models */
 %nlmixed_1(T=12,LC=&class.,Y=1,
            starting=%starting_value_alpha(class=&class.)
                     %starting_value_beta_sigma(class=&class.,outcome=1,order=&order_model.,equal_sigma=&equal.),
@@ -66,7 +71,25 @@ libname DUA_SPECIFIC "/sas/vrdc/data/dua/DUA_SPECIFIC/source";
 
 %plot_prep(T=12,LC=&class.,result=nlm_fix_T1_T2&class.,order=&order_model.,equal_sigma=&equal.,dist=&dist.);
 
+/*=========================================================Step 3: Best Model Selection =============================================*/
+%summarize_all;
+%select_best(summary=model_summary, 
+             criterion=bic,                    
+             entropy_thresh=&entropy_thresh.,  /* entropy cutoff */
+             app_thresh=&app_thresh.,          /* APP cutoff */
+             out=best_model);
 
 
+/*=========================================================Final All-in-One Macro=============================================*/
+%run_gbtm(
+      data=base_file_srs,       /* use existing dataset or simulated */
+      dist=zinb,                /* distribution: normal|poisson|zip|nb|zinb */
+      max_classes=3,            /* maximum # latent classes */
+      order=2,                  /* trajectory polynomial order */
+      outcomes=2,               /* number of outcomes, default 2 */
+      T=12,                     /* # time points */
+      entropy_thresh=0.70,      /* entropy cutoff */
+      app_thresh=0.70           /* APP cutoff */
+);
 
-
+%export_report(outfile="trajectory_report.pdf", dest=pdf);

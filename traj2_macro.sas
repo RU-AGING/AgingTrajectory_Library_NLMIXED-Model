@@ -898,4 +898,253 @@ run;
 %mend nlmixed_MultiTraj;
 
 
+/*============================== Step 2: Model Diagnostics ================================*/
+
+/* 2.1 Wrap Model Runs with Auto-Capture */
+/*
+PROC NLMIXED automatically produces:
+- -2 Log Likelihood
+- AIC
+- BIC
+via FitStatistics ODS table.
+*/
+
+/* Compute Entropy + APPs */
+%macro posterior_metrics(post_ds=pred_membership_y, LC=2, output=posterior_results);
+
+data _temp;
+  set &post_ds;
+  /* entropy contribution per subject */
+  array post[&LC.] post_:;
+  ent_i = 0;
+  max_post = 0; class_assign=.;
+  do j=1 to &LC.;
+     if post[j] > 0 then ent_i + (-post[j]*log(post[j]));
+     if post[j] > max_post then do;
+         max_post = post[j];
+         class_assign=j;
+     end;
+  end;
+run;
+
+proc means data=_temp noprint;
+  var ent_i;
+  output out=_entropy sum=entropy_sum n=nsub;
+run;
+
+data _entropy;
+  set _entropy;
+  K=&LC.;
+  Entropy = 1 - (entropy_sum/(nsub*log(K)));
+  keep Entropy;
+run;
+
+/* Average Posterior Probabilities (APP) */
+proc means data=_temp noprint;
+  class class_assign;
+  var post1-post&LC.;
+  output out=_apps mean=;
+run;
+
+data &output.;
+  merge _entropy _apps;
+run;
+%mend posterior_metrics;
+
+
+/*============================== Step 2: Model Dianostics and Model Selection ================================*/
+
+/* 2.1 Automatic Fit Stat Collector (all_fit_results) */
+%macro run_model(T,LC,Y,starting,output,order,equal_sigma,dist);
+
+%nlmixed_1(T=&T.,LC=&LC.,Y=&Y.,
+   starting=&starting.,
+   output=&output.,
+   order=&order.,equal_sigma=&equal_sigma.,dist=&dist.);
+
+ods output FitStatistics=fit_&output.;
+proc append base=all_fit_results data=fit_&output. force; run;
+
+%posterior_metrics(post_ds=pred_membership_y, LC=&LC., output=postmet_&output.);
+
+proc append base=all_post_results data=postmet_&output. force; run;
+
+data all_fit_results;
+   set all_fit_results;
+   length Dist $10 Model $20;
+   Dist="&dist."; 
+   Classes=&LC.;
+   Order=&order.;
+   Model="&output.";
+run;
+
+data all_post_results;
+   set all_post_results;
+   length Dist $10 Model $20;
+   Dist="&dist.";
+   Classes=&LC.;
+   Order=&order.;
+   Model="&output.";
+run;
+
+%mend run_model;
+
+
+
+/* 2.2 Summarize All Models */
+/*
+This gives you a tidy summary of:
+-	Dist: normal / poisson / zip / nb / zinb
+-	Classes: # groups
+-	Order: polynomial order
+-	–2LL, AIC, BIC: from FitStatistics
+-	Entropy: classification certainty
+-	APPs: columns like mean(post1), mean(post2) … per modal assignment
+*/
+
+%macro summarize_all;
+proc sort data=all_fit_results; by Dist Classes Order; run;
+proc sort data=all_post_results; by Dist Classes Order; run;
+
+data model_summary;
+  merge all_fit_results all_post_results;
+  by Dist Classes Order;
+run;
+
+title "Model Selection Summary";
+proc print data=model_summary noobs label;
+run;
+title;
+%mend summarize_all;
+
+
+/* 2.3 Auto-Best Model Selection */
+
+%macro select_best(summary=model_summary, criterion=bic, entropy_thresh=0.70, app_thresh=0.70, out=best_model);
+
+proc sql;
+  /* Wide table: pull out one row per candidate model */
+  create table candidates as
+  select Dist, Classes, Order,
+         sum(case when Descr='-2 Log Likelihood' then Value else . end) as LL,
+         sum(case when Descr='AIC' then Value else . end) as AIC,
+         sum(case when Descr='BIC' then Value else . end) as BIC,
+         max(Entropy) as Entropy,
+         /* compute minimum APP across classes to check weakest class quality */
+         min(of post1-post99) as MinAPP /* works if enough post columns exist */
+  from &summary.
+  group by Dist, Classes, Order;
+quit;
+
+/* Apply thresholds */
+data candidates;
+  set candidates;
+  pass_entropy = (Entropy >= &entropy_thresh.);
+  pass_app     = (MinAPP >= &app_thresh.);
+  pass_all     = (pass_entropy=1 and pass_app=1);
+run;
+
+/* Rank models by BIC (lower is better) among those meeting thresholds */
+proc sort data=candidates out=ranked;
+  by pass_all BIC Classes;
+run;
+
+/* Pick best */
+data &out.;
+  set ranked;
+  if pass_all=1 then select_flag=1; else select_flag=0;
+  if _n_=1 then Best=1; else Best=0;
+run;
+
+title "Best Model Selection Results";
+proc print data=&out. noobs label;
+  var Dist Classes Order BIC AIC Entropy MinAPP pass_all Best;
+  label MinAPP="Min APP"
+        pass_all="Meets Criteria"
+        Best="Selected Best";
+run;
+title;
+
+%mend select_best;
+
+
+
+/*============================== Final All-in-One Macro ================================*/ 
+%macro run_gbtm(
+      data=base_file_srs,       /* use existing dataset or simulated */
+      dist=zinb,                /* distribution: normal|poisson|zip|nb|zinb */
+      max_classes=3,            /* maximum # latent classes */
+      order=2,                  /* trajectory polynomial order */
+      outcomes=2,               /* number of outcomes, default 2 */
+      T=12,                     /* # time points */
+      entropy_thresh=0.70,      /* entropy cutoff */
+      app_thresh=0.70           /* APP cutoff */
+);
+
+/* Initialize results containers */
+proc datasets lib=work nolist; 
+  delete all_fit_results all_post_results model_summary best_model; 
+quit;
+
+/* Loop through class sizes */
+%do LC=2 %to &max_classes.;
+  
+  /* Run each outcome model separately (to set starting values) */
+  %do Y=1 %to &outcomes.;
+    %let startvals=%starting_value_alpha(class=&LC.)
+                   %starting_value_beta_sigma(
+                       class=&LC.,outcome=&Y.,order=&order.,
+                       equal_sigma=T,dist=&dist.);
+
+    %nlmixed_1(T=&T.,LC=&LC.,Y=&Y.,
+       starting=&startvals.,
+       output=nlm_Y&Y._CL&LC.,
+       order=&order.,equal_sigma=T,dist=&dist.);
+
+    /* capture fit stats */
+    ods output FitStatistics=fit_Y&Y._CL&LC.;
+    proc append base=all_fit_results data=fit_Y&Y._CL&LC. force; run;
+  %end;
+
+  /* Merge individual model parameters for multitrajectory */
+  data nlm_multi_start;
+    set nlm_Y1_CL&LC. nlm_Y2_CL&LC.;
+    if parameter =: 'alpha' then delete;
+  run;
+
+  %nlmixed_MultiTraj(T=&T.,LC=&LC.,
+       starting=%starting_value_alpha(class=&LC.)/data=nlm_multi_start,
+       output=nlm_CL&LC.,
+       order=&order.,equal_sigma=T,dist=&dist.);
+
+  ods output FitStatistics=fit_CL&LC.;
+  proc append base=all_fit_results data=fit_CL&LC. force; run;
+
+  /* Posterior metrics (uses pred_membership_y from plot_prep) */
+  %plot_prep(T=&T.,LC=&LC.,result=nlm_CL&LC.,
+             order=&order.,equal_sigma=T,dist=&dist.);
+
+  %posterior_metrics(post_ds=pred_membership_y, LC=&LC., output=post_CL&LC.);
+  proc append base=all_post_results data=post_CL&LC. force; run;
+
+%end; /* classes */
+
+/* Summarize */
+%summarize_all;
+
+/* Select best model */
+%select_best(summary=model_summary, 
+             criterion=bic, 
+             entropy_thresh=&entropy_thresh., 
+             app_thresh=&app_thresh., 
+             out=best_model);
+
+title "FINAL: Recommended Best Model Based on BIC + Entropy + APP thresholds";
+proc print data=best_model noobs; run;
+title;
+
+%mend run_gbtm;
+
+
+
 

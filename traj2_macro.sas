@@ -50,7 +50,7 @@ alpha0_&class_.=0 /* Set the initial value for alpha for each class. */
 
 
 /* Macro to initialize starting values for beta, sigma (if Normal), 
-   gamma (if ZIP), and theta (if NB). */
+   gamma (if ZIP/ZINB), and theta (if NB/ZINB). */
 %macro starting_value_beta_sigma(class,outcome,order,equal_sigma,dist);   
 %local s;  
 
@@ -85,6 +85,18 @@ alpha0_&class_.=0 /* Set the initial value for alpha for each class. */
         theta&outcome._&class_.=0   /* exp(theta)=1 → modest dispersion */
     %end;
 %end;
+
+/* ZIP already has gamma, NB has theta */
+/* ZINB just needs BOTH gamma & theta */
+%if &dist=zinb %then %do;
+    %do s=1 %to &class.;
+        %let class_=%scan("&class_all.", &s, ", ");
+        gamma&outcome._&class_.=0   /* logit-zero inflation param */
+        theta&outcome._&class_.=0   /* dispersion param log-scale */
+    %end;
+%end;
+
+
 
 /* Initialize beta polynomial coefficients across all outcomes & classes */
 %do s=1 %to &class.;
@@ -246,6 +258,37 @@ PROD&class_.&outcome.=PROD&class_.&outcome.+PI&class_.&outcome.[I]%str(;)
 %end;
 %mend Prob_nb;
 
+/* Macro for calculating log-probabilities for Zero-Inflated Negative Binomial */
+%macro Prob_zinb(class,outcome);   
+%local s; 
+%do s=1 %to &class;
+    %let class_=%scan("&class_all.", &s, ", ");
+
+    /* Class-specific dispersion */
+    kappa&outcome._&class_. = exp(theta&outcome._&class_.); 
+
+    /* NB probability parameter */
+    pNB&class_.&outcome. = kappa&outcome._&class_. / (kappa&outcome._&class_. + mu&class_.&outcome.[I]);
+
+    /* Zero-inflation probability (logit) */
+    p0&class_.&outcome. = logistic(gamma&outcome._&class_.);
+
+    if Y&outcome.[I]=0 then do;
+        PI&class_.&outcome.[I] = log(
+            p0&class_.&outcome. 
+            + (1 - p0&class_.&outcome.)*pdf('NEGBINOMIAL', 0, pNB&class_.&outcome., kappa&outcome._&class_.)
+        );
+    end;
+    else do;
+        PI&class_.&outcome.[I] = log(
+            (1 - p0&class_.&outcome.) 
+            * pdf('NEGBINOMIAL', Y&outcome.[I], pNB&class_.&outcome., kappa&outcome._&class_.)
+        );
+    end;
+
+    PROD&class_.&outcome.=PROD&class_.&outcome.+PI&class_.&outcome.[I];
+%end;
+%mend Prob_zinb;
 
 
 /* Macro for calculating class membership*/
@@ -358,6 +401,16 @@ MAX[I]*exp(logcdf('normal',(-MAX[i]+mu&class_.&outcome.[I])/sigma&outcome._&clas
     Pred&class_.&outcome.[I] = mu&class_.&outcome.[I];
 %end;
 %mend Pred_nb;
+
+%macro Pred_zinb(class,outcome);   
+%local s; 
+%do s=1 %to &class;
+    %let class_=%scan("&class_all.", &s, ", ");
+    kappa&outcome._&class_. = exp(theta&outcome._&class_.);
+    p0&class_.&outcome. = logistic(gamma&outcome._&class_.);
+    Pred&class_.&outcome.[I] = (1 - p0&class_.&outcome.)*mu&class_.&outcome.[I];
+%end;
+%mend Pred_zinb;
 
 
 %macro plot_prep(T,LC,result,order,equal_sigma,dist);
@@ -762,7 +815,11 @@ run;
     %else %if &dist=nb %then %do;
         %Prob_nb(class=&class.,outcome=&outcome.);
     %end;
+    %else %if &dist=zinb %then %do;
+        %Prob_zinb(class=&class.,outcome=&outcome.);
+    %end;
 %mend Prob_dispatch;
+
 
 
 /* Choose prediction generator based on DIST */
@@ -779,7 +836,11 @@ run;
     %else %if &dist=nb %then %do;
         %Pred_nb(class=&class.,outcome=&outcome.);
     %end;
+    %else %if &dist=zinb %then %do;
+        %Pred_zinb(class=&class.,outcome=&outcome.);
+    %end;
 %mend Pred_dispatch;
+
 
 
 %macro nlmixed_1(T,LC,Y,starting,output,order,equal_sigma,dist);
@@ -835,5 +896,6 @@ proc nlmixed data= base_file_srs itdetails qpoints=40 noad maxiter=1000 tech=dbl
 run;
 
 %mend nlmixed_MultiTraj;
+
 
 

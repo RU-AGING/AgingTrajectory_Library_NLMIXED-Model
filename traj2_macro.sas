@@ -1148,3 +1148,274 @@ title;
 
 
 
+
+/*============================== Reporting Macro ================================*/ 
+%macro export_report(outfile="gbtm_report.rtf", style=journal, dest=rtf);
+
+%if &dest=rtf %then %do;
+    ods rtf file=&outfile style=&style;
+%end;
+%else %if &dest=pdf %then %do;
+    ods pdf file=&outfile style=&style notoc;
+%end;
+%else %if &dest=excel %then %do;
+    ods excel file=&outfile style=&style options(sheet_interval="proc");
+%end;
+
+title "Group-Based Trajectory Modeling Report";
+
+/* Section 1: Model Comparison */
+title2 "Model Selection Summary (Fit Stats + Classification Metrics)";
+proc print data=model_summary noobs label; run;
+
+/* Section 2: Best Model */
+title2 "Best Model Identified";
+proc print data=best_model noobs label; run;
+
+/* Section 3: Average Posterior Probabilities (APPs) */
+title2 "Average Posterior Probabilities (APPs)";
+proc means data=pred_membership_y mean;
+   var post_:;
+   class class_assign;
+run;
+
+/* Section 4: Posterior Membership Summary */
+title2 "Posterior Membership (Per-Subject Probabilities)";
+proc print data=pred_membership_y(obs=20); 
+   var id post_:;
+   label id="Subject ID";
+run;
+
+/* Section 5: Plots */
+title2 "Observed vs Predicted Trajectories by Latent Class";
+proc sgpanel data=data_plot;
+ panelby outcome;
+ series x=quar y=pred / group=class name="pred";
+ scatter x=quar y=avg / group=class name="obs";
+ keylegend "pred" /title="Predicted";
+ keylegend "obs" /title="Observed";
+run;
+
+ods &dest close;
+title;
+
+%mend export_report;
+
+/*============================== Macro: %diagnostics_report ================================*/ 
+%macro diagnostics_report(best_ds=best_model, post_ds=pred_membership_y, result=nlm_fix_T1_T2);
+
+title "Diagnostics Section";
+
+/* 1. Convergence status */
+title2 "Model Convergence Status (from NLMIXED logs)";
+proc print data=&result. (obs=10);
+   var parameter estimate;
+run;
+
+/* 2. Class size proportions */
+title2 "Posterior-Based Class Proportions";
+proc means data=&post_ds n mean;
+   var post_:;
+run;
+
+/* 3. APP thresholds check */
+title2 "Average Posterior Probabilities (APPs)";
+proc means data=&post_ds mean;
+   class class_assign;
+   var post_:;
+run;
+
+/* 4. Flag tiny classes (<5%) */
+data class_size_check;
+  set &post_ds;
+  array post[99] post_:;
+  class = class_assign;
+  output;
+run;
+
+proc freq data=class_size_check;
+   tables class / out=class_counts;
+run;
+
+data diagnostics_flags;
+  set class_counts;
+  pct = percent/100;
+  flag_small = (pct < 0.05);
+run;
+
+title2 "Class Size Proportion Check (Flag tiny <5%)";
+proc print data=diagnostics_flags noobs;
+   var class count pct flag_small;
+run;
+
+title2;
+%mend diagnostics_report;
+
+/*============================== Bootstrap ================================*/ 
+/* Step 1. Bootstrap Macro Core */
+%macro bootstrap_gbtm(data=base_file_srs, dist=zinb, LC=2, order=2, T=12,
+                      B=100, seed=123, out=boot_results);
+
+/* Container for results */
+proc datasets lib=work nolist; delete &out.; quit;
+
+%do b=1 %to &B.;
+  /* Resample subjects with replacement */
+  proc surveyselect data=&data. out=bsample method=urs samprate=1 outhits seed=%eval(&seed+&b);
+     strata id;
+  run;
+
+  /* Refit model on bootstrap sample */
+  %let startvals=%starting_value_alpha(class=&LC.)
+                %starting_value_beta_sigma(class=&LC.,outcome=1,
+                    order=&order.,equal_sigma=T,dist=&dist.);
+
+  %nlmixed_1(T=&T.,LC=&LC.,Y=1,
+     starting=&startvals., output=boot_out&b.,
+     order=&order.,equal_sigma=T,dist=&dist.);
+
+  /* Save predicted curves for bootstrap b */
+  %plot_prep(T=&T.,LC=&LC.,result=boot_out&b.,
+     order=&order.,equal_sigma=T,dist=&dist.);
+
+  data boot_curves;
+    set data_plot;  /* from %plot_prep result */
+    replicate=&b.;
+  run;
+
+  proc append base=&out. data=boot_curves force; run;
+
+%end;
+
+%mend bootstrap_gbtm;
+
+/* Step 2. Summarize CIs */
+%macro summarize_boot(out=boot_results, alpha=0.05);
+
+proc sort data=&out.; by class outcome quar; run;
+
+proc means data=&out. noprint;
+  by class outcome quar;
+  var pred;
+  output out=boot_ci 
+     mean=mean_pred 
+     pctlpre=ci_ 
+     pctlpts=%sysevalf(100*&alpha/2) %sysevalf(100*(1-&alpha/2));
+run;
+
+data boot_ci;
+  set boot_ci;
+  rename ci_2_5=CI_Lower ci_97_5=CI_Upper;
+run;
+
+/* Plot CIs with trajectories */
+title "Bootstrap Trajectory Confidence Intervals";
+proc sgpanel data=boot_ci;
+  panelby outcome;
+  band x=quar lower=CI_Lower upper=CI_Upper / group=class transparency=0.5;
+  series x=quar y=mean_pred / group=class;
+run;
+title;
+
+%mend summarize_boot;
+
+/*============================== Version 1: Single-threaded Bootstrap (Portable) ================================*/ 
+%macro bootstrap_gbtm_serial(data=base_file_srs, dist=zinb, LC=2, order=2, T=12,
+                      B=100, seed=123, out=boot_results);
+
+proc datasets lib=work nolist; delete &out.; quit;
+
+%do b=1 %to &B.;
+  /* Resample subjects with replacement */
+  proc surveyselect data=&data. out=bsample method=urs 
+                    samprate=1 outhits seed=%eval(&seed+&b);
+     strata id; /* keep each subject as unit */
+  run;
+
+  /* NLMIXED fit */
+  %let startvals=%starting_value_alpha(class=&LC.)
+                %starting_value_beta_sigma(
+                       class=&LC.,outcome=1,
+                       order=&order.,equal_sigma=T,dist=&dist.);
+
+  %nlmixed_1(T=&T.,LC=&LC.,Y=1,
+     starting=&startvals., 
+     output=boot_out&b.,
+     order=&order.,equal_sigma=T,dist=&dist.);
+
+  /* Gather predicted trajectories */
+  %plot_prep(T=&T.,LC=&LC.,result=boot_out&b.,
+             order=&order.,equal_sigma=T,dist=&dist.);
+
+  data boot_curves;
+    set data_plot; 
+    replicate=&b.;
+  run;
+
+  proc append base=&out. data=boot_curves force; run;
+%end;
+
+%mend bootstrap_gbtm_serial;
+
+/*============================== Version 2: Parallel Bootstrap (If Supported) ================================*/ 
+/* Uses SYSTASK (sas commands submitted in parallel) or MP CONNECT. Below is a simplified SYSTASK version: */
+%macro bootstrap_gbtm_parallel(data=base_file_srs, dist=zinb, LC=2, order=2, T=12,
+                       B=100, seed=123, out=boot_results, ncores=4);
+
+proc datasets lib=work nolist; delete &out.; quit;
+
+%local b core;
+%let chunk=%sysevalf(&B./&ncores.,ceil);
+
+%do core=1 %to &ncores.;
+   filename task&core temp;
+   data _null_;
+     file task&core;
+     %do b=%eval((&core-1)*&chunk+1) %to %eval(%sysfunc(min(&core*&chunk,&B.)));
+       put '%sim_data(dist=&dist., class=&LC., n=200, T=&T., seed=%eval(&seed+&b));';
+       put '%let startvals=%starting_value_alpha(class=&LC.)'
+           '%starting_value_beta_sigma(class=&LC.,outcome=1,order=&order.,equal_sigma=T,dist=&dist.);';
+       put '%nlmixed_1(T=&T.,LC=&LC.,Y=1,starting=&startvals.,'
+           'output=boot_out&b.,order=&order.,equal_sigma=T,dist=&dist.);';
+       put '%plot_prep(T=&T.,LC=&LC.,result=boot_out&b.,order=&order.,equal_sigma=T,dist=&dist.);';
+       put 'data boot_curves; set data_plot; replicate=' &b '; run;';
+       put 'proc append base=&out. data=boot_curves force; run;';
+     %end;
+   run;
+  
+   systask command "sas task&core" taskname=bt&core status=rc&core;
+%end;
+
+waitfor _all_ 
+%do core=1 %to &ncores.; bt&core %end;;
+
+%mend bootstrap_gbtm_parallel;
+%macro summarize_boot(out=boot_results, alpha=0.05);
+
+proc sort data=&out.; by class outcome quar; run;
+
+proc means data=&out. noprint;
+  by class outcome quar;
+  var pred;
+  output out=boot_ci 
+     mean=mean_pred 
+     pctlpre=ci_ 
+     pctlpts=%sysevalf(100*&alpha/2) %sysevalf(100*(1-&alpha/2));
+run;
+
+data boot_ci;
+  set boot_ci;
+  rename ci_2_5=CI_Lower ci_97_5=CI_Upper;
+run;
+
+title "Bootstrap Trajectories with Confidence Intervals";
+proc sgpanel data=boot_ci;
+  panelby outcome;
+  band x=quar lower=CI_Lower upper=CI_Upper / group=class transparency=0.3;
+  series x=quar y=mean_pred / group=class lineattrs=(thickness=2);
+run;
+title;
+
+%mend summarize_boot;
+
+

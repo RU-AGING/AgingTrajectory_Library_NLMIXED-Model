@@ -1419,3 +1419,158 @@ title;
 %mend summarize_boot;
 
 
+/*============================== Data simulation ================================*/ 
+
+%macro sim_data(dist=poisson, class=2, n=200, T=12, seed=123, miss_pattern=balanced, p_obs_min=0.6);
+
+/* 
+ miss_pattern = balanced | unbalanced
+ p_obs_min = minimum fraction of timepoints observed in unbalanced case
+*/
+
+data long;
+  call streaminit(&seed.);
+
+  do id=1 to &n.;
+    /* Assign latent class probabilistically (equal across LC) */
+    u = rand('uniform');
+    class = ceil(u*&class.);
+
+    /* Determine how many timepoints this subject is observed */
+    if "&miss_pattern."="balanced" then do;
+      first_t = 1; last_t = &T.;
+    end;
+    else do;
+      /* subject observed at a random fraction of T */
+      frac = rand('uniform')*(1-&p_obs_min.) + &p_obs_min.; 
+      n_obs = ceil(&T.*frac);
+      first_t = 1;
+      last_t = n_obs;
+    end;
+
+    do t=1 to &T.;
+      if t >= first_t and t <= last_t then do;
+        /* Base trajectory: quadratic by class */
+        select(class);
+          when (1) mu = 0.5 + 0.05*t;
+          when (2) mu = 0.5 + 0.3*t;
+          when (3) mu = 1   + 0.1*t + 0.01*t*t;
+          otherwise mu = 0.5 + 0.2*t;
+        end;
+
+        /* Dist-specific simulation */
+        %if &dist.=normal %then %do;
+          sigma = 2;  
+          y = rand('normal', mu, sigma);
+          if y<0 then y=0;
+        %end;
+        %else %if &dist.=poisson %then %do;
+          y = rand('poisson', mu);
+        %end;
+        %else %if &dist.=zip %then %do;
+          p0 = 0.4 - 0.1*class;
+          if rand('uniform') < p0 then y=0;
+          else y = rand('poisson', mu);
+        %end;
+        %else %if &dist.=nb %then %do;
+          kappa = 2;  pNB = kappa/(kappa+mu);
+          y = rand('negbinomial', pNB, kappa);
+        %end;
+        %else %if &dist.=zinb %then %do;
+          kappa = 2;  pNB = kappa/(kappa+mu);
+          p0 = 0.4 - 0.1*class;
+          if rand('uniform')<p0 then y=0;
+          else y = rand('negbinomial', pNB, kappa);
+        %end;
+
+        /* Split between Outcome 1 & Outcome 2 to mimic 2 trajectories */
+        if mod(id,2)=0 then QY1=y; else QY2=y;
+        output;
+      end;
+    end; /* time loop */
+  end; /* id loop */
+run;
+
+/* Reshape into wide form with missing values */
+proc sort data=long; by id; run;
+
+proc transpose data=long out=wide1 prefix=QY1_;
+  by id;
+  id t;
+  var QY1;
+run;
+
+proc transpose data=long out=wide2 prefix=QY2_;
+  by id;
+  id t;
+  var QY2;
+run;
+
+data base_file_srs;
+  merge wide1 wide2;
+  by id;
+run;
+
+%mend sim_data;
+
+
+
+%macro prep_gbtm_data(data=, id=, time=, outcome=, value=, T=12, out=base_file_srs);
+
+proc sort data=&data.; by &id &outcome &time; run;
+
+/* Prepare separate datasets per outcome */
+%do y=1 %to 2;  /* default supports 2 outcomes */
+  data long_y&y;
+     set &data.;
+     where &outcome=&y;
+     varname=cats("QY", &y, "_", &time);
+     keep &id varname &value;
+  run;
+
+  proc transpose data=long_y&y out=wide_y&y prefix=QY&y._;
+     by &id;
+     id &time;
+     var &value;
+  run;
+%end;
+
+/* Merge outcomes wide */
+data &out.;
+  merge wide_y1 wide_y2;
+  by &id.;
+run;
+
+%mend prep_gbtm_data;
+
+
+/*============================== Diagnostic Macro — Mean–Variance Check ================================*/ 
+%macro diag_meanvar(data=base_file_srs, outcomes=2, T=12);
+
+data longform;
+  set &data.;
+  array QY1[&T.] QY1_1-QY1_&T.;
+  array QY2[&T.] QY2_1-QY2_&T.;
+
+  do y=1 to &T.;
+     if QY1[y] ne . then do; outcome=1; time=y; value=QY1[y]; output; end;
+     if QY2[y] ne . then do; outcome=2; time=y; value=QY2[y]; output; end;
+  end;
+  keep &id outcome time value;
+run;
+
+proc means data=longform noprint;
+  class outcome time;
+  var value;
+  output out=mv mean=Mean var=Var;
+run;
+
+title "Mean-Variance Diagnostics for Outcomes";
+proc sgplot data=mv;
+  scatter x=Mean y=Var / group=outcome markerattrs=(symbol=circlefilled);
+  lineparm x=0 y=0 slope=1 / transparency=0.5 lineattrs=(color=red pattern=dash); /* Poisson line */
+run;
+title;
+
+%mend diag_meanvar;
+

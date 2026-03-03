@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GBTM Macros — Reading Catalog</title>
+  <style>
+    :root {
+      --navy: #1a2744;
+      --teal: #1a6b74;
+      --gold: #c8973a;
+      --light: #f4f7f9;
+      --border: #d4dde4;
+      --text: #2c3a4a;
+      --muted: #6b7a8d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--light);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--navy);
+      color: #fff;
+      padding: 40px 48px 32px;
+      border-bottom: 4px solid var(--gold);
+    }
+    header .lab-tag {
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    header h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    header p  { font-size: 14px; color: #b0bccc; max-width: 780px; }
+    header .meta {
+      margin-top: 18px;
+      display: flex; gap: 24px; flex-wrap: wrap;
+    }
+    header .meta span {
+      font-size: 12px; color: #8da0b8;
+      background: rgba(255,255,255,.07);
+      padding: 4px 10px; border-radius: 4px;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 24px 60px;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-title {
+      display: flex; align-items: center; gap: 12px;
+      margin: 40px 0 20px;
+    }
+    .section-title h2 {
+      font-size: 13px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--teal);
+    }
+    .section-title .line {
+      flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── CARDS ── */
+    .cards { display: grid; gap: 20px; }
+    .cards.two-col { grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    }
+    .card-header {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-icon {
+      width: 42px; height: 42px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .icon-sas   { background: #e8f4f8; }
+    .icon-guide { background: #eaf7ee; }
+    .icon-pptx  { background: #fff3e0; }
+    .icon-qa    { background: #f3e8ff; }
+
+    .card-title { flex: 1; }
+    .card-title h3 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .card-title .filename {
+      font-size: 11px; color: var(--muted);
+      font-family: 'Courier New', monospace;
+      background: var(--light); padding: 2px 6px; border-radius: 3px;
+    }
+    .badge {
+      font-size: 10px; font-weight: 700; letter-spacing: .8px;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 10px;
+      white-space: nowrap; align-self: flex-start;
+    }
+    .badge-sas   { background: #dbeeff; color: #1752a3; }
+    .badge-guide { background: #d5f5e3; color: #0e6b3a; }
+    .badge-pptx  { background: #fde8c0; color: #8a5200; }
+    .badge-qa    { background: #ede0ff; color: #5b21b6; }
+
+    .card-body { padding: 16px 20px 18px; }
+    .card-body p { font-size: 13.5px; margin-bottom: 12px; }
+
+    /* ── TAGS ── */
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .tag {
+      font-size: 11px; padding: 2px 8px; border-radius: 10px;
+      background: var(--light); border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* ── KEY ITEMS ── */
+    .key-items { list-style: none; margin-top: 8px; }
+    .key-items li {
+      font-size: 12.5px; color: var(--text);
+      padding: 4px 0 4px 16px; position: relative;
+      border-bottom: 1px dashed #eef0f3;
+    }
+    .key-items li:last-child { border-bottom: none; }
+    .key-items li::before {
+      content: '›';
+      position: absolute; left: 0; color: var(--teal); font-weight: 700;
+    }
+
+    /* ── TWO-COL TABLE ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 20px;
+      margin-top: 8px;
+    }
+    .info-item { font-size: 12.5px; }
+    .info-item .label { color: var(--muted); font-size: 11px; margin-bottom: 1px; }
+    .info-item .value { font-weight: 600; }
+
+    /* ── SUMMARY TABLE ── */
+    .summary-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px; margin-top: 8px;
+    }
+    .summary-table th {
+      background: var(--navy); color: #fff;
+      padding: 9px 14px; text-align: left;
+      font-size: 11px; letter-spacing: .8px; text-transform: uppercase;
+    }
+    .summary-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .summary-table tr:nth-child(even) td { background: var(--light); }
+    .summary-table .mono {
+      font-family: 'Courier New', monospace; font-size: 12px; color: var(--teal);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 30px;
+      color: var(--muted); font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="lab-tag">Community Health and Aging Outcome (CHAO) Lab · Rutgers University</div>
+  <h1>GBTM Macros — Reading Catalog</h1>
+  <p>Complete reference index for all documents, code files, testing assets, and user guides associated with the
+     Group-Based Trajectory Modeling (GBTM) SAS macro library covering ZIP Poisson, ZINB, Ordinal-Probit,
+     and Continuous outcome models.</p>
+  <div class="meta">
+    <span>📅 Catalog date: March 2026</span>
+    <span>👩‍💻 Authors: Anum Zafar, Weiyi Xia, Haiqun Lin</span>
+    <span>📦 8 files cataloged</span>
+    <span>🏷 SAS 9.4+ / PROC NLMIXED</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ═══════════════════════════ SECTION 1: SAS CODE ═══════════════════════════ -->
+  <div class="section-title">
+    <h2>SAS Source Code</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="cards two-col">
+
+    <!-- ZIP Poisson (RTF) -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-sas">📄</div>
+        <div class="card-title">
+          <h3>ZIP Poisson Latent-Class Trajectories</h3>
+          <span class="filename">poisson_model_complete_35_.rtf</span>
+        </div>
+        <span class="badge badge-sas">SAS Code</span>
+      </div>
+      <div class="card-body">
+        <p>Self-contained SAS program fitting Zero-Inflated Poisson (ZIP) latent-class trajectory (growth-mixture) models via PROC NLMIXED. Includes optional data simulator, PARMS builder, likelihood macro, and plotting.</p>
+        <ul class="key-items">
+          <li>Author: Anum Zafar · Last edit: 02/09/2026</li>
+          <li>Sections: [A] Simulator · [B] Input prep · [C] Starting values · [D] Modeling macros · [E] Plotting · [F] Example run</li>
+          <li>Input: wide table <code>BASE_FILE_SRS</code> with <code>BENE_ID</code>, <code>SUM_Q1..SUM_Q12</code></li>
+          <li>Outputs: <code>pe_zip</code>, <code>fit_zip</code>, trajectory + mixture-mean plots</li>
+          <li>Key feature: single PARMS statement, no carryover of starting values between runs</li>
+        </ul>
+        <div class="tag-list">
+          <span class="tag">ZIP</span><span class="tag">Poisson</span><span class="tag">Count outcomes</span>
+          <span class="tag">Growth mixture</span><span class="tag">PROC NLMIXED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZINB -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-sas">📄</div>
+        <div class="card-title">
+          <h3>ZINB Latent-Class Trajectories</h3>
+          <span class="filename">ZINB_LatentClass_Trajectories.docx</span>
+        </div>
+        <span class="badge badge-sas">SAS Code</span>
+      </div>
+      <div class="card-body">
+        <p>SAS program fitting Zero-Inflated Negative Binomial (ZINB) latent-class trajectory models. Extends ZIP by modeling over-dispersion via the NB2 parameterization (Var = μ + μ²/k).</p>
+        <ul class="key-items">
+          <li>Author: Anum Zafar · Last edit: 2026-02-09</li>
+          <li>Sections: [A–F] mirror ZIP program structure</li>
+          <li>Simulator: mixture of K classes with class-specific polynomial mean + zero-inflation trajectories</li>
+          <li>Outcome drawn from ZINB: structural zero with prob p(t), else NB2(μ(t), k)</li>
+          <li>Requires: wide data, 1 row/person; <code>BENE_ID</code>, <code>SUM_Q1..SUM_Q12</code></li>
+        </ul>
+        <div class="tag-list">
+          <span class="tag">ZINB</span><span class="tag">Negative Binomial</span><span class="tag">Over-dispersion</span>
+          <span class="tag">Zero inflation</span><span class="tag">PROC NLMIXED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ordinal Probit -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-sas">📄</div>
+        <div class="card-title">
+          <h3>Ordinal-Probit Latent Class (Simulate → Fit → Plot)</h3>
+          <span class="filename">discrete_ordinal_final.docx</span>
+        </div>
+        <span class="badge badge-sas">SAS Code</span>
+      </div>
+      <div class="card-body">
+        <p>Single-run pipeline for ordinal-probit latent-class trajectory modeling. Handles bounded ordered outcomes (e.g., 0–4) across T time points using cumulative probit with exp()-incremented thresholds.</p>
+        <ul class="key-items">
+          <li>Authors: Haiqun Lin, Anum Zafar</li>
+          <li>Macros: <code>%sim_data</code>, <code>%build_base_from_simwide</code>, <code>%ordprob_mix_fit_one</code>, <code>%ordprob_mix_plot_one</code></li>
+          <li>Class A mixing intercept fixed to 0 for identifiability</li>
+          <li>Simulator families: BIN4, TPOIS4, CAT5 (with optional monotone missingness)</li>
+          <li>Outputs: <code>&lt;prefix&gt;_EST_Kk</code>, <code>_FIT_Kk</code>, <code>_ESTS_Kk</code> + plots</li>
+        </ul>
+        <div class="tag-list">
+          <span class="tag">Ordinal</span><span class="tag">Probit</span><span class="tag">Ordered categories</span>
+          <span class="tag">Latent class</span><span class="tag">Thresholds</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Continuous 2 outcomes -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-sas">📄</div>
+        <div class="card-title">
+          <h3>Group-Based Trajectory: Two Continuous Outcomes</h3>
+          <span class="filename">Continuous_2_outcomes.docx</span>
+        </div>
+        <span class="badge badge-sas">SAS Code</span>
+      </div>
+      <div class="card-body">
+        <p>Implements GBTM for two simultaneous continuous outcomes using a censored-normal (Tobit) model in PROC NLMIXED. Supports single-outcome models, joint modeling, and posterior summaries.</p>
+        <ul class="key-items">
+          <li>Authors: Weiyi Xia, Haiqun Lin, Anum Zafar · Last edit: 2026-02-09</li>
+          <li>Supports 1 row/person wide format across T quarters (default T=12, K=5, cubic)</li>
+          <li>Global settings: <code>%let USE_SIM</code>, <code>%let T</code>, <code>%let class</code>, <code>%let order_model</code>, <code>%let equal</code></li>
+          <li>Outcome vars: <code>y1vars = QHH1–QHH12</code>, <code>y2vars = QINP1–QINP12</code></li>
+          <li>Outputs: <code>nlm_fix_T1&amp;class</code>, <code>nlm_fix_T2&amp;class</code>, <code>nlm_fix_T1_T2&amp;class</code>, avg_membership, plots</li>
+        </ul>
+        <div class="tag-list">
+          <span class="tag">Continuous</span><span class="tag">Tobit / Censored-normal</span>
+          <span class="tag">Joint model</span><span class="tag">Two outcomes</span><span class="tag">Posterior</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 2: USER GUIDES ═══════════════════════════ -->
+  <div class="section-title">
+    <h2>User Guides</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="cards two-col">
+
+    <!-- ZIP User Guide -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-guide">📘</div>
+        <div class="card-title">
+          <h3>Zero-Inflated Poisson — User Guide</h3>
+          <span class="filename">POission_Final_User_Guide_79__70_.docx</span>
+        </div>
+        <span class="badge badge-guide">User Guide</span>
+      </div>
+      <div class="card-body">
+        <p>Step-by-step guide for running and customizing the ZIP latent-class trajectory program. Covers prerequisites, quick-start workflow, section-by-section explanation, and customization.</p>
+        <ul class="key-items">
+          <li><strong>Step 1:</strong> What the program does — ZIP model overview, single PARMS logic, plot outputs</li>
+          <li><strong>Step 2:</strong> File structure — sections [A]–[F] explained in plain language</li>
+          <li><strong>Step 3:</strong> Prerequisites — SAS 9.4+, wide table, column naming conventions</li>
+          <li><strong>Step 4:</strong> Quick start — 5-step workflow (open → prepare → set starts → configure run → execute)</li>
+          <li>Covers: <code>nclass=</code>, <code>class_labels=</code>, <code>order=</code>, <code>p_order=</code>, <code>T=</code> parameters</li>
+        </ul>
+        <div class="tag-list">
+          <span class="tag">ZIP</span><span class="tag">How-to</span><span class="tag">Quick start</span>
+          <span class="tag">Parameters</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ordinal User Guide -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-guide">📘</div>
+        <div class="card-title">
+          <h3>Ordinal-Probit Latent Class — User Guide</h3>
+          <span class="filename">discrete_ordinal_user_guide.docx</span>
+        </div>
+        <span class="badge badge-guide">User Guide</span>
+      </div>
+      <div class="card-body">
+        <p>Complete usage guide for the ordinal-probit pipeline. Covers all four macros with parameter definitions, simulator families, and an annotated quick-setup code block.</p>
+        <ul class="key-items">
+          <li>Four-step pipeline: <code>%sim_data</code> → <code>%build_base_from_simwide</code> → <code>%ordprob_mix_fit_one</code> → <code>%ordprob_mix_plot_one</code></li>
+          <li>Simulator families: BIN4 (Binomial/cap), TPOIS4 (truncated Poisson), CAT5 (uniform categorical)</li>
+          <li>Model settings: <code>K</code> (classes), <code>M</code> (categories), <code>DEG</code> (polynomial degree), <code>ycodes=</code></li>
+          <li>Mixing identifiability: alpha0_A fixed to 0 — do NOT include in start overrides</li>
+          <li>Plots: class proportion barplot + predicted mean trajectories E[Y_t | class]</li>
+        </ul>
+        <div class="tag-list">
+          <span class="tag">Ordinal</span><span class="tag">How-to</span><span class="tag">Identifiability</span>
+          <span class="tag">Simulator</span><span class="tag">Plot</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 3: TESTING ASSETS ═══════════════════════════ -->
+  <div class="section-title">
+    <h2>Testing &amp; QA Assets</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="cards two-col">
+
+    <!-- PPTX Brief -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-pptx">📊</div>
+        <div class="card-title">
+          <h3>GBTM Macros Testing Brief</h3>
+          <span class="filename">GBTM_Macros_Testing_Brief.pptx</span>
+        </div>
+        <span class="badge badge-pptx">Presentation</span>
+      </div>
+      <div class="card-body">
+        <p>8-slide analyst test brief for IFH reviewers. Covers what the macros do, data requirements, representative output formats, quick-start code, customization checklist, recommended test plan, and compute time estimates.</p>
+
+        <table class="summary-table">
+          <tr><th>Slide</th><th>Content</th></tr>
+          <tr><td>1</td><td>Title — ZIP + Ordinal + Continuous + ZINB overview</td></tr>
+          <tr><td>2</td><td>What the macros do: simulate → prep → fit → output</td></tr>
+          <tr><td>3</td><td>Data requirements (wide format) for both pipelines</td></tr>
+          <tr><td>4</td><td>Example output plots</td></tr>
+          <tr><td>5</td><td>Quick start: run on simulated data</td></tr>
+          <tr><td>6</td><td>Running on real data — what parameters to change</td></tr>
+          <tr><td>7</td><td>Recommended test plan (G01–G02, Z06–Z16, O01–O08)</td></tr>
+          <tr><td>8</td><td>Realistic runtime estimates (setup to compute)</td></tr>
+        </table>
+
+        <div class="tag-list" style="margin-top:12px">
+          <span class="tag">Test brief</span><span class="tag">IFH analyst</span>
+          <span class="tag">Runtime estimates</span><span class="tag">Test plan</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- QA Excel -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-qa">🧪</div>
+        <div class="card-title">
+          <h3>TRAJ2 QA Test Cases</h3>
+          <span class="filename">TRAJ2_QA_47_.xlsx</span>
+        </div>
+        <span class="badge badge-qa">QA Spreadsheet</span>
+      </div>
+      <div class="card-body">
+        <p>Formal QA test case registry with 47+ test cases spanning General environment checks, ZIP Poisson tests, and Ordinal-Probit tests. Each row contains pre-conditions, steps, expected results, and notes.</p>
+
+        <table class="summary-table">
+          <tr><th>Module</th><th>Range</th><th>Focus</th></tr>
+          <tr><td>General</td><td class="mono">G01–G02</td><td>Environment, WORK space, PROC NLMIXED license</td></tr>
+          <tr><td>ZIP Poisson</td><td class="mono">Z01–Z16</td><td>2–10 class fits, missing data, PNG export, PARMS logic, bounds</td></tr>
+          <tr><td>Ordinal</td><td class="mono">O01–O08</td><td>2–8 class fits, category mismatch, identifiability, start overrides</td></tr>
+        </table>
+
+        <p style="margin-top:12px">Also includes starting-value reference blocks for both ZIP (Section [C] A–J) and Ordinal (<code>%let STARTS_K4</code>) pipelines.</p>
+        <div class="tag-list">
+          <span class="tag">Test cases</span><span class="tag">QA registry</span>
+          <span class="tag">Edge cases</span><span class="tag">Starting values</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 4: CROSS-REFERENCE ═══════════════════════════ -->
+  <div class="section-title">
+    <h2>Cross-Reference: Model → Files</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding-top:18px">
+      <table class="summary-table">
+        <tr>
+          <th>Model</th>
+          <th>Source Code</th>
+          <th>User Guide</th>
+          <th>Test Cases (in QA xlsx)</th>
+          <th>In PPTX Brief</th>
+        </tr>
+        <tr>
+          <td><strong>ZIP Poisson</strong></td>
+          <td class="mono">poisson_model_complete_35_.rtf</td>
+          <td class="mono">POission_Final_User_Guide…docx</td>
+          <td class="mono">Z01–Z16</td>
+          <td>Slides 2, 3, 5, 6, 7</td>
+        </tr>
+        <tr>
+          <td><strong>ZINB</strong></td>
+          <td class="mono">ZINB_LatentClass_Trajectories.docx</td>
+          <td>—</td>
+          <td>—</td>
+          <td>Slide 1 (listed)</td>
+        </tr>
+        <tr>
+          <td><strong>Ordinal-Probit</strong></td>
+          <td class="mono">discrete_ordinal_final.docx</td>
+          <td class="mono">discrete_ordinal_user_guide.docx</td>
+          <td class="mono">O01–O08</td>
+          <td>Slides 2, 3, 5, 6, 7</td>
+        </tr>
+        <tr>
+          <td><strong>Continuous (2-outcome)</strong></td>
+          <td class="mono">Continuous_2_outcomes.docx</td>
+          <td>—</td>
+          <td>—</td>
+          <td>Slide 1 (listed)</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 5: SHARED DATA CONTRACT ═══════════════════════════ -->
+  <div class="section-title">
+    <h2>Shared Data &amp; Naming Conventions</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding-top:18px">
+      <table class="summary-table">
+        <tr><th>Convention</th><th>Detail</th></tr>
+        <tr><td><strong>Input format</strong></td><td>Wide — 1 row per beneficiary, T repeated-measure columns</td></tr>
+        <tr><td><strong>ID column</strong></td><td><code class="mono">BENE_ID</code> (or overridden via <code>id=</code> parameter)</td></tr>
+        <tr><td><strong>ZIP/ZINB outcomes</strong></td><td><code class="mono">SUM_Q1 … SUM_QT</code> (integer counts, <code>.</code> = missing OK)</td></tr>
+        <tr><td><strong>Ordinal outcomes</strong></td><td><code class="mono">Y1_1 … Y1_T</code> with time index <code>quar1…quarT = 0..T-1</code></td></tr>
+        <tr><td><strong>Continuous outcomes</strong></td><td><code class="mono">QHH1–QHH12</code> (outcome 1), <code>QINP1–QINP12</code> (outcome 2)</td></tr>
+        <tr><td><strong>Time points</strong></td><td>Default T = 12 (quarterly, 3 years); configurable via <code>%let T=</code></td></tr>
+        <tr><td><strong>Source data table</strong></td><td><code class="mono">BASE_FILE_SRS</code> (all pipelines)</td></tr>
+        <tr><td><strong>PARMS rule</strong></td><td>Exactly ONE PARMS statement; no carryover between runs</td></tr>
+        <tr><td><strong>SAS version</strong></td><td>SAS 9.4+ with Base SAS, PROC NLMIXED, ODS Graphics</td></tr>
+        <tr><td><strong>Missing handling</strong></td><td>Likelihood skips observations where Y = <code>.</code></td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Community Health and Aging Outcome (CHAO) Lab · Rutgers University ·
+  Generated March 2026 · 8 files cataloged
+</footer>
+
+</body>
+</html>

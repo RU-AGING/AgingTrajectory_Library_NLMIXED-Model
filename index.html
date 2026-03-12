@@ -161,9 +161,9 @@ footer a{color:#64748b;text-decoration:none}
       <div class="mexp-icon ci-bl">🧭</div>
       <div><h2>Group-Based Trajectory Modeling</h2><div class="mexp-sub">Nagin &amp; Land (1993) · Finite Mixture Model · Maximum Likelihood via PROC NLMIXED</div></div>
     </div>
-    <p>Group-Based Trajectory Modeling (GBTM) is a specialized finite mixture model designed to identify subgroups of individuals in a population who follow similar patterns over time. Rather than estimating a single average trajectory for everyone — which can mask meaningful heterogeneity — GBTM partitions the population into K latent classes, each characterized by its own trajectory shape (intercept, slope, curvature) estimated as a polynomial function of time.</p>
-    <p>The core idea is that the <strong>population distribution of trajectories</strong> is approximated by a finite mixture of K groups. This is not a claim that nature has produced exactly K discrete types; it is a flexible, data-driven device for capturing the dominant features of individual-level heterogeneity. The latent groups should be thought of as longitudinal strata — clusters of individuals following approximately the same developmental course — rather than as sharply bounded categories.</p>
-    <p>Each individual's observed longitudinal sequence contributes to the likelihood through two components: the <strong>probability of group membership</strong> (modeled via a generalized logit / softmax) and the <strong>probability of the observed data given group membership</strong> (modeled by a distribution appropriate to the outcome type). Parameters are estimated jointly by maximum likelihood. Model selection — choosing K — relies on BIC, AIC, average posterior probability, and clinical interpretability of the resulting trajectories.</p>
+    <p>Group-Based Trajectory Modeling (GBTM) is a specialized finite mixture model designed to identify subgroups of individuals in a population who follow similar patterns over time. Rather than estimating a single average trajectory for everyone, which can mask meaningful heterogeneity, GBTM partitions the population into K latent classes, each characterized by its own trajectory shape (intercept, slope, curvature) estimated as a polynomial function of time.</p>
+    <p>The core idea is that the <strong>population distribution of trajectories</strong> is approximated by a finite mixture of K groups. This is not a claim that nature has produced exactly K discrete types; it is a flexible, data-driven device for capturing the dominant features of individual-level heterogeneity. The latent groups should be thought of as longitudinal strata, clusters of individuals following approximately the same developmental course, rather than as sharply bounded categories.</p>
+    <p>Each individual's observed longitudinal sequence contributes to the likelihood through two components: the <strong>probability of group membership</strong> (modeled via a generalized logit / softmax) and the <strong>probability of the observed data given group membership</strong> (modeled by a distribution appropriate to the outcome type). Parameters are estimated jointly by maximum likelihood. Model selection, choosing K, relies on BIC, AIC, average posterior probability, and clinical interpretability of the resulting trajectories.</p>
     <p>GBTM has seen rapid adoption across medicine, epidemiology, and public health. Applications span medication adherence trajectories in Medicare populations, healthcare utilization patterns in aging cohorts, biomarker evolution in dementia and chronic disease, and post-hospitalization recovery curves. The four macros in this library implement GBTM for the four outcome types most common in CMS Medicare/Medicaid data: count outcomes (ZIP &amp; ZINB), bounded ordered outcomes (Ordinal-Probit), and censored continuous outcomes (Censored Normal).</p>
     <div class="eq">L(θ) = ∏ᵢ Σⱼ πⱼ · ∏ₜ P(yᵢₜ | group j, θⱼ)
 where πⱼ = exp(αⱼ) / Σⱼ exp(αⱼ)   [softmax mixing weights]
@@ -179,7 +179,7 @@ and P(yᵢₜ | j) depends on the outcome distribution (ZIP, ZINB, Probit, or Ce
     </div>
     <div class="ov">
       <div class="oi">📈</div><h3>ZINB</h3>
-      <p>Extends ZIP with Negative Binomial dispersion (NB2: Var = μ + μ²/k). Appropriate when the count variance substantially exceeds the mean even after accounting for structural zeros — a common finding in Medicare claims data for high-utilization populations.</p>
+      <p>Extends ZIP with Negative Binomial dispersion (NB2: Var = μ + μ²/k). Appropriate when the count variance substantially exceeds the mean even after accounting for structural zeros, a common finding in Medicare claims data for high-utilization populations.</p>
       <span class="ob" style="background:#ccfbf1;color:#0f766e">Count · Overdispersed</span>
     </div>
     <div class="ov">
@@ -189,7 +189,7 @@ and P(yᵢₜ | j) depends on the outcome distribution (ZIP, ZINB, Probit, or Ce
     </div>
     <div class="ov">
       <div class="oi">📉</div><h3>Continuous (2-Outcome Tobit)</h3>
-      <p>For continuous outcomes censored at a maximum (e.g., utilization days capped by quarter length). Jointly models two outcomes — such as home health visits and inpatient days — across K classes, using single-outcome warm starts to stabilize the joint optimization.</p>
+      <p>For continuous outcomes censored at a maximum (e.g., utilization days capped by quarter length). Jointly models two outcomes, such as home health visits and inpatient days, across K classes, using single-outcome warm starts to stabilize the joint optimization.</p>
       <span class="ob" style="background:#fef3c7;color:#92400e">Censored · Joint</span>
     </div>
   </div>
@@ -224,15 +224,15 @@ and P(yᵢₜ | j) depends on the outcome distribution (ZIP, ZINB, Probit, or Ce
       <div class="mexp-icon ci-bl">📊</div>
       <div><h2>Zero-Inflated Poisson (ZIP) Trajectories</h2><div class="mexp-sub">Author: Anum Zafar · Last updated 02/09/2026</div></div>
     </div>
-    <p>The ZIP model addresses a fundamental challenge in healthcare count data: the presence of far more zeros than a standard Poisson distribution can accommodate. In Medicare claims data, many beneficiaries have zero utilization in a given quarter — not because they were never at risk, but because the underlying care process generates both <strong>structural zeros</strong> (individuals who would not use the service regardless) and <strong>sampling zeros</strong> (individuals who happen not to use it in that period). ZIP separates these two processes explicitly.</p>
+    <p>The ZIP model addresses a fundamental challenge in healthcare count data: the presence of far more zeros than a standard Poisson distribution can accommodate. In Medicare claims data, many beneficiaries have zero utilization in a given quarter, not because they were never at risk, but because the underlying care process generates both <strong>structural zeros</strong> (individuals who would not use the service regardless) and <strong>sampling zeros</strong> (individuals who happen not to use it in that period). ZIP separates these two processes explicitly.</p>
     <p>For each class k and time point t, ZIP models the outcome Y as a two-component mixture:</p>
     <div class="eq">P(Yᵢₜ = 0 | class k) = pₖ(t) + (1 − pₖ(t)) · exp(−μₖ(t))
 P(Yᵢₜ = y | class k) = (1 − pₖ(t)) · [exp(−μₖ(t)) · μₖ(t)ʸ / y!]   for y > 0
 
 where  μₖ(t) = exp(β₀ₖ + β₁ₖ·t + β₂ₖ·t²)      [mean count trajectory, log-link]
        pₖ(t) = logistic(γ₀ₖ + γ₁ₖ·t)            [zero-inflation logit]</div>
-    <p>The <strong>mean count trajectory</strong> μₖ(t) captures how the expected frequency of events (e.g., ED visits per quarter) evolves over 12 quarters within each class, fitted as a polynomial of degree <code>order=</code> on the log scale. The <strong>zero-inflation parameter</strong> pₖ(t) captures the proportion of structural non-users in that class — a time-varying probability that can itself trend up or down.</p>
-    <p>Mixing weights π₁…πK (from softmax on α parameters) determine the relative size of each class in the population. Model selection uses BIC — prefer the K that gives the lowest BIC while keeping all class sizes above ~5% and posterior assignment probabilities above 0.7.</p>
+    <p>The <strong>mean count trajectory</strong> μₖ(t) captures how the expected frequency of events (e.g., ED visits per quarter) evolves over 12 quarters within each class, fitted as a polynomial of degree <code>order=</code> on the log scale. The <strong>zero-inflation parameter</strong> pₖ(t) captures the proportion of structural non-users in that class, a time-varying probability that can itself trend up or down.</p>
+    <p>Mixing weights π₁…πK (from softmax on α parameters) determine the relative size of each class in the population. Model selection uses BIC, prefer the K that gives the lowest BIC while keeping all class sizes above ~5% and posterior assignment probabilities above 0.7.</p>
     <div class="use">
       <span class="use-item">ED visits · quarterly</span>
       <span class="use-item">Outpatient encounters</span>

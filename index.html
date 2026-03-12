@@ -629,36 +629,11 @@ Likelihood contribution:
 <!-- ==================== DOCKER ==================== -->
 <div id="t-docker" class="tab"><div class="wrap">
   <div class="dh">
-    <h2>🐳 Dockerized GBTM Environment</h2>
-    <p>Package the macro library with Python and R validation tooling into a reproducible container. Mount your licensed SAS 9.4+ installation — this image ships code and helpers only.</p>
-    <div class="dh-meta">
-      <span class="dc">Ubuntu 22.04</span><span class="dc">Python 3.11 + pandas, saspy, jupyterlab</span>
-      <span class="dc">R 4.3 + traj, ggplot2</span><span class="dc">Jupyter on port 8888</span>
     </div>
   </div>
 
   <div class="sec"><h2>Dockerfile</h2><div class="rule"></div></div>
-  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">Dockerfile</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
-  <pre><code><span class="k">FROM</span> ubuntu:22.04
-<span class="k">LABEL</span> maintainer=<span class="s">"Anum Zafar"</span>
-<span class="k">LABEL</span> description=<span class="s">"GBTM SAS Macros: ZIP, ZINB, Ordinal-Probit, Continuous"</span>
-<span class="k">ARG</span> DEBIAN_FRONTEND=noninteractive
-<span class="k">ENV</span> GBTM_HOME=/opt/gbtm  SAS_HOME=/opt/sas
-<span class="k">ENV</span> PATH=<span class="s">"${GBTM_HOME}/bin:${SAS_HOME}/SASFoundation/9.4:${PATH}"</span>
-<span class="k">RUN</span> apt-get update &amp;&amp; apt-get install -y --no-install-recommends \
-    python3 python3-pip r-base r-base-dev curl git locales \
-    &amp;&amp; locale-gen en_US.UTF-8 &amp;&amp; apt-get clean
-<span class="k">COPY</span> requirements.txt /tmp/
-<span class="k">RUN</span> pip3 install --no-cache-dir -r /tmp/requirements.txt
-<span class="k">RUN</span> Rscript -e <span class="s">"install.packages(c('traj','ggplot2','dplyr','readxl'), repos='https://cloud.r-project.org')"</span>
-<span class="k">WORKDIR</span> ${GBTM_HOME}
-<span class="k">RUN</span> mkdir -p macros guides qa data output bin
-<span class="k">COPY</span> macros/ macros/
-<span class="k">COPY</span> guides/ guides/
-<span class="k">COPY</span> qa/ qa/
-<span class="k">VOLUME</span> ["${GBTM_HOME}/data", "${GBTM_HOME}/output", "/opt/sas"]
-<span class="k">EXPOSE</span> 8888
-<span class="k">ENTRYPOINT</span> ["/entrypoint.sh"]
+
 <span class="k">CMD</span> ["help"]</code></pre></div>
 
   <div class="sec"><h2>docker-compose.yml</h2><div class="rule"></div></div>

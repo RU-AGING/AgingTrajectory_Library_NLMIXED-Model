@@ -1,0 +1,26 @@
+# Traj2 Docker Compose example.
+# Copy to your working directory, edit the SAS_HOME path, and run:
+#   GBTM_MODEL=ordinal GBTM_NCLASS=4 docker compose run --rm gbtm
+#
+# This file is for END USERS. The build-and-push workflow uses Dockerfile directly.
+
+services:
+  gbtm:
+    image: ghcr.io/ru-aging/traj2:1.0.0
+    environment:
+      - GBTM_MODEL=${GBTM_MODEL:-ordinal}
+      - GBTM_NCLASS=${GBTM_NCLASS:-4}
+      - GBTM_ORDER=${GBTM_ORDER:-2}
+      - GBTM_T=${GBTM_T:-12}
+    volumes:
+      # REQUIRED — your licensed SAS install, mounted read-only.
+      - ${SAS_HOME:-/opt/sas}:/opt/sas:ro
+      # Your input data (BASE_FILE_SRS etc.) and where outputs land.
+      - ./data:/opt/gbtm/data
+      - ./output:/opt/gbtm/output
+    command:
+      - run
+      - --model=${GBTM_MODEL:-ordinal}
+      - --nclass=${GBTM_NCLASS:-4}
+      - --order=${GBTM_ORDER:-2}
+      - --T=${GBTM_T:-12}

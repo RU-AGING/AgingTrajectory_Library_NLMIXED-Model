@@ -25,6 +25,6 @@ Full documentation, model equations, quick-start examples, and download links ar
 
 ## Quick start (Docker)
 
-The easiest way to use Traj2 is via the prebuilt Docker image. The image bundles all macros, simulators, and entrypoint scripts; it does **not** bundle SAS, which is proprietary — mount your licensed SAS installation at `/opt/sas`:
+The easiest way to use Traj2 is via the prebuilt Docker image. The image bundles all macros, simulators, and entrypoint scripts; it does **not** bundle SAS, which is proprietary, mount your licensed SAS installation at `/opt/sas`:
 
 ```bash

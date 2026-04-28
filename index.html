@@ -632,41 +632,69 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   </div>
 </div></div>
 
-<!-- ==================== DOCKER (PLACEHOLDER UNTIL IMAGE IS BUILT) ==================== -->
+<!-- ==================== DOCKER ==================== -->
 <div id="t-docker" class="tab"><div class="wrap">
   <div class="dh">
     <h2>Docker — Run Traj2 Without Local Setup</h2>
-    <p>A prebuilt Docker image with the full macro library, simulators, and entrypoint scripts is being prepared. Pull, mount your licensed SAS installation, and run any of the four models with a single command.</p>
+    <p>A prebuilt Docker image with the full macro library, simulators, and entrypoint scripts is published to GitHub Container Registry. Pull, mount your licensed SAS installation, and run any model with a single command.</p>
     <div class="dh-meta">
-      <span class="dc">Status: Image build in progress</span>
+      <span class="dc">Image: ghcr.io/ru-aging/traj2:1.0.0</span>
       <span class="dc">Requires: Licensed SAS 9.4+</span>
-      <span class="dc">Registry: TBA</span>
+      <span class="dc">Size: ~80 MB (excluding SAS)</span>
     </div>
   </div>
 
-  <div class="al al-info"><div class="al-icon">ℹ️</div><div class="al-body"><strong>Coming soon.</strong>The Docker image will let users run Traj2 without local SAS macro setup. Because SAS is proprietary and cannot be redistributed, the image will require users to mount their own licensed SAS installation at runtime. Pull-and-run instructions will appear here once the image is published. Check back, or watch the GitHub repository for release notes.</div></div>
+  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>SAS license required.</strong>The image does not bundle SAS — that would violate SAS Institute's licensing terms. You mount your own licensed SAS 9.4+ installation read-only at <code>/opt/sas</code> when you run the container.</div></div>
 
-  <div class="sec"><h2>What the Image Will Include</h2><div class="rule"></div></div>
+  <div class="sec"><h2>Pull the Image</h2><div class="rule"></div></div>
+  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">Shell</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
+<pre><code>docker pull ghcr.io/ru-aging/traj2:1.0.0</code></pre></div>
+
+  <div class="sec"><h2>Validate Your Setup</h2><div class="rule"></div></div>
+  <p style="font-size:13.5px;color:var(--muted);margin-bottom:10px">Confirm the image can find and run your SAS installation:</p>
+  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">Shell</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
+<pre><code>docker run --rm \
+  -v /path/to/your/sas:/opt/sas:ro \
+  ghcr.io/ru-aging/traj2:1.0.0 validate</code></pre></div>
+
+  <div class="sec"><h2>Run a Model</h2><div class="rule"></div></div>
+  <p style="font-size:13.5px;color:var(--muted);margin-bottom:10px">Fit a 4-class ordinal-probit model on data in <code>./data</code>, with outputs written to <code>./output</code>:</p>
+  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">Shell</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
+<pre><code>docker run --rm \
+  -v /path/to/your/sas:/opt/sas:ro \
+  -v "$PWD/data":/opt/gbtm/data \
+  -v "$PWD/output":/opt/gbtm/output \
+  ghcr.io/ru-aging/traj2:1.0.0 \
+  run --model=ordinal --nclass=4 --order=2</code></pre></div>
+
+  <p style="font-size:13.5px;color:var(--muted);margin-top:14px;margin-bottom:10px">Available models: <code>ordinal</code>, <code>continuous</code>, <code>zip</code>, <code>zinb</code>.</p>
+
+  <div class="sec"><h2>Or Use Docker Compose</h2><div class="rule"></div></div>
+  <p style="font-size:13.5px;color:var(--muted);margin-bottom:10px">Copy <code>docker-compose.yml</code> from the repo, set <code>SAS_HOME</code> in a <code>.env</code> file, then:</p>
+  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">Shell</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
+<pre><code>GBTM_MODEL=ordinal GBTM_NCLASS=4 docker compose run --rm gbtm</code></pre></div>
+
+  <div class="sec"><h2>What's Inside the Image</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card"><div class="cb" style="padding-bottom:18px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Pre-loaded macros</h3>
-      <p style="font-size:13px">All four model families (Ordinal-Probit, Truncated-Normal continuous, ZIP, ZINB), simulators, plotting routines, and helper macros installed at <code>/opt/gbtm/macros</code> and made available to your SAS session through <code>%include</code>.</p>
+      <p style="font-size:13px">All four model families (Ordinal-Probit, Truncated-Normal continuous, ZIP, ZINB), simulators, and plotting utilities at <code>/opt/gbtm/macros</code>.</p>
     </div></div>
     <div class="card"><div class="cb" style="padding-bottom:18px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Entrypoint commands</h3>
-      <p style="font-size:13px">Single commands such as <code>docker run … gbtm run --model=ordinal --nclass=4</code> that handle macro inclusion, run a model on your data or the bundled simulator, and write outputs to a mounted volume.</p>
+      <p style="font-size:13px"><code>help</code>, <code>validate</code>, <code>list</code>, <code>run</code>, and <code>shell</code> — invoke with <code>docker run … ghcr.io/ru-aging/traj2:1.0.0 &lt;command&gt;</code>.</p>
     </div></div>
     <div class="card"><div class="cb" style="padding-bottom:18px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Bring your own SAS</h3>
-      <p style="font-size:13px">The image does not bundle SAS — that would violate SAS Institute's licensing terms. You mount your licensed SAS installation read-only at <code>/opt/sas</code>; the entrypoint scripts find and use it.</p>
+      <p style="font-size:13px">Mount a licensed SAS 9.4+ installation at <code>/opt/sas</code>. The entrypoint locates the <code>sas</code> binary under standard install paths automatically.</p>
     </div></div>
     <div class="card"><div class="cb" style="padding-bottom:18px">
-      <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Reproducible environments</h3>
-      <p style="font-size:13px">Pinned macro versions and dependency versions are baked in, making it easy to reproduce results across machines and over time. Tagged releases (e.g., <code>v1.0.0</code>) match the GitHub source-code tags one-to-one.</p>
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Reproducible tags</h3>
+      <p style="font-size:13px">Image tags match the Git release tags one-to-one. <code>v1.0.0</code> on GitHub builds <code>:1.0.0</code> on GHCR. <code>:latest</code> tracks the default branch.</p>
     </div></div>
   </div>
 
-  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>SAS license required.</strong>Docker is a packaging convenience, not a way around licensing. Users must hold a valid SAS 9.4+ license and mount their installation when running the image.</div></div>
+  <div class="al al-info"><div class="al-icon">ℹ️</div><div class="al-body"><strong>Linux/amd64 only.</strong>The image is built for x86_64. ARM (Apple Silicon) users need to invoke Docker with <code>--platform linux/amd64</code>; emulation works but is slower.</div></div>
 </div></div>
 
 <!-- ==================== QA ==================== -->

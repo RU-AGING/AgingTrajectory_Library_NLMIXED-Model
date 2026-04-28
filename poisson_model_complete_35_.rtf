@@ -1,0 +1,1036 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2867
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fmodern\fcharset0 CourierNewPSMT;\f1\fmodern\fcharset0 CourierNewPS-BoldMT;\f2\fmodern\fcharset0 CourierNewPS-BoldItalicMT;
+}
+{\colortbl;\red255\green255\blue255;\red27\green122\blue27;\red0\green0\blue128;\red8\green114\blue109;
+\red0\green0\blue255;\red128\green0\blue128;\red104\green104\blue104;}
+{\*\expandedcolortbl;;\csgenericrgb\c10588\c47843\c10588;\csgenericrgb\c0\c0\c50196;\csgenericrgb\c3137\c44706\c42745;
+\csgenericrgb\c0\c0\c100000;\csgenericrgb\c50196\c0\c50196;\csgenericrgb\c40784\c40784\c40784;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs22 \cf2 /*===============================================================================\
+ Program:    ZIP_LatentClass_Trajectories.sas\
+ Purpose:    Fit Zero-Inflated Poisson (ZIP) latent-class trajectory models\
+             (growth-mixture) in PROC NLMIXED with user-controlled starting values,\
+             and produce class curves plus a mixture-mean plot.\
+\
+ Key features:\
+   - No carryover of starting values from previous runs.\
+   - Exactly one PARMS statement (no duplicates).\
+   - User sets starting values via %let lines (unset values default to 0).\
+   - Post-estimation parsing of ParameterEstimates to build trajectories and plots.\
+\
+ Requirements:\
+   - SAS 9.4+ recommended.\
+   - Input long or wide data of integer counts per time point (quarters in this example).\
+   - For the example call at the bottom: a wide dataset named BASE_FILE_SRS with:\
+       BENE_ID, SUM_Q1 ... SUM_Q12\
+\
+ Optional:\
+   - A self-contained simulator (%sim_data) is included to generate toy data.\
+   - ODS HTML5 lines (commented) show how to save plots to PNGs.\
+\
+ Sections:\
+   [A] Optional simulator (bounded outcomes 0..cap)\
+   [B] Input prep example (reshape/rename to BASE_FILE_SRS)\
+   [C] Starting values (user edits here)\
+   [D] Modeling macros (helpers, PARMS builder, likelihood, main fit macro)\
+   [E] Plotting macro (parses estimates and plots)\
+   [F] Example run: fit + plots\
+\
+ Author:    Anum Zafar\
+ Last edit:  02/09/2026\
+===============================================================================*/\cf0 \
+\
+\
+\cf2 /*===============================================================================\
+ [A] OPTIONAL: Bounded (0..cap) Simulator to create toy data (sim_long/sim_wide)\
+    - dist=poisson (default, truncated to 0..cap), BIN4 (binomial), TPOIS4 (trunc. Poisson),\
+      CAT5 (categorical on 0..cap)\
+    - Outputs:\
+        sim_long(id, class, qtr, y1, y2, obs)\
+        sim_wide(Y1_1..Y1_&T, Y2_1..Y2_&T)\
+===============================================================================*/\cf0 \
+\
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  sim_data(\
+  dist=poisson,             \cf2 /* poisson | BIN4 | TPOIS4 | CAT5                 */\cf0 \
+  class=
+\f1\b \cf4 5
+\f0\b0 \cf0 ,                  \cf2 /* number of latent classes                         */\cf0 \
+  n=
+\f1\b \cf4 10000
+\f0\b0 \cf0 ,                  \cf2 /* subjects                                         */\cf0 \
+  T=
+\f1\b \cf4 12
+\f0\b0 \cf0 ,                     \cf2 /* time points (quarters)                           */\cf0 \
+  seed=
+\f1\b \cf4 2025
+\f0\b0 \cf0 ,                \cf2 /* RNG seed                                         */\cf0 \
+  miss_pattern=balanced,    \cf2 /* balanced | unbalanced (monotone)                 */\cf0 \
+  p_obs_min=
+\f1\b \cf4 0.6
+\f0\b0 \cf0 ,            \cf2 /* min fraction observed if unbalanced              */\cf0 \
+  sigma_re=
+\f1\b \cf4 0.4
+\f0\b0 \cf0 ,             \cf2 /* subject random effect SD                         */\cf0 \
+  cap=
+\f1\b \cf4 7
+\f0\b0 \cf0                      \cf2 /* upper bound of support (0..cap)                  */\cf0 \
+);\
+\
+  \cf5 %local\cf0  _DIST;\
+  \cf5 %let\cf0  _DIST=\cf5 %sysfunc\cf0 (upcase(\cf5 %sysfunc\cf0 (strip(&dist.))));\
+\
+  data sim_long;\
+    call streaminit(&\cf4 seed.\cf0 );\
+    do id = 
+\f1\b \cf4 1
+\f0\b0 \cf0  to &\cf4 n.\cf0 ;\
+\
+      \cf2 /* 1) latent class (equal probs) */\cf0 \
+      class = ceil(rand(\cf6 'uniform'\cf0 ) * &\cf4 class.\cf0 );\
+\
+      \cf2 /* 2) follow-up window / monotone missing */\cf0 \
+      if \cf6 "&miss_pattern."\cf0  = \cf6 "balanced"\cf0  then do;\
+        first_t = 
+\f1\b \cf4 1
+\f0\b0 \cf0 ; last_t = &\cf4 T.\cf0 ;\
+      end;\
+      else do;\
+        frac   = rand(\cf6 'uniform'\cf0 )*(
+\f1\b \cf4 1
+\f0\b0 \cf0 -&\cf4 p_obs_min.\cf0 ) + &\cf4 p_obs_min.\cf0 ;\
+        n_obs  = ceil(&\cf4 T.\cf0 *frac);\
+        first_t= 
+\f1\b \cf4 1
+\f0\b0 \cf0 ; last_t  = n_obs;\
+      end;\
+\
+      \cf2 /* 3) subject random effect (induces correlation) */\cf0 \
+      bi = rand(\cf6 'normal'\cf0 , 
+\f1\b \cf4 0
+\f0\b0 \cf0 , &\cf4 sigma_re.\cf0 );\
+\
+      \cf2 /* 4) loop over quarters */\cf0 \
+      do t = 
+\f1\b \cf4 1
+\f0\b0 \cf0  to &\cf4 T.\cf0 ;\
+        qtr = t;\
+        obs = (t >= first_t and t <= last_t);\
+        y1 = 
+\f1\b \cf4 .
+\f0\b0 \cf0 ; y2 = 
+\f1\b \cf4 .
+\f0\b0 \cf0 ;\
+\
+        if obs then do;\
+          \cf2 /* class-specific mean trajectories (just to diversify) */\cf0 \
+          select (class);\
+            when (
+\f1\b \cf4 1
+\f0\b0 \cf0 ) do; mu1 = 
+\f1\b \cf4 0.6
+\f0\b0 \cf0  + 
+\f1\b \cf4 0.06
+\f0\b0 \cf0 *t;            mu2 = 
+\f1\b \cf4 0.8
+\f0\b0 \cf0  + 
+\f1\b \cf4 0.03
+\f0\b0 \cf0 *t; end;\
+            when (
+\f1\b \cf4 2
+\f0\b0 \cf0 ) do; mu1 = 
+\f1\b \cf4 0.5
+\f0\b0 \cf0  + 
+\f1\b \cf4 0.30
+\f0\b0 \cf0 *t;            mu2 = 
+\f1\b \cf4 0.7
+\f0\b0 \cf0  + 
+\f1\b \cf4 0.10
+\f0\b0 \cf0 *t; end;\
+            when (
+\f1\b \cf4 3
+\f0\b0 \cf0 ) do; mu1 = 
+\f1\b \cf4 1.0
+\f0\b0 \cf0  + 
+\f1\b \cf4 0.10
+\f0\b0 \cf0 *t + 
+\f1\b \cf4 0.01
+\f0\b0 \cf0 *t*t; mu2 = 
+\f1\b \cf4 0.9
+\f0\b0 \cf0  + 
+\f1\b \cf4 0.08
+\f0\b0 \cf0 *t; end;\
+            otherwise do; mu1 = 
+\f1\b \cf4 0.5
+\f0\b0 \cf0  + 
+\f1\b \cf4 0.20
+\f0\b0 \cf0 *t;           mu2 = 
+\f1\b \cf4 0.5
+\f0\b0 \cf0  + 
+\f1\b \cf4 0.15
+\f0\b0 \cf0 *t; end;\
+          end;\
+\
+          \cf2 /* Map to bounded support \{0..cap\} by chosen family */\cf0 \
+          \cf5 %if\cf0  \cf6 "&_DIST."\cf0  = \cf6 "BIN4"\cf0  \cf5 %then\cf0  \cf5 %do\cf0 ;\
+            m1 = max(
+\f1\b \cf4 0
+\f0\b0 \cf0 ,  mu1*exp(bi));\
+            m2 = max(
+\f1\b \cf4 0
+\f0\b0 \cf0 ,  mu2*exp(bi));\
+            p1 = min(max(m1/&\cf4 cap.\cf0 , 
+\f1\b \cf4 0
+\f0\b0 \cf0 ), 
+\f1\b \cf4 1
+\f0\b0 \cf0 );\
+            p2 = min(max(m2/&\cf4 cap.\cf0 , 
+\f1\b \cf4 0
+\f0\b0 \cf0 ), 
+\f1\b \cf4 1
+\f0\b0 \cf0 );\
+            y1 = rand(\cf6 'binomial'\cf0 , p1, &\cf4 cap.\cf0 );\
+            y2 = rand(\cf6 'binomial'\cf0 , p2, &\cf4 cap.\cf0 );\
+          \cf5 %end\cf0 ;\
+          \cf5 %else\cf0  \cf5 %if\cf0  \cf6 "&_DIST."\cf0  = \cf6 "TPOIS4"\cf0  \cf5 %then\cf0  \cf5 %do\cf0 ;\
+            \cf2 /* Truncated Poisson (0..cap) via renormalized probabilities */\cf0 \
+            m1 = max(
+\f1\b \cf4 1e-6
+\f0\b0 \cf0 , mu1*exp(bi));\
+            m2 = max(
+\f1\b \cf4 1e-6
+\f0\b0 \cf0 , mu2*exp(bi));\
+            array p1[\cf5 %eval\cf0 (&\cf4 cap.\cf0 +
+\f1\b \cf4 1
+\f0\b0 \cf0 )];\
+            array p2[\cf5 %eval\cf0 (&\cf4 cap.\cf0 +
+\f1\b \cf4 1
+\f0\b0 \cf0 )];\
+            s1 = 
+\f1\b \cf4 0
+\f0\b0 \cf0 ; s2 = 
+\f1\b \cf4 0
+\f0\b0 \cf0 ;\
+            do k = 
+\f1\b \cf4 0
+\f0\b0 \cf0  to &\cf4 cap.\cf0 ; p1[k+
+\f1\b \cf4 1
+\f0\b0 \cf0 ]=pdf(\cf6 'poisson'\cf0 , k, m1); s1 + p1[k+
+\f1\b \cf4 1
+\f0\b0 \cf0 ]; end;\
+            do k = 
+\f1\b \cf4 0
+\f0\b0 \cf0  to &\cf4 cap.\cf0 ; p2[k+
+\f1\b \cf4 1
+\f0\b0 \cf0 ]=pdf(\cf6 'poisson'\cf0 , k, m2); s2 + p2[k+
+\f1\b \cf4 1
+\f0\b0 \cf0 ]; end;\
+            do k = 
+\f1\b \cf4 0
+\f0\b0 \cf0  to &\cf4 cap.\cf0 ; p1[k+
+\f1\b \cf4 1
+\f0\b0 \cf0 ]=p1[k+
+\f1\b \cf4 1
+\f0\b0 \cf0 ]/s1; p2[k+
+\f1\b \cf4 1
+\f0\b0 \cf0 ]=p2[k+
+\f1\b \cf4 1
+\f0\b0 \cf0 ]/s2; end;\
+            y1 = rand(\cf6 'table'\cf0 , of p1[*]) - 
+\f1\b \cf4 1
+\f0\b0 \cf0 ;\
+            y2 = rand(\cf6 'table'\cf0 , of p2[*]) - 
+\f1\b \cf4 1
+\f0\b0 \cf0 ;\
+          \cf5 %end\cf0 ;\
+          \cf5 %else\cf0  \cf5 %if\cf0  \cf6 "&_DIST."\cf0  = \cf6 "CAT5"\cf0  \cf5 %then\cf0  \cf5 %do\cf0 ;\
+            \cf2 /* Categorical uniform on \{0..cap\} */\cf0 \
+            y1 = rand(\cf6 'integer'\cf0 , \cf5 %eval\cf0 (&\cf4 cap.\cf0 +
+\f1\b \cf4 1
+\f0\b0 \cf0 )) - 
+\f1\b \cf4 1
+\f0\b0 \cf0 ;\
+            y2 = rand(\cf6 'integer'\cf0 , \cf5 %eval\cf0 (&\cf4 cap.\cf0 +
+\f1\b \cf4 1
+\f0\b0 \cf0 )) - 
+\f1\b \cf4 1
+\f0\b0 \cf0 ;\
+          \cf5 %end\cf0 ;\
+          \cf5 %else\cf0  \cf5 %do\cf0 ;\
+            \cf2 /* Fallback: default to BIN4 */\cf0 \
+            if id=
+\f1\b \cf4 1
+\f0\b0 \cf0  and t=
+\f1\b \cf4 1
+\f0\b0 \cf0  then put \cf6 "WARNING: dist=&dist not recognized. Defaulting to BIN4."\cf0 ;\
+            m1 = max(
+\f1\b \cf4 0
+\f0\b0 \cf0 ,  mu1*exp(bi));\
+            m2 = max(
+\f1\b \cf4 0
+\f0\b0 \cf0 ,  mu2*exp(bi));\
+            p1 = min(max(m1/&\cf4 cap.\cf0 , 
+\f1\b \cf4 0
+\f0\b0 \cf0 ), 
+\f1\b \cf4 1
+\f0\b0 \cf0 );\
+            p2 = min(max(m2/&\cf4 cap.\cf0 , 
+\f1\b \cf4 0
+\f0\b0 \cf0 ), 
+\f1\b \cf4 1
+\f0\b0 \cf0 );\
+            y1 = rand(\cf6 'binomial'\cf0 , p1, &\cf4 cap.\cf0 );\
+            y2 = rand(\cf6 'binomial'\cf0 , p2, &\cf4 cap.\cf0 );\
+          \cf5 %end\cf0 ;\
+        end;\
+\
+        output;\
+      end;\
+    end;\
+    keep id class qtr y1 y2 obs;\
+  run;\
+\
+  \cf2 /* reshape to wide (quarters as columns) */\cf0 \
+  proc sort data=sim_long; by id qtr; run;\
+\
+  proc transpose data=sim_long(where=(obs=
+\f1\b \cf4 1
+\f0\b0 \cf0 )) out=y1_w prefix=Y1_;\
+    by id; id qtr; var y1;\
+  run;\
+\
+  proc transpose data=sim_long(where=(obs=
+\f1\b \cf4 1
+\f0\b0 \cf0 )) out=y2_w prefix=Y2_;\
+    by id; id qtr; var y2;\
+  run;\
+\
+  data sim_wide;\
+    merge y1_w y2_w; by id;\
+  run;\
+\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0  sim_data;\
+\
+\cf2 /* Demo: build a toy dataset (comment out if you already have real data) */\cf0 \
+\cf2 /* %sim_data(dist=poisson, n=5000, T=12, seed=1); */\cf0 \
+\
+\
+\cf2 /*===============================================================================\
+ [B] INPUT PREP EXAMPLE\
+    - Expect a wide dataset with Y1_1..Y1_12 and an ID named id.\
+    - This block renames to BASE_FILE_SRS with SUM_Q1..SUM_Q12 and BENE_ID.\
+    - Comment out if your data is already prepared.\
+===============================================================================*/\cf0 \
+\
+
+\f1\b \cf3 data
+\f0\b0 \cf0  BASE_FILE_SRS;\
+  \cf5 set\cf0  WORK.Y1_W;  \cf2 /* replace with your source if needed */\cf0 \
+  \cf5 rename\cf0 \
+    Y1_1 = SUM_Q1  Y1_2 = SUM_Q2  Y1_3  = SUM_Q3  Y1_4  = SUM_Q4  Y1_5  = SUM_Q5\
+    Y1_6 = SUM_Q6  Y1_7 = SUM_Q7  Y1_8  = SUM_Q8  Y1_9  = SUM_Q9  Y1_10 = SUM_Q10\
+    Y1_11= SUM_Q11 Y1_12= SUM_Q12 id    = BENE_ID\
+  ;\
+
+\f1\b \cf3 run
+\f0\b0 \cf0 ;\
+\
+\cf2 /* Add time index variables (0..11) if you want them for other tooling */\cf0 \
+
+\f1\b \cf3 data
+\f0\b0 \cf0  BASE_FILE_SRS(\cf5 keep\cf0 =BENE_ID SUM_Q1-SUM_Q12 quar1-quar12);\
+  \cf5 set\cf0  BASE_FILE_SRS;\
+  quar1=
+\f1\b \cf4 0
+\f0\b0 \cf0 ; quar2=
+\f1\b \cf4 1
+\f0\b0 \cf0 ; quar3=
+\f1\b \cf4 2
+\f0\b0 \cf0 ; quar4=
+\f1\b \cf4 3
+\f0\b0 \cf0 ; quar5=
+\f1\b \cf4 4
+\f0\b0 \cf0 ; quar6=
+\f1\b \cf4 5
+\f0\b0 \cf0 ; quar7=
+\f1\b \cf4 6
+\f0\b0 \cf0 ; quar8=
+\f1\b \cf4 7
+\f0\b0 \cf0 ;\
+  quar9=
+\f1\b \cf4 8
+\f0\b0 \cf0 ; quar10=
+\f1\b \cf4 9
+\f0\b0 \cf0 ; quar11=
+\f1\b \cf4 10
+\f0\b0 \cf0 ; quar12=
+\f1\b \cf4 11
+\f0\b0 \cf0 ;\
+
+\f1\b \cf3 run
+\f0\b0 \cf0 ;\
+\
+\
+\cf2 /*===============================================================================\
+ [C] STARTING VALUES (USER EDITS HERE)\
+    - Example below matches nclass=6, order=2, p_order=0.\
+    - Define only the parameters you want; all others default to 0.\
+    - Class 1 is the reference for mixing weights (no alpha0_A).\
+===============================================================================*/\cf0 \
+\
+\cf2 /* mixing weights */\cf0 \
+\cf5 %let\cf0  alpha0_B = -0.50;\
+\cf5 %let\cf0  alpha0_C = -0.80;\
+\cf2 /* %let alpha0_D = ; %let alpha0_E = ; %let alpha0_F = ; */\cf0 \
+\
+\cf2 /* mean curve betas up to ORDER=2 for each class */\cf0 \
+\cf5 %let\cf0  beta0_A =  0.10; \cf5 %let\cf0  beta1_A = 0.02; \cf5 %let\cf0  beta2_A = 0;\
+\cf5 %let\cf0  beta0_B = -0.20; \cf5 %let\cf0  beta1_B = 0.01; \cf5 %let\cf0  beta2_B = 0;\
+\cf2 /* %let beta0_C = ; %let beta1_C = ; %let beta2_C = ; */\cf0 \
+\cf2 /* %let beta0_D = ; %let beta1_D = ; %let beta2_D = ; */\cf0 \
+\cf2 /* %let beta0_E = ; %let beta1_E = ; %let beta2_E = ; */\cf0 \
+\cf2 /* %let beta0_F = ; %let beta1_F = ; %let beta2_F = ; */\cf0 \
+\
+\cf2 /* ZIP logits p(t) up to P_ORDER=0 (gamma0 only here) */\cf0 \
+\cf5 %let\cf0  gamma0_A = -1.00;\
+\cf5 %let\cf0  gamma0_B = -0.50;\
+\cf2 /* %let gamma0_C = ; %let gamma0_D = ; %let gamma0_E = ; %let gamma0_F = ; */\cf0 \
+\
+\
+\cf2 /*===============================================================================\
+ [D] MODELING MACROS\
+    - Helpers\
+    - Safe PARMS builder (uses %let values or defaults to 0)\
+    - Likelihood builders\
+    - Main fitting macro: %ct_zip_pois_nlmixed\
+===============================================================================*/\cf0 \
+\
+\cf2 /* helper to emit one value per parameter into a single PARMS statement */\cf0 \
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  _emit_parm(name, default);\
+  \cf2 /* name is a token like alpha0_B */\cf0 \
+  \cf5 %if\cf0  \cf5 %symexist\cf0 (&name) \cf5 %then\cf0  \cf5 %do\cf0 ;                \cf2 /* variable exists? */\cf0 \
+    \cf5 %if\cf0  \cf5 %length\cf0 (\cf5 %superq\cf0 (&name)) \cf5 %then\cf0  \cf5 %do\cf0 ;       \cf2 /* nonblank value? */\cf0 \
+      &name = \cf5 %superq\cf0 (&name)\
+    \cf5 %end\cf0 ;\
+    \cf5 %else\cf0  \cf5 %do\cf0 ;                                   \cf2 /* blank -> default */\cf0 \
+      &name = &default\
+    \cf5 %end\cf0 ;\
+  \cf5 %end\cf0 ;\
+  \cf5 %else\cf0  \cf5 %do\cf0 ;                                     \cf2 /* does not exist -> default */\cf0 \
+    &name = &default\
+  \cf5 %end\cf0 ;\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+\cf2 /* array and bookkeeping helpers */\cf0 \
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  _ct_array_from_list(name, list, T); array &\cf4 name.\cf0 [&T] &\cf4 list.\cf0 ; 
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  _ct_declare_mu_arrays(nclass, class_labels, T);\
+  \cf5 %local\cf0  k lab;\
+  \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass;\
+    \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+    array mu_&\cf4 lab.\cf0 [&T];\
+  \cf5 %end\cf0 ;\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  _ct_declare_pi_arrays(nclass, class_labels, T);\
+  \cf5 %local\cf0  k lab;\
+  \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass;\
+    \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+    array pi_&\cf4 lab.\cf0 [&T];\
+  \cf5 %end\cf0 ;\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  _ct_declare_zip_arrays(nclass, class_labels, T);\
+  \cf5 %local\cf0  k lab;\
+  \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass;\
+    \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+    array logitp_&\cf4 lab.\cf0 [&T];\
+    array p_&\cf4 lab.\cf0 [&T];\
+  \cf5 %end\cf0 ;\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+\cf2 /* build one PARMS statement using either %let starts or 0 defaults */\cf0 \
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  _ct_parms_all(nclass, class_labels, order, p_order);\
+  parms\
+  \cf5 %local\cf0  k lab;\
+  \cf2 /* Mixing alphas: class 1 is reference -> no alpha0_A */\cf0 \
+  \cf5 %do\cf0  k=
+\f1\b \cf4 2
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass;\
+    \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+    %
+\f2\i\b \cf7 _emit_parm
+\f0\i0\b0 \cf0 (\cf5 %sysfunc\cf0 (catx(_,alpha0,&lab)), 
+\f1\b \cf4 0
+\f0\b0 \cf0 )\
+  \cf5 %end\cf0 ;\
+  \cf2 /* Mean curve betas */\cf0 \
+  \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass;\
+    \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+    %
+\f2\i\b \cf7 _emit_parm
+\f0\i0\b0 \cf0 (\cf5 %sysfunc\cf0 (catx(_,beta0,&lab)), 
+\f1\b \cf4 0
+\f0\b0 \cf0 )\
+    %
+\f2\i\b \cf7 _emit_parm
+\f0\i0\b0 \cf0 (\cf5 %sysfunc\cf0 (catx(_,beta1,&lab)), 
+\f1\b \cf4 0
+\f0\b0 \cf0 )\
+    \cf5 %if\cf0  &order>=
+\f1\b \cf4 2
+\f0\b0 \cf0  \cf5 %then\cf0  %
+\f2\i\b \cf7 _emit_parm
+\f0\i0\b0 \cf0 (\cf5 %sysfunc\cf0 (catx(_,beta2,&lab)), 
+\f1\b \cf4 0
+\f0\b0 \cf0 );\
+    \cf5 %if\cf0  &order>=
+\f1\b \cf4 3
+\f0\b0 \cf0  \cf5 %then\cf0  %
+\f2\i\b \cf7 _emit_parm
+\f0\i0\b0 \cf0 (\cf5 %sysfunc\cf0 (catx(_,beta3,&lab)), 
+\f1\b \cf4 0
+\f0\b0 \cf0 );\
+  \cf5 %end\cf0 ;\
+  \cf2 /* ZIP logits p_k(t) */\cf0 \
+  \cf5 %if\cf0  &p_order>=
+\f1\b \cf4 0
+\f0\b0 \cf0  \cf5 %then\cf0  \cf5 %do\cf0 ;\
+    \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass;\
+      \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+      %
+\f2\i\b \cf7 _emit_parm
+\f0\i0\b0 \cf0 (\cf5 %sysfunc\cf0 (catx(_,gamma0,&lab)), 
+\f1\b \cf4 0
+\f0\b0 \cf0 )\
+      \cf5 %if\cf0  &p_order>=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %then\cf0  %
+\f2\i\b \cf7 _emit_parm
+\f0\i0\b0 \cf0 (\cf5 %sysfunc\cf0 (catx(_,gamma1,&lab)), 
+\f1\b \cf4 0
+\f0\b0 \cf0 );\
+      \cf5 %if\cf0  &p_order>=
+\f1\b \cf4 2
+\f0\b0 \cf0  \cf5 %then\cf0  %
+\f2\i\b \cf7 _emit_parm
+\f0\i0\b0 \cf0 (\cf5 %sysfunc\cf0 (catx(_,gamma2,&lab)), 
+\f1\b \cf4 0
+\f0\b0 \cf0 );\
+      \cf5 %if\cf0  &p_order>=
+\f1\b \cf4 3
+\f0\b0 \cf0  \cf5 %then\cf0  %
+\f2\i\b \cf7 _emit_parm
+\f0\i0\b0 \cf0 (\cf5 %sysfunc\cf0 (catx(_,gamma3,&lab)), 
+\f1\b \cf4 0
+\f0\b0 \cf0 );\
+    \cf5 %end\cf0 ;\
+  \cf5 %end\cf0 ;\
+  ;\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+\cf2 /* fill class-specific mu(t) over T using polynomial of degree order */\cf0 \
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  _ct_fill_mu_poly(nclass, class_labels, order, T);\
+  \cf5 %local\cf0  k lab;\
+  do i = 
+\f1\b \cf4 1
+\f0\b0 \cf0  to &T; t = i;\
+    \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass;\
+      \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+      eta_&lab = beta0_&\cf4 lab.\cf0  + beta1_&\cf4 lab.\cf0 *t\
+                 \cf5 %if\cf0  &order>=
+\f1\b \cf4 2
+\f0\b0 \cf0  \cf5 %then\cf0  + beta2_&\cf4 lab.\cf0 *(t*t);\
+                 \cf5 %if\cf0  &order>=
+\f1\b \cf4 3
+\f0\b0 \cf0  \cf5 %then\cf0  + beta3_&\cf4 lab.\cf0 *(t*t*t);\
+                 ;\
+      mu_&\cf4 lab.\cf0 [i] = exp(eta_&lab);\
+    \cf5 %end\cf0 ;\
+  end;\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+\cf2 /* fill class-specific logit p_k(t) over T using polynomial of degree p_order */\cf0 \
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  _ct_fill_zip_poly(nclass, class_labels, p_order, T);\
+  \cf5 %local\cf0  k lab;\
+  do i = 
+\f1\b \cf4 1
+\f0\b0 \cf0  to &T; t = i;\
+    \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass;\
+      \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+      logitp_&\cf4 lab.\cf0 [i] = gamma0_&\cf4 lab.\cf0 \
+                        \cf5 %if\cf0  &p_order>=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %then\cf0  + gamma1_&\cf4 lab.\cf0 *t;\
+                        \cf5 %if\cf0  &p_order>=
+\f1\b \cf4 2
+\f0\b0 \cf0  \cf5 %then\cf0  + gamma2_&\cf4 lab.\cf0 *(t*t);\
+                        \cf5 %if\cf0  &p_order>=
+\f1\b \cf4 3
+\f0\b0 \cf0  \cf5 %then\cf0  + gamma3_&\cf4 lab.\cf0 *(t*t*t);\
+                        ;\
+      p_&\cf4 lab.\cf0 [i] = 
+\f1\b \cf4 1
+\f0\b0 \cf0 /(
+\f1\b \cf4 1
+\f0\b0 \cf0 +exp(-logitp_&\cf4 lab.\cf0 [i]));\
+    \cf5 %end\cf0 ;\
+  end;\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+\cf2 /* accumulate ZIP log-likelihood per class across observed time points */\cf0 \
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  _ct_accumulate_zip_ll(nclass, class_labels, T);\
+  \cf5 %local\cf0  k lab;\
+  do i = 
+\f1\b \cf4 1
+\f0\b0 \cf0  to &T;\
+    if not missing(Y[i]) then do;\
+      \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass;\
+        \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+        lp = -log(
+\f1\b \cf4 1
+\f0\b0 \cf0  + exp(-logitp_&\cf4 lab.\cf0 [i]));   \cf2 /* log p   */\cf0 \
+        lq = -log(
+\f1\b \cf4 1
+\f0\b0 \cf0  + exp( logitp_&\cf4 lab.\cf0 [i]));   \cf2 /* log(1-p) */\cf0 \
+        if Y[i]=
+\f1\b \cf4 0
+\f0\b0 \cf0  then do;                      \cf2 /* log-sum-exp for 0 mass */\cf0 \
+          a = lp; b = lq - mu_&\cf4 lab.\cf0 [i]; m = max(a,b);\
+          pi_&\cf4 lab.\cf0 [i] = m + log(exp(a-m) + exp(b-m));\
+        end;\
+        else do;                                \cf2 /* Poisson mass for Y>0 */\cf0 \
+          pi_&\cf4 lab.\cf0 [i] = lq + (Y[i]*log(mu_&\cf4 lab.\cf0 [i]) - mu_&\cf4 lab.\cf0 [i] - lgamma(Y[i]+
+\f1\b \cf4 1
+\f0\b0 \cf0 ));\
+        end;\
+      \cf5 %end\cf0 ;\
+    end;\
+  end;\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+\cf2 /* mix across classes via softmax weights from alphas */\cf0 \
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  _ct_mixture_ll_zip(nclass, class_labels, T);\
+  \cf5 %local\cf0  k lab;\
+  den = 
+\f1\b \cf4 1
+\f0\b0 \cf0 ;\
+  \cf5 %do\cf0  k=
+\f1\b \cf4 2
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass; \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( )); den = den + exp(alpha0_&\cf4 lab.\cf0 ); \cf5 %end\cf0 ;\
+\
+  \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass; \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+    \cf5 %if\cf0  &k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %then\cf0  \cf5 %do\cf0 ; w_&\cf4 lab.\cf0 =
+\f1\b \cf4 1
+\f0\b0 \cf0 /den; \cf5 %end\cf0 ;\
+    \cf5 %else\cf0  \cf5 %do\cf0 ;          w_&\cf4 lab.\cf0 =exp(alpha0_&\cf4 lab.\cf0 )/den; \cf5 %end\cf0 ;\
+  \cf5 %end\cf0 ;\
+\
+  \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass; \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+    prod_&\cf4 lab.\cf0 =
+\f1\b \cf4 0
+\f0\b0 \cf0 ;\
+    do i=
+\f1\b \cf4 1
+\f0\b0 \cf0  to &T; if not missing(pi_&\cf4 lab.\cf0 [i]) then prod_&\cf4 lab.\cf0  + pi_&\cf4 lab.\cf0 [i]; end;\
+  \cf5 %end\cf0 ;\
+\
+  m = prod_\cf5 %scan\cf0 (&\cf4 class_labels.\cf0 ,
+\f1\b \cf4 1
+\f0\b0 \cf0 ,\cf5 %str\cf0 ( ));\
+  \cf5 %do\cf0  k=
+\f1\b \cf4 2
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass; \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( )); m = max(m, prod_&\cf4 lab.\cf0 ); \cf5 %end\cf0 ;\
+\
+  sum_exp = 
+\f1\b \cf4 0
+\f0\b0 \cf0 ;\
+  \cf5 %do\cf0  k=
+\f1\b \cf4 1
+\f0\b0 \cf0  \cf5 %to\cf0  &nclass; \cf5 %let\cf0  lab=\cf5 %scan\cf0 (&class_labels., &k, \cf5 %str\cf0 ( ));\
+    sum_exp + w_&lab.*exp(prod_&lab. - m);\
+  \cf5 %end\cf0 ;\
+\
+  ll = m + log(sum_exp);\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+\cf2 /* main modeling macro: runs NLMIXED and captures ParameterEstimates and FitStatistics */\cf0 \
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  ct_zip_pois_nlmixed(\
+  data=BASE_FILE_SRS,\
+  id=BENE_ID,\
+  yvars=SUM_Q1-SUM_Q12,\
+  nclass=
+\f1\b \cf4 6
+\f0\b0 \cf0 ,\
+  class_labels=A B C D E F,\
+  order=
+\f1\b \cf4 2
+\f0\b0 \cf0 ,\
+  p_order=
+\f1\b \cf4 0
+\f0\b0 \cf0 ,\
+  T=
+\f1\b \cf4 12
+\f0\b0 \cf0 ,\
+  tech=newrap,\
+  maxiter=
+\f1\b \cf4 500
+\f0\b0 \cf0 ,\
+  pe_out=pe_zip,\
+  fit_out=fit_zip,\
+  bounds=\
+);\
+  ods listing;\
+  ods output ParameterEstimates=&pe_out FitStatistics=&fit_out;\
+\
+  proc nlmixed data=&data qpoints=
+\f1\b \cf4 1
+\f0\b0 \cf0  tech=&tech maxiter=&maxiter;\
+    \cf2 /* Build single PARMS with user starts or 0 defaults */\cf0 \
+    %
+\f2\i\b \cf7 _ct_parms_all
+\f0\i0\b0 \cf0 (&nclass, &class_labels, &order, &p_order);\
+\
+    \cf2 /* Optional stability bounds (example: bounds %str(-6 < beta0_A < 6)) */\cf0 \
+    \cf5 %if\cf0  \cf5 %length\cf0 (&bounds) \cf5 %then\cf0  \cf5 %do\cf0 ; bounds &bounds; \cf5 %end\cf0 ;\
+\
+    \cf2 /* Build arrays and deterministic pieces */\cf0 \
+    %
+\f2\i\b \cf7 _ct_array_from_list
+\f0\i0\b0 \cf0 (Y, &yvars, &T);\
+    %
+\f2\i\b \cf7 _ct_declare_mu_arrays
+\f0\i0\b0 \cf0 (&nclass, &class_labels, &T);\
+    %
+\f2\i\b \cf7 _ct_declare_pi_arrays
+\f0\i0\b0 \cf0 (&nclass, &class_labels, &T);\
+    %
+\f2\i\b \cf7 _ct_declare_zip_arrays
+\f0\i0\b0 \cf0 (&nclass, &class_labels, &T);\
+\
+    %
+\f2\i\b \cf7 _ct_fill_mu_poly
+\f0\i0\b0 \cf0 (&nclass, &class_labels, &order, &T);\
+    %
+\f2\i\b \cf7 _ct_fill_zip_poly
+\f0\i0\b0 \cf0 (&nclass, &class_labels, &p_order, &T);\
+\
+    \cf2 /* Accumulate per-class log-likelihood and mix */\cf0 \
+    %
+\f2\i\b \cf7 _ct_accumulate_zip_ll
+\f0\i0\b0 \cf0 (&nclass, &class_labels, &T);\
+    %
+\f2\i\b \cf7 _ct_mixture_ll_zip
+\f0\i0\b0 \cf0 (&nclass, &class_labels, &T);\
+\
+    one = 
+\f1\b \cf4 1
+\f0\b0 \cf0 ;\
+    model one ~ general(ll);\
+    id &id;\
+  run;\
+\
+  ods output close;\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+\
+\cf2 /*===============================================================================\
+ [E] PLOTTING MACRO\
+    - Reads ParameterEstimates, reconstructs per-class trajectories:\
+        mu_zip(t) = (1 - p_k(t)) * exp(eta_k(t))\
+    - Computes mixture mean across classes using softmax weights.\
+    - Produces two plots (class curves; class curves + mixture mean).\
+===============================================================================*/\cf0 \
+\
+
+\f1\b \cf3 %macro
+\f0\b0 \cf0  ct_zip_plots(pe=pe_zip, T=
+\f1\b \cf4 12
+\f0\b0 \cf0 , out_traj=traj, out_mix=mix);\
+  ods listing;\
+\
+  \cf2 /* extract class-specific betas */\cf0 \
+  proc sql;\
+    create table _betas as\
+    select scan(Parameter,
+\f1\b \cf4 2
+\f0\b0 \cf0 ,\cf6 '_'\cf0 ) as class length=
+\f1\b \cf4 32
+\f0\b0 \cf0 ,\
+           input(compress(substr(Parameter,
+\f1\b \cf4 5
+\f0\b0 \cf0 ),,\cf6 'kd'\cf0 ), \cf4 best.\cf0 ) as deg,\
+           Estimate\
+    from &pe\
+    where upcase(substr(Parameter,
+\f1\b \cf4 1
+\f0\b0 \cf0 ,
+\f1\b \cf4 4
+\f0\b0 \cf0 ))=\cf6 'BETA'\cf0 ;\
+  quit;\
+  proc sort data=_betas; by class deg; run;\
+  proc transpose data=_betas out=_betas_w prefix=b;\
+    by class; id deg; var Estimate;\
+  run;\
+\
+  \cf2 /* mixing weights (alpha logits) */\cf0 \
+  proc sql;\
+    create table _alphas as\
+    select scan(Parameter,
+\f1\b \cf4 2
+\f0\b0 \cf0 ,\cf6 '_'\cf0 ) as class length=
+\f1\b \cf4 32
+\f0\b0 \cf0 ,\
+           Estimate as alpha\
+    from &pe\
+    where upcase(substr(Parameter,
+\f1\b \cf4 1
+\f0\b0 \cf0 ,
+\f1\b \cf4 6
+\f0\b0 \cf0 ))=\cf6 'ALPHA0'\cf0 ;\
+  quit;\
+  proc sort data=_alphas; by class; run;\
+\
+  \cf2 /* ZIP logits p(t) coefficients (gamma) */\cf0 \
+  proc sql;\
+    create table _gammas as\
+    select scan(Parameter,
+\f1\b \cf4 2
+\f0\b0 \cf0 ,\cf6 '_'\cf0 ) as class length=
+\f1\b \cf4 32
+\f0\b0 \cf0 ,\
+           input(compress(substr(Parameter,
+\f1\b \cf4 7
+\f0\b0 \cf0 ),,\cf6 'kd'\cf0 ), \cf4 best.\cf0 ) as deg,\
+           Estimate\
+    from &pe\
+    where upcase(substr(Parameter,
+\f1\b \cf4 1
+\f0\b0 \cf0 ,
+\f1\b \cf4 5
+\f0\b0 \cf0 ))=\cf6 'GAMMA'\cf0 ;\
+  quit;\
+  proc sort data=_gammas; by class deg; run;\
+  proc transpose data=_gammas out=_gammas_w prefix=g;\
+    by class; id deg; var Estimate;\
+  run;\
+\
+  \cf2 /* combine class parameters; alpha missing -> 0 for reference class */\cf0 \
+  data _classes;\
+    merge _betas_w(in=b) _alphas(in=a) _gammas_w(in=g);\
+    by class;\
+    if missing(alpha) then alpha=
+\f1\b \cf4 0
+\f0\b0 \cf0 ;\
+    exp_alpha = exp(alpha);\
+  run;\
+\
+  \cf2 /* denominator for class weights */\cf0 \
+  proc sql noprint;\
+    select sum(exp_alpha) into :_den from _classes;\
+  quit;\
+\
+  \cf2 /* build trajectories over time */\cf0 \
+  data &out_traj;\
+    set _classes;\
+    length class $
+\f1\b \cf4 32
+\f0\b0 \cf0 ;\
+    do t = 
+\f1\b \cf4 1
+\f0\b0 \cf0  to &T;\
+      eta    = coalesce(b0,
+\f1\b \cf4 0
+\f0\b0 \cf0 ) + coalesce(b1,
+\f1\b \cf4 0
+\f0\b0 \cf0 )*t + coalesce(b2,
+\f1\b \cf4 0
+\f0\b0 \cf0 )*(t*t) + coalesce(b3,
+\f1\b \cf4 0
+\f0\b0 \cf0 )*(t*t*t);\
+      mu     = exp(eta);\
+      logitp = coalesce(g0,
+\f1\b \cf4 0
+\f0\b0 \cf0 ) + coalesce(g1,
+\f1\b \cf4 0
+\f0\b0 \cf0 )*t + coalesce(g2,
+\f1\b \cf4 0
+\f0\b0 \cf0 )*(t*t) + coalesce(g3,
+\f1\b \cf4 0
+\f0\b0 \cf0 )*(t*t*t);\
+      p      = 
+\f1\b \cf4 1
+\f0\b0 \cf0 /(
+\f1\b \cf4 1
+\f0\b0 \cf0 +exp(-logitp));\
+      w      = exp_alpha / &_den;\
+      mu_zip = (
+\f1\b \cf4 1
+\f0\b0 \cf0 -p)*mu;\
+      output;\
+    end;\
+    keep class t mu p mu_zip w;\
+  run;\
+\
+  \cf2 /* mixture mean across classes */\cf0 \
+  proc sql;\
+    create table &out_mix as\
+    select t, sum(w*mu_zip) as mu_mix_zip\
+    from &out_traj\
+    group by t;\
+  quit;\
+\
+  \cf2 /* Plot 1: class ZIP means */\cf0 \
+  proc sgplot data=&out_traj;\
+    series x=t y=mu_zip / group=class lineattrs=(thickness=
+\f1\b \cf4 2
+\f0\b0 \cf0 );\
+    xaxis integer label=\cf6 "Quarter"\cf0  min=
+\f1\b \cf4 1
+\f0\b0 \cf0  max=&T;\
+    yaxis label=\cf6 "Expected count (ZIP mean)"\cf0 ;\
+    title \cf6 "Latent-Class ZIP Trajectories"\cf0 ;\
+  run;\
+\
+  \cf2 /* Plot 2: class curves + mixture mean */\cf0 \
+  proc sort data=&out_traj; by t; run;\
+  data traj_all; merge &out_traj &out_mix; by t; run;\
+\
+  proc sgplot data=traj_all;\
+    series x=t y=mu_mix_zip / lineattrs=(pattern=shortdash thickness=
+\f1\b \cf4 3
+\f0\b0 \cf0 ) name=\cf6 "mix"\cf0  legendlabel=\cf6 "Mixture mean"\cf0 ;\
+    series x=t y=mu_zip     / group=class lineattrs=(thickness=
+\f1\b \cf4 2
+\f0\b0 \cf0 );\
+    keylegend / position=topright;\
+    xaxis integer label=\cf6 "Quarter"\cf0  min=
+\f1\b \cf4 1
+\f0\b0 \cf0  max=&T;\
+    yaxis label=\cf6 "Expected count (ZIP mean)"\cf0 ;\
+    title \cf6 "Latent-Class ZIP Trajectories with Mixture Mean"\cf0 ;\
+  run;\
+
+\f1\b \cf3 %mend
+\f0\b0 \cf0 ;\
+\
+\
+\cf2 /*===============================================================================\
+ [F] EXAMPLE RUN\
+    - Adjust nclass, class_labels, order, p_order, and T as needed.\
+    - Set your starts in Section [C].\
+    - Optionally add bounds via the bounds= parameter.\
+===============================================================================*/\cf0 \
+\
+\cf5 %let\cf0  T=12;\
+\
+%
+\f2\i\b \cf7 ct_zip_pois_nlmixed
+\f0\i0\b0 \cf0 (\
+  data=BASE_FILE_SRS,\
+  id=BENE_ID,\
+  yvars=SUM_Q1-SUM_Q12,\
+  nclass=
+\f1\b \cf4 6
+\f0\b0 \cf0 ,\
+  class_labels=A B C D E F,\
+  order=
+\f1\b \cf4 2
+\f0\b0 \cf0 ,\
+  p_order=
+\f1\b \cf4 0
+\f0\b0 \cf0 ,\
+  T=&T\
+  \cf2 /* bounds=%str(-6 < alpha0_B alpha0_C < 6) */\cf0 \
+);\
+\
+\cf2 /* Produce the plots from ParameterEstimates (default pe_zip) */\cf0 \
+%
+\f2\i\b \cf7 ct_zip_plots
+\f0\i0\b0 \cf0 (pe=pe_zip, T=&T);\
+\
+\
+\cf2 /*===============================================================================\
+ Optional: Save plots as PNG to WORK and embed in Results (uncomment to use)\
+\
+%let outdir=%sysfunc(getoption(work));\
+ods _all_ close;\
+ods html5 path="&outdir" (url=none) gpath="&outdir";\
+ods graphics / reset imagename="ZIP_Trajectories" imagefmt=png;\
+%ct_zip_plots(pe=pe_zip, T=&T);\
+ods html5 close;\
+\
+===============================================================================*/\cf0 \
+}

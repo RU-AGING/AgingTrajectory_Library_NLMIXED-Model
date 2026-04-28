@@ -4,7 +4,7 @@
 # https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model
 #
 # This image contains the Traj2 SAS macros, simulators, plotting utilities,
-# and entrypoint scripts. It does NOT contain SAS itself : SAS is proprietary
+# and entrypoint scripts. It does NOT contain SAS itself — SAS is proprietary
 # and cannot be redistributed. Users must mount their licensed SAS 9.4+
 # installation read-only at /opt/sas at runtime.
 
@@ -23,9 +23,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     GBTM_DATA=/opt/gbtm/data \
     GBTM_OUTPUT=/opt/gbtm/output
 
-# Minimal OS deps. SAS itself provides its own runtime; we only need
-# bash, file utilities, and a small text-processing toolchain for the
-# entrypoint script.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bash \
         ca-certificates \
@@ -38,26 +35,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Layout:
-#   /opt/gbtm/macros   — the SAS source files copied from the repo
-#   /opt/gbtm/data     — user mounts their input data here
-#   /opt/gbtm/output   — user mounts an output directory here
-#   /opt/sas           — user mounts their licensed SAS install here (RO)
-RUN mkdir -p ${GBTM_MACROS} ${GBTM_DATA} ${GBTM_OUTPUT}
+#   /opt/gbtm/macros        SAS source files
+#   /opt/gbtm/macros/docs   original docx/rtf documents (for reference)
+#   /opt/gbtm/data          user mounts their input data here
+#   /opt/gbtm/output        user mounts an output directory here
+#   /opt/sas                user mounts their licensed SAS install here (RO)
+RUN mkdir -p ${GBTM_MACROS}/docs ${GBTM_DATA} ${GBTM_OUTPUT}
 
-# Copy the SAS source files. We copy the whole repo's docx/rtf/etc. so the
-# image stays self-contained even if files are renamed; the entrypoint
-# resolves them by name at run time.
-COPY discrete_ordinal_final.docx       ${GBTM_MACROS}/
-COPY Continuous_2_outcomes.docx        ${GBTM_MACROS}/
-COPY poisson_model_complete_35_.rtf    ${GBTM_MACROS}/
-COPY ZINB_LatentClass_Trajectories.docx ${GBTM_MACROS}/
+# Existing macros already in the repo
+COPY traj2_macro.sas         ${GBTM_MACROS}/
+COPY traj2_main_macro.sas    ${GBTM_MACROS}/
 
-# Convenience: extract plain-text .sas wrappers from the .docx/.rtf at build
-# time would require pandoc/unoconv. We instead ship the source files as-is
-# and document that users include them via SAS file references that handle
-# RTF/DOCX. If you have plain .sas exports, drop them into ./macros_sas/
-# in the repo and they will be copied below.
-COPY macros_sas/ ${GBTM_MACROS}/sas/
+# Plain-text SAS files extracted from the four model documents
+COPY ordinal_probit.sas       ${GBTM_MACROS}/
+COPY continuous_2outcomes.sas ${GBTM_MACROS}/
+COPY zip_poisson.sas          ${GBTM_MACROS}/
+COPY zinb.sas                 ${GBTM_MACROS}/
+
+# Original documentation files (kept inside the image for reference)
+COPY discrete_ordinal_final.docx        ${GBTM_MACROS}/docs/
+COPY Continuous_2_outcomes.docx         ${GBTM_MACROS}/docs/
+COPY poisson_model_complete_35_.rtf     ${GBTM_MACROS}/docs/
+COPY ZINB_LatentClass_Trajectories.docx ${GBTM_MACROS}/docs/
 
 # Entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh

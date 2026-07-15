@@ -2,7 +2,7 @@
 <html lang="en">
 <head> 
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>GBTM Macro Library · CHAO Lab, Rutgers</title>
+<title>Traj2 · GBTM Macro Library · CHAO Lab, Rutgers</title>
 <style>
 :root{--navy:#0f2044;--navy2:#1a3260;--teal:#0e7490;--teal2:#0891b2;--gold:#d97706;--gold2:#f59e0b;--green:#059669;--purple:#7c3aed;--light:#f0f4f8;--white:#fff;--border:#cbd5e1;--text:#1e293b;--muted:#64748b;--code:#1e293b}
 *{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
@@ -43,7 +43,7 @@ svg.ico{width:14px;height:14px;fill:currentColor;flex-shrink:0}
 .cm{flex:1}.cm h3{font-size:15px;font-weight:700;margin-bottom:4px;line-height:1.3}
 .fn{font-size:11px;font-family:'Courier New',monospace;color:var(--muted);background:var(--light);padding:2px 7px;border-radius:4px;display:inline-block}
 .badge{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;padding:3px 9px;border-radius:10px;white-space:nowrap;flex-shrink:0}
-.b-sas{background:#dbeffe;color:#1d4ed8}.b-guide{background:#d1fae5;color:#065f46}.b-pptx{background:#fef3c7;color:#92400e}.b-qa{background:#ede9fe;color:#5b21b6}.b-docker{background:#e0f2fe;color:#0369a1}
+.b-sas{background:#dbeffe;color:#1d4ed8}.b-guide{background:#d1fae5;color:#065f46}.b-pptx{background:#fef3c7;color:#92400e}.b-qa{background:#ede9fe;color:#5b21b6}.b-docker{background:#e0f2fe;color:#0369a1}.b-proto{background:#fee2e2;color:#b91c1c}
 .cb{padding:16px 20px 0;flex:1}.cb p{font-size:13.5px;margin-bottom:12px}
 .kl{list-style:none;margin-bottom:12px}
 .kl li{font-size:12.5px;padding:5px 0 5px 18px;position:relative;border-bottom:1px dashed #e2e8f0;line-height:1.55}
@@ -106,7 +106,7 @@ code{font-family:'Courier New',monospace;color:#e2e8f0}
 .cite{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:18px}
 .cite p{font-size:13.5px;line-height:1.7}
 .cite .ref{margin-top:10px;font-family:'Courier New',monospace;font-size:12.5px;color:var(--navy);background:var(--light);padding:12px 14px;border-radius:8px;border-left:3px solid var(--teal)}
-footer{background:var(--navy);color:#475569;text-align:center;padding:26px;font-size:12px}
+footer{background:var(--navy);color:#475569;text-align:center;padding:26px;font-size:12px;line-height:1.9}
 footer a{color:#64748b;text-decoration:none}
 @media(max-width:768px){.hdr-top{padding:22px 18px}.hdr-act{padding:10px 18px}.wrap{padding:20px 14px 44px}.g2{grid-template-columns:1fr}}
 </style>
@@ -115,14 +115,15 @@ footer a{color:#64748b;text-decoration:none}
 
 <header class="hdr">
   <div class="hdr-top">
-    <div class="lab">Community Health and Aging Outcome (CHAO) Lab · Rutgers University</div>
-    <h1>GBTM <span>Macro Library</span> · Documentation Portal</h1>
-    <p>Group-Based Trajectory Modeling in SAS/PROC NLMIXED: Ordinal-Probit and censored-normal continuous (single- and two-outcome) pipelines for aging and healthcare trajectory research, with ZIP/ZINB extensions building on the same framework.</p>
+    <div class="lab">Community Health and Aging Outcomes (CHAO) Lab · Rutgers University</div>
+    <h1>Traj2 <span>GBTM Macro Library</span> · Documentation Portal</h1>
+    <p>A native macro library for single and multi-outcome group-based trajectory modeling in SAS. The current release implements censored-normal continuous (single- and joint two-outcome) and ordinal-probit pipelines via PROC NLMIXED, with no externally compiled code — runs as-is in the CMS VRDC and other secure SAS environments. ZIP/ZINB count-outcome prototypes are in the repository and undergoing quality assurance.</p>
     <div class="chips">
       <span class="chip">📅 February 2026</span>
-      <span class="chip">👩‍💻  Anum Zafar · Haiqun Lin · Weiyi Xia · Bobby Jones · Olga F. Jarrín</span>
+      <span class="chip">👩‍💻 Anum Zafar · Weiyi Xia · Haiqun Lin · Bobby Jones · Olga F. Jarrín</span>
       <span class="chip">🏷 SAS 9.4+ · PROC NLMIXED · ODS Graphics</span>
-      <span class="chip">📦 4 Models · 8 Files · 47 QA Tests</span>
+      <span class="chip">📦 2 Released Models · 2 Prototypes · 47 QA Tests</span>
+      <span class="chip">⚖️ MIT License (code) · CC-BY 4.0 (docs)</span>
     </div>
   </div>
   <div class="hdr-act">
@@ -133,6 +134,10 @@ footer a{color:#64748b;text-decoration:none}
     <a class="btn-gh" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/archive/refs/heads/main.zip">
       <svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>
       Download All (.zip)
+    </a>
+    <a class="btn-gh" href="https://doi.org/10.17605/OSF.IO/6FG5J" target="_blank">
+      <svg class="ico" viewBox="0 0 16 16"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zM4.5 7.5a.5.5 0 000 1h5.793l-2.147 2.146a.5.5 0 00.708.708l3-3a.5.5 0 000-.708l-3-3a.5.5 0 10-.708.708L10.293 7.5H4.5z"/></svg>
+      Archival Release (OSF DOI)
     </a>
   </div>
 </header>
@@ -156,68 +161,300 @@ footer a{color:#64748b;text-decoration:none}
   <div class="sec"><h2>Citation</h2><div class="rule"></div></div>
   <div class="cite">
     <p>If you use Traj2 in your research, please cite:</p>
-    <div class="ref">Zafar, A., Lin, H., Xia, W., Jones, B., &amp; Jarrín, O. F. (2026). <em>Traj2: A Native Macro for Single- and Multi-Outcome Group-Based Trajectory Modeling in SAS.</em> Journal of Statistical Software (in preparation).</div>
+    <div class="ref">Zafar, A., Xia, W., Lin, H., Jones, B., &amp; Jarrín, O. F. (2026). <em>Traj2: A Native Macro Library for Single and Multi-Outcome Group-Based Trajectory Modeling in SAS.</em> Journal of Statistical Software (in preparation).</div>
   </div>
 
   <div class="sec"><h2>What is GBTM?</h2><div class="rule"></div></div>
   <div class="mexp">
     <div class="mexp-title">
       <div class="mexp-icon ci-bl">🧭</div>
-      <div><h2>Group-Based Trajectory Modeling</h2><div class="mexp-sub">Nagin &amp; Land (1993) · Finite Mixture Model · Maximum Likelihood via PROC NLMIXED</div></div>
+      <div><h2>Group-Based Trajectory Modeling</h2><div class="mexp-sub">Nagin (1999) · Finite Mixture Model · Maximum Likelihood via PROC NLMIXED</div></div>
     </div>
-    <p>Group-Based Trajectory Modeling (GBTM) is a finite mixture model designed to identify subgroups of individuals in a population who follow similar patterns over time. Rather than estimating a single average trajectory for everyone, which can mask meaningful heterogeneity, GBTM partitions the population into K latent classes, each characterized by its own trajectory shape (intercept, slope, curvature) estimated as a polynomial function of time.</p>
-    <p>The core idea is that the <strong>population distribution of trajectories</strong> is approximated by a finite mixture of K groups. This is not a claim that nature has produced exactly K discrete types; it is a flexible, data-driven device for capturing the dominant features of individual-level heterogeneity. The latent groups should be thought of as longitudinal strata, clusters of individuals following approximately the same developmental course, rather than as sharply bounded categories.</p>
-    <p>Each individual's observed longitudinal sequence contributes to the likelihood through two components: the <strong>probability of group membership</strong> (modeled via a generalized logit / softmax) and the <strong>probability of the observed data given group membership</strong> (modeled by a distribution appropriate to the outcome type). Parameters are estimated jointly by maximum likelihood. Model selection, choosing K, relies on BIC, AIC, average posterior probability, and clinical interpretability of the resulting trajectories.</p>
-    <p>The library implements GBTM for outcome types common in CMS Medicare/Medicaid data, including bounded ordered outcomes (Ordinal-Probit) and bounded continuous outcomes (censored normal, with single- and two-outcome variants). Count-outcome extensions (ZIP and ZINB) build on the same finite-mixture framework and shared data contract.</p>
-    <div class="eq">L(θ) = ∏ᵢ Σⱼ πⱼ · ∏ₜ P(yᵢₜ | group j, θⱼ)
-where πⱼ = exp(αⱼ) / Σⱼ exp(αⱼ)   [softmax mixing weights]
-and P(yᵢₜ | j) depends on the outcome distribution
-(Ordinal-Probit, Censored Normal, ZIP, or ZINB)</div>
+    <p>Group-based trajectory modeling (GBTM) is a finite mixture model that stratifies the sample into a small number of latent groups, gives each group its own polynomial time trend, and jointly estimates the class shapes and mixing weights by maximum likelihood (Nagin 1999). Rather than estimating a single average trajectory for everyone — which typically fails to capture the heterogeneity visible in longitudinal data — GBTM partitions the population into C latent classes, each characterized by its own trajectory shape estimated as a polynomial function of time. These classes represent <strong>patterns rather than a typology</strong>: they are longitudinal strata, not sharply bounded natural categories.</p>
+    <p>Each subject's observed longitudinal sequence contributes to the likelihood through two components: the <strong>class-membership probability</strong> π<sub>j</sub> (multinomial, constrained to sum to 1, with a clear interpretation as the expected class proportion) and the <strong>class-conditional distribution</strong> of the observed data given membership. Parameters are estimated jointly by maximum likelihood using the SAS internal optimizers of PROC NLMIXED (dual quasi-Newton and Newton-Raphson). The polynomial order can be linear, quadratic, cubic, or any order, and can differ between classes.</p>
+    <div class="eq">P(Y) = Σ_{j=1..C} π_j · Π_{k=1..K} Π_{t=1..T} p(Y_t^k | X = j)
+
+where X is the latent class (1..C), K ∈ {1,2} outcomes, T time points,
+and p(Y_t^k | X=j) is the class-conditional density
+(censored normal or cumulative ordinal probit in this release)</div>
+    <p><strong>Assumptions.</strong> (1) Conditional independence over time: given class membership, responses at different time points are independent. (2) Conditional independence across outcomes: given class membership, there is no association between the two outcomes. Skipping missing time points in the likelihood is valid under ignorable missingness (missing at random); data missing not at random would require an explicit missingness model (Dodge et al. 2008).</p>
+    <p>The current release implements <strong>two outcome families</strong>: bounded ordinal scales (class-specific cumulative probit with exp-incremented thresholds) and continuous measures with bounded support (class-specific censored normal, with built-in estimation of joint two-outcome trajectories following the multi-trajectory framework of Nagin et al. 2018). Zero-inflated count prototypes (ZIP and ZINB) are in the repository and undergoing quality assurance — see Planned Extensions below.</p>
+  </div>
+
+  <div class="sec"><h2>Why a Native Implementation?</h2><div class="rule"></div></div>
+  <div class="mexp">
+    <p>The well-known SAS procedure <strong>PROC TRAJ</strong> implements GBTM but relies on an externally compiled C dynamic-link library, which prevents its use in environments that restrict externally compiled code — most importantly the CMS <strong>Virtual Research Data Center (VRDC)</strong>, where an increasing amount of Medicare and Medicaid research is conducted, as well as VA data enclaves and other secure custodial platforms. <strong>Traj2</strong> expresses the GBTM marginal likelihood directly in PROC NLMIXED (included in SAS/STAT in every standard SAS distribution) with no compiled components, so the macros run as-is in the VRDC and with any version of SAS 9.4 and newer. Because the likelihoods are written in SAS macro language, analysts can read, edit, and extend them — adding outcome types the compiled procedure does not support, and diagnosing convergence problems that a black-box estimator would hide.</p>
   </div>
 
   <div class="sec"><h2>Models at a Glance</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="ov">
       <div class="oi">🔢</div><h3>Ordinal-Probit</h3>
-      <p>For bounded ordered-categorical outcomes (e.g., functional status scales, frailty scores, severity grades 0–4). Uses cumulative probit with exp-incremented thresholds that guarantee strict category ordering while allowing each class to follow its own polynomial mean trajectory.</p>
-      <span class="ob" style="background:#ede9fe;color:#5b21b6">Ordered Categories</span>
+      <p>For bounded, ordered scales such as activities of daily living (ADL), frailty indices, and cognitive screening scores. Class-specific cumulative probits use exp-incremented thresholds, which ensure monotonicity without constrained optimization. Identified by fixing the first threshold at 0 with the class intercept freely estimated.</p>
+      <span class="ob" style="background:#ede9fe;color:#5b21b6">Released · Ordered Categories</span>
     </div>
     <div class="ov">
-      <div class="oi">📉</div><h3>Continuous (2-outcome censored normal)</h3>
-      <p>For continuous outcomes on bounded support, with optional one- or two-sided bounds that may vary across time. Jointly models two outcomes (for example, home-health visits and inpatient days) across K classes, using single-outcome warm starts to stabilize the joint optimization.</p>
-      <span class="ob" style="background:#fef3c7;color:#92400e">Bounded · Joint</span>
+      <div class="oi">📉</div><h3>Censored Normal (single &amp; joint two-outcome)</h3>
+      <p>For continuous outcomes with user-defined upper and/or lower bounds, in both single and joint two-outcome implementations. The joint form links two co-evolving continuous measures through a shared latent-class structure, following the multi-trajectory framework of Nagin et al. (2018), with a warm-start pipeline for robust convergence.</p>
+      <span class="ob" style="background:#fef3c7;color:#92400e">Released · Bounded · Joint</span>
     </div>
     <div class="ov">
-      <div class="oi">📊</div><h3>ZIP Poisson <span style="font-size:11px;font-weight:600;color:var(--muted);margin-left:6px">(extension)</span></h3>
-      <p>For integer count outcomes (e.g., quarterly ED visits, hospitalizations) with excess zeros. Builds on the same finite-mixture framework as the released models, replacing the class-conditional density with a zero-inflated Poisson while preserving the shared data contract and softmax mixing weights.</p>
-      <span class="ob" style="background:#dbeffe;color:#1d4ed8">Count · Zero-Inflated</span>
+      <div class="oi">📊</div><h3>ZIP Poisson <span style="font-size:11px;font-weight:600;color:#b91c1c;margin-left:6px">(prototype · under QA)</span></h3>
+      <p>Zero-Inflated Poisson trajectory model targeted at count healthcare-utilization measures (e.g., quarterly ED visits, inpatient admissions) with excess zeros. The prototype macro <code style="font-size:11px">%ct_zip_pois_nlmixed</code>, with a numerically stable log-sum-exp evaluation of the zero-mass probability, is already in the repository and undergoing quality assurance. Not part of the current release.</p>
+      <span class="ob" style="background:#fee2e2;color:#b91c1c">Prototype · Count · Zero-Inflated</span>
     </div>
     <div class="ov">
-      <div class="oi">📈</div><h3>ZINB <span style="font-size:11px;font-weight:600;color:var(--muted);margin-left:6px">(extension)</span></h3>
-      <p>Extends ZIP by replacing the Poisson component with a Negative Binomial (NB2) distribution to accommodate overdispersion (Var = μ + μ²/k). Appropriate when count variance substantially exceeds the mean even after accounting for structural zeros, common in Medicare claims data for high-utilization populations.</p>
-      <span class="ob" style="background:#ccfbf1;color:#0f766e">Count · Overdispersed</span>
+      <div class="oi">📈</div><h3>ZINB <span style="font-size:11px;font-weight:600;color:#b91c1c;margin-left:6px">(prototype · under QA)</span></h3>
+      <p>Zero-Inflated Negative Binomial prototype (<code style="font-size:11px">%ct_zinb_nlmixed</code>) extending ZIP with an NB2 dispersion parameter to accommodate overdispersion (Var = μ + μ²/k), common in Medicare claims for high-utilization populations. In the repository and undergoing quality assurance. Not part of the current release.</p>
+      <span class="ob" style="background:#fee2e2;color:#b91c1c">Prototype · Count · Overdispersed</span>
     </div>
   </div>
 
   <div class="sec"><h2>Shared Pipeline</h2><div class="rule"></div></div>
   <div class="pipe">
-    <div class="pb">Global Settings<small>%let T, class, order</small></div><div class="pa">→</div>
-    <div class="pb">%sim_data<small>Optional simulator</small></div><div class="pa">→</div>
+    <div class="pb">Global Settings<small>%let T, class, order_model</small></div><div class="pa">→</div>
+    <div class="pb">%sim_data / %sim_data_cont<small>Optional simulators</small></div><div class="pa">→</div>
     <div class="pb">BASE_FILE_SRS<small>Wide input table</small></div><div class="pa">→</div>
-    <div class="pb">PROC NLMIXED<small>Fit K-class model</small></div><div class="pa">→</div>
-    <div class="pb">pe_ / fit_<small>Estimates + fit stats</small></div><div class="pa">→</div>
-    <div class="pb">%*_plots<small>Trajectory visualization</small></div>
+    <div class="pb">PROC NLMIXED<small>Fit C-class model</small></div><div class="pa">→</div>
+    <div class="pb">Estimates + fit stats<small>Posterior probabilities</small></div><div class="pa">→</div>
+    <div class="pb">%plot_prep / %ordprob_mix_plot_one<small>ODS Graphics</small></div>
   </div>
 
   <div class="sec"><h2>Universal Data Contract</h2><div class="rule"></div></div>
   <div class="card"><div class="cb" style="padding-bottom:18px"><table class="pt">
-    <tr><th>Element</th><th>Ordinal-Probit</th><th>Continuous (2-outcome)</th><th>ZIP / ZINB</th></tr>
-    <tr><td><strong>Table name</strong></td><td colspan="3" class="mo">BASE_FILE_SRS (all pipelines)</td></tr>
-    <tr><td><strong>ID column</strong></td><td colspan="3" class="mo">BENE_ID (or pass id= to macro)</td></tr>
-    <tr><td><strong>Outcomes</strong></td><td class="mo">Y1_1..Y1_T<br>quar1..quarT = 0..T-1</td><td class="mo">QHH1..QHH12<br>QINP1..QINP12</td><td class="mo">SUM_Q1..SUM_QT<br><small>integer counts</small></td></tr>
-    <tr><td><strong>Missing</strong></td><td colspan="3">Allowed as <code>.</code>; the likelihood skips them automatically</td></tr>
-    <tr><td><strong>Default T</strong></td><td colspan="3">12 quarterly time points (3 years)</td></tr>
+    <tr><th>Element</th><th>Convention</th><th>Notes</th></tr>
+    <tr><td><strong>Table name</strong></td><td class="mo">BASE_FILE_SRS</td><td>Default for all macros; can be overridden via the <span class="mo">data=</span> argument in <span class="mo">%ordprob_mix_fit_one</span>.</td></tr>
+    <tr><td><strong>ID column</strong></td><td class="mo">BENE_ID</td><td>Unique subject identifier.</td></tr>
+    <tr><td><strong>Continuous outcomes</strong></td><td class="mo">Y1_1, ..., Y1_T<br>or QHH1, ..., QHH12</td><td>Repeated measures stored one column per time point.</td></tr>
+    <tr><td><strong>Joint outcomes</strong></td><td class="mo">Y1_t, Y2_t<br>or QHHt, QINPt</td><td>Two parallel sets of repeated measures.</td></tr>
+    <tr><td><strong>Time index</strong></td><td class="mo">quar1, ..., quar12</td><td>Numeric time indices (1, ..., T).</td></tr>
+    <tr><td><strong>Default T</strong></td><td class="mo">12</td><td>Twelve quarterly time points (three years).</td></tr>
+    <tr><td><strong>Missing values</strong></td><td class="mo">Allowed (.)</td><td>Likelihood contribution is skipped at missing time points (assumes missing at random).</td></tr>
   </table></div></div>
+
+  <div class="sec"><h2>Validation Highlights</h2><div class="rule"></div></div>
+  <div class="grid g2">
+    <div class="ov">
+      <div class="oi">🎯</div><h3>Agreement with PROC TRAJ</h3>
+      <p>On identical simulated data (N = 10,000, three-class quadratic censored-normal), the single-outcome fit matches PROC TRAJ with a maximum absolute coefficient difference of 1.0 × 10⁻⁴ across all nine coefficients. The joint two-outcome (multi-trajectory) fit matches to ≈ 5 × 10⁻⁴ across all 22 parameters; class proportions agree to three decimals and −2 log L differs by about 0.2.</p>
+      <span class="ob" style="background:#d1fae5;color:#065f46">Numerical-tolerance match</span>
+    </div>
+    <div class="ov">
+      <div class="oi">🎲</div><h3>Monte Carlo Bias &amp; Coverage</h3>
+      <p>Over 200 independent replications from the three-class censored-normal DGP (N = 2,500 each), the joint two-outcome model shows a maximum absolute bias of ≈ 0.011 on a 0–100 scale, and empirical 95% CI coverage from 0.930 to 0.975 (mean 0.953) — consistent with nominal coverage. A Monte Carlo scaffold with the design and seed is distributed with the package.</p>
+      <span class="ob" style="background:#d1fae5;color:#065f46">Near-nominal coverage</span>
+    </div>
+    <div class="ov">
+      <div class="oi">📐</div><h3>Ordinal-Probit Recovery</h3>
+      <p>Over 200 replications (N = 2,500, T = 12, true C = 3), worst-class trajectory RMSE is 0.029 on the 0–3 scale; class assignment agrees with truth 91.0% of the time (vs. a 45% majority-class baseline); and BIC selected the true C = 3 in 100% of replications. All 200 replications returned fully estimable standard errors for every free parameter.</p>
+      <span class="ob" style="background:#ede9fe;color:#5b21b6">Shape · Class · C recovered</span>
+    </div>
+    <div class="ov">
+      <div class="oi">🔁</div><h3>Cross-Implementation Check (lcmm)</h3>
+      <p>Because PROC TRAJ lacks a cumulative-probit family, the ordinal model was checked against the R package lcmm on a matched design: fitted E[Y | class] trajectories agree to a maximum absolute difference of 0.012 (mean 0.003) across 36 class-by-time points, class proportions differ by at most 1 percentage point, and −2 log L is essentially identical (68,517 vs. 68,520).</p>
+      <span class="ob" style="background:#ede9fe;color:#5b21b6">Independent implementation</span>
+    </div>
+  </div>
+
+  <div class="sec"><h2>Real-Data Application: Cognitive Trajectories in the Last Five Years of Life</h2><div class="rule"></div></div>
+  <div class="mexp">
+    <div class="mexp-title">
+      <div class="mexp-icon ci-te">🧠</div>
+      <div><h2>2019 Medicare Decedent Cohort · CMS VRDC</h2><div class="mexp-sub">Lin, April-Sanders, Zafar &amp; Jarrín (2026), manuscript submitted for publication</div></div>
+    </div>
+    <p>Using the ordinal-probit pipeline (<strong>%ordprob_mix_fit_one</strong>), cognitive function during the final five years of life was classified in a 10% random sample (<strong>N = 181,463</strong>) of Medicare beneficiaries older than 50 years who died in 2019. Assessments were quarterly over <strong>T = 20 quarters</strong>, in four categories of cognitive impairment (none, memory loss, mild, moderate-to-severe/dementia), with each class trajectory fitted as a quadratic function of time on the cumulative-probit scale.</p>
+    <p>Models with 2–11 classes were fit; by BIC, a <strong>ten-class solution</strong> was preferred. Recovered trajectories ranged from a large group with near-stable cognition (35.9% of the sample) to a group severely impaired for the entire duration (12.1%). Reproducibility was confirmed by refitting over several different 10% random samples, each returning the same ten-class solution. The entire analysis was carried out <strong>inside the restricted CMS VRDC</strong>, where PROC TRAJ's compiled binary is unavailable — precisely the setting that motivated Traj2 — and demonstrates scalability: 181,463 subjects, 20 time points, ten latent classes (59 parameters), fit in ~53 minutes wall-clock.</p>
+  </div>
+
+  <div class="sec"><h2>Planned Extensions (Under Testing)</h2><div class="rule"></div></div>
+  <div class="card"><div class="cb" style="padding-bottom:18px">
+    <ul class="kl">
+      <li><strong>Zero-inflated count outcomes:</strong> ZIP and ZINB trajectory models for count healthcare-utilization measures. Prototype macros (<code>%ct_zip_pois_nlmixed</code>, <code>%ct_zinb_nlmixed</code>) with a numerically stable log-sum-exp evaluation of the zero-mass probability are already in the repository and undergoing quality assurance.</li>
+      <li><strong>Random effects:</strong> class-specific random intercepts and slopes to allow correlation of outcomes over time and unexplained within-class heterogeneity.</li>
+      <li><strong>Covariate adjustment:</strong> time-invariant and time-varying covariates in both the class-assignment logit and the trajectory functions.</li>
+      <li><strong>Distal-outcome analysis:</strong> the BCH correction for associations between latent-class membership and a distal outcome.</li>
+      <li><strong>Trajectory mediation:</strong> trajectory-class membership as a mediator between baseline risk factors and downstream outcomes.</li>
+      <li><strong>Distribution:</strong> a SAS catalog release bundling all macros into a single loadable unit; the current source-code release remains available.</li>
+    </ul>
+  </div></div>
+
+  <div class="sec"><h2>Software Availability &amp; License</h2><div class="rule"></div></div>
+  <div class="card"><div class="cb" style="padding-bottom:18px"><table class="pt">
+    <tr><th>Resource</th><th>Location</th></tr>
+    <tr><td><strong>Documentation</strong></td><td class="mo"><a href="https://ru-aging.github.io/AgingTrajectory_Library_NLMIXED-Model/" target="_blank" style="color:var(--teal)">https://ru-aging.github.io/AgingTrajectory_Library_NLMIXED-Model/</a></td></tr>
+    <tr><td><strong>Repository</strong></td><td class="mo"><a href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model" target="_blank" style="color:var(--teal)">https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model</a></td></tr>
+    <tr><td><strong>Archival release</strong></td><td class="mo"><a href="https://doi.org/10.17605/OSF.IO/6FG5J" target="_blank" style="color:var(--teal)">https://doi.org/10.17605/OSF.IO/6FG5J</a></td></tr>
+    <tr><td><strong>License</strong></td><td>MIT License (source code); CC-BY 4.0 (documentation)</td></tr>
+    <tr><td><strong>Docker container</strong></td><td class="mo">chao-lab/gbtm-macros:1.0.0</td></tr>
+    <tr><td><strong>Requirements</strong></td><td>SAS 9.4 or newer with PROC NLMIXED (SAS/STAT); runs on Windows, Linux, and within the CMS VRDC; no compiled components outside SAS.</td></tr>
+  </table></div></div>
+
+</div></div>
+
+<!-- ==================== CONTINUOUS ==================== -->
+<div id="t-continuous" class="tab"><div class="wrap">
+
+  <div class="mexp">
+    <div class="mexp-title">
+      <div class="mexp-icon ci-am">📉</div>
+      <div><h2>Censored-Normal GBTM: Single &amp; Joint Two-Outcome</h2><div class="mexp-sub">Authors: Weiyi Xia, Haiqun Lin, Anum Zafar</div></div>
+    </div>
+    <p>For continuous outcomes with a lower and/or upper bound — common in clinical biomarker data that cannot be measured below the limit of quantitation, and in bounded count data approximated as continuous — <strong>Traj2</strong> uses a censored-normal (Tobit) density. With the class-specific latent mean μ<sub>jt</sub> = β<sub>j0</sub> + β<sub>j1</sub>t + ... + β<sub>jd</sub>t<sup>d</sup>, and φ, Φ the standard normal density and CDF, the class-conditional contribution at time t is:</p>
+    <div class="eq">p(Y_t | X = j) =
+  σ_j⁻¹ φ((Y_t − μ_jt)/σ_j)    if L < Y_t < U   (observed exactly)
+  Φ((L − μ_jt)/σ_j)            if Y_t = L        (lower-censored)
+  1 − Φ((U − μ_jt)/σ_j)        if Y_t = U        (upper-censored)</div>
+    <p>The density over the interior is <strong>not renormalized</strong> over [L, U]; the bounds carry positive probability mass — as opposed to a truncated normal, which would renormalize the interior density and give the bounds no mass. This matches the <strong>CNORM family in PROC TRAJ</strong>. Censoring is determined by an <em>exact equality</em> of Y<sub>t</sub> to a bound: the user-supplied cap vector must exactly match the ceiling of the data. If a cap value is lower than any actual observed outcome, cases at that cap are treated as interior and contribute no censored component — always validate the cap values against the maximum of the sample.</p>
+    <p>The <strong>joint two-outcome</strong> model links two co-evolving continuous measures through a shared latent-class structure, following the multi-trajectory framework of Nagin et al. (2018): the latent class is a subject-level attribute, and each class has one trajectory per outcome. The model assumes conditional independence over time and across the two outcomes, given class membership.</p>
+    <p><strong>Why warm starts matter.</strong> The joint optimization is more prone to convergence failure because of its sensitivity to starting values. Traj2 therefore uses a warm-start pipeline: the two outcomes are first fit separately with <code>%nlmixed_1</code>, their parameter estimates are stacked (dropping the mixing intercepts) into <code>work.nlm_2y_starting</code>, and <code>%nlmixed_MultiTraj</code> reads these per-parameter starting values via the <code>/ data=</code> clause on the PARMS statement, while <code>%starting_value_alpha</code> provides neutral starting values for the mixing intercepts.</p>
+    <div class="use">
+      <span class="use-item">Home health + inpatient (joint)</span>
+      <span class="use-item">Biomarkers with limit of quantitation</span>
+      <span class="use-item">Bounded count data (approximated)</span>
+      <span class="use-item">Two correlated bounded outcomes</span>
+    </div>
+  </div>
+
+  <div class="sec"><h2>Source Code</h2><div class="rule"></div></div>
+  <div class="card">
+    <div class="ch"><div class="ci ci-am">📄</div><div class="cm"><h3>Continuous Single &amp; Two-Outcome Trajectories</h3><span class="fn">continuous_2_outcomes.sas</span></div><span class="badge b-sas">SAS Code</span></div>
+    <div class="cb">
+      <ul class="kl">
+        <li><strong>Setup:</strong> <code>%include "/path/to/traj2/continuous_2_outcomes.sas";</code> — no compilation or external package installation required; runs identically in desktop SAS and the CMS VRDC</li>
+        <li><strong>Global settings:</strong> set <code>USE_SIM</code>, <code>T</code>, <code>class</code>, <code>order_model</code>, <code>equal</code>, <code>max_values</code>, <code>y1vars</code>, <code>y2vars</code>, <code>idvar</code>, <code>tvars</code>; once set, these are read by every macro in the workflow</li>
+        <li><strong>Simulation:</strong> with <code>USE_SIM=1</code>, sourcing the library calls <code>%sim_data_cont</code> and assembles the wide-format <code>BASE_FILE_SRS</code> table automatically</li>
+        <li><strong>Starting values:</strong> produced by helper macros <code>%starting_value_alpha</code> (class-membership intercepts, class A fixed to 0 for identification) and <code>%starting_value_beta_sigma</code> (polynomial coefficients and residual-scale parameters at neutral values)</li>
+        <li><strong>Run order:</strong> <code>%nlmixed_1(Y=1)</code> → <code>%nlmixed_1(Y=2)</code> → DATA step stacking the two estimate sets (dropping alpha rows) into <code>nlm_2y_starting</code> → <code>%nlmixed_MultiTraj</code> → <code>%plot_prep</code></li>
+      </ul>
+    </div>
+    <div class="cf">
+      <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/continuous_2_outcomes.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download .SAS</a>
+      <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/continuous_2_outcomes.sas" target="_blank">View on GitHub</a>
+    </div>
+  </div>
+
+  <div class="sec"><h2>Global Settings (Edit These Only)</h2><div class="rule"></div></div>
+  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">SAS · Global Macro Variables</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
+  <pre><code><span class="k">%let</span> <span class="v">USE_SIM</span>     = <span class="n">1</span>;    <span class="c">/* 1 = simulate; 0 = use your own BASE_FILE_SRS */</span>
+<span class="k">%let</span> <span class="v">T</span>           = <span class="n">12</span>;   <span class="c">/* time points */</span>
+<span class="k">%let</span> <span class="v">class</span>       = <span class="n">3</span>;    <span class="c">/* latent classes */</span>
+<span class="k">%let</span> <span class="v">order_model</span> = <span class="n">2</span>;    <span class="c">/* 1=linear, 2=quadratic, 3=cubic */</span>
+<span class="k">%let</span> <span class="v">equal</span>       = T;   <span class="c">/* T = equal residual SD across classes */</span>
+<span class="k">%let</span> <span class="v">max_values</span>  = <span class="n">10 10 10 10 10 10 10 10 10 10 10 10</span>; <span class="c">/* censoring caps, one per time point */</span>
+<span class="k">%let</span> <span class="v">y1vars</span>      = QHH1-QHH12;    <span class="c">/* Outcome 1 repeated measures */</span>
+<span class="k">%let</span> <span class="v">y2vars</span>      = QINP1-QINP12;  <span class="c">/* Outcome 2 repeated measures */</span>
+<span class="k">%let</span> <span class="v">idvar</span>       = BENE_ID;
+<span class="k">%let</span> <span class="v">tvars</span>       = quar1-quar12;</code></pre></div>
+
+  <div class="sec"><h2>Single-Outcome Fit</h2><div class="rule"></div></div>
+  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">SAS · %nlmixed_1 with helper-macro starting values</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
+  <pre><code><span class="f">%nlmixed_1</span>(
+  T=<span class="n">12</span>, LC=<span class="n">3</span>, Y=<span class="n">1</span>,
+  starting=<span class="f">%starting_value_alpha</span>(class=<span class="n">3</span>)
+           <span class="f">%starting_value_beta_sigma</span>(class=<span class="n">3</span>, outcome=<span class="n">1</span>,
+             order=<span class="n">2</span>, equal_sigma=T),
+  output=nlm_fix_T1C3, order=<span class="n">2</span>, equal_sigma=T
+);</code></pre></div>
+
+  <div class="sec"><h2>Joint Two-Outcome Warm-Start Pipeline</h2><div class="rule"></div></div>
+  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">SAS · Warm-start pipeline (fit separately → stack → joint fit)</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
+  <pre><code><span class="c">/* 1. Fit each outcome separately */</span>
+<span class="f">%nlmixed_1</span>(T=<span class="n">12</span>, LC=<span class="n">3</span>, Y=<span class="n">1</span>,
+  starting=<span class="f">%starting_value_alpha</span>(class=<span class="n">3</span>)
+           <span class="f">%starting_value_beta_sigma</span>(class=<span class="n">3</span>, outcome=<span class="n">1</span>,
+             order=<span class="n">2</span>, equal_sigma=T),
+  output=nlm_fix_T1C3, order=<span class="n">2</span>, equal_sigma=T);
+
+<span class="f">%nlmixed_1</span>(T=<span class="n">12</span>, LC=<span class="n">3</span>, Y=<span class="n">2</span>,
+  starting=<span class="f">%starting_value_alpha</span>(class=<span class="n">3</span>)
+           <span class="f">%starting_value_beta_sigma</span>(class=<span class="n">3</span>, outcome=<span class="n">2</span>,
+             order=<span class="n">2</span>, equal_sigma=T),
+  output=nlm_fix_T2C3, order=<span class="n">2</span>, equal_sigma=T);
+
+<span class="c">/* 2. Stack the single-outcome estimates, dropping the mixing
+      intercepts, to seed the joint fit */</span>
+<span class="k">data</span> work.nlm_2y_starting;
+  <span class="k">set</span> nlm_fix_T1C3 nlm_fix_T2C3;
+  <span class="k">if</span> parameter =: <span class="s">'alpha'</span> <span class="k">then delete</span>;
+<span class="k">run</span>;
+
+<span class="c">/* 3. Fit the joint model, reading starting values from the dataset */</span>
+<span class="f">%nlmixed_MultiTraj</span>(T=<span class="n">12</span>, LC=<span class="n">3</span>,
+  starting=<span class="f">%starting_value_alpha</span>(class=<span class="n">3</span>) / data=work.nlm_2y_starting,
+  output=nlm_fix_T1_T2C3, order=<span class="n">2</span>, equal_sigma=T);
+
+<span class="f">%plot_prep</span>(T=<span class="n">12</span>, LC=<span class="n">3</span>, result=nlm_fix_T1_T2C3,
+  order=<span class="n">2</span>, equal_sigma=T);</code></pre></div>
+
+  <div class="al al-tip"><div class="al-icon">💡</div><div class="al-body"><strong>Run order matters.</strong> Always fit <code>%nlmixed_1(Y=1)</code> and <code>%nlmixed_1(Y=2)</code> first, then build <code>work.nlm_2y_starting</code> with the DATA step above (dropping the alpha rows) before calling <code>%nlmixed_MultiTraj</code>. The <code>/ data=</code> clause on the PARMS statement reads per-parameter starting values from the dataset, while <code>%starting_value_alpha</code> provides neutral starting values for the mixing intercepts. Starting the joint model cold significantly increases the risk of non-convergence.</div></div>
+
+  <div class="sec"><h2>Macro Arguments</h2><div class="rule"></div></div>
+  <div class="grid g2">
+    <div class="card"><div class="cb" style="padding-bottom:18px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">%nlmixed_1 (single-outcome model)</h3>
+      <table class="pt">
+        <tr><th>Argument</th><th>Type/Default</th><th>Description</th></tr>
+        <tr><td class="mo">T</td><td>integer <span class="req">REQUIRED</span></td><td>Number of time points.</td></tr>
+        <tr><td class="mo">LC</td><td>integer <span class="req">REQUIRED</span></td><td>Number of latent classes.</td></tr>
+        <tr><td class="mo">Y</td><td>integer (1 or 2) <span class="req">REQUIRED</span></td><td>Outcome index to model.</td></tr>
+        <tr><td class="mo">starting</td><td>text <span class="req">REQUIRED</span></td><td>Parameter starting values (alpha, beta, sigma).</td></tr>
+        <tr><td class="mo">output</td><td>name <span class="req">REQUIRED</span></td><td>Output dataset for parameter estimates.</td></tr>
+        <tr><td class="mo">order</td><td>integer, default=2</td><td>Polynomial order for time.</td></tr>
+        <tr><td class="mo">equal_sigma</td><td>T/F, default=T</td><td>Whether residual variances are equal across classes.</td></tr>
+      </table>
+    </div></div>
+    <div class="card"><div class="cb" style="padding-bottom:18px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">%nlmixed_MultiTraj (joint two-outcome model)</h3>
+      <table class="pt">
+        <tr><th>Argument</th><th>Type/Default</th><th>Description</th></tr>
+        <tr><td class="mo">T</td><td>integer <span class="req">REQUIRED</span></td><td>Number of time points.</td></tr>
+        <tr><td class="mo">LC</td><td>integer <span class="req">REQUIRED</span></td><td>Number of latent classes.</td></tr>
+        <tr><td class="mo">starting</td><td>text <span class="req">REQUIRED</span></td><td>Parameter starting values for both outcomes.</td></tr>
+        <tr><td class="mo">output</td><td>name <span class="req">REQUIRED</span></td><td>Output dataset for parameter estimates.</td></tr>
+        <tr><td class="mo">order</td><td>integer, default=2</td><td>Polynomial order for both outcomes.</td></tr>
+        <tr><td class="mo">equal_sigma</td><td>T/F, default=T</td><td>Whether residual variances are equal across classes.</td></tr>
+      </table>
+    </div></div>
+    <div class="card"><div class="cb" style="padding-bottom:18px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">%sim_data_cont (continuous two-outcome simulator)</h3>
+      <table class="pt">
+        <tr><th>Argument</th><th>Type/Default</th><th>Description</th></tr>
+        <tr><td class="mo">class</td><td>integer, default=5</td><td>Number of latent classes to simulate.</td></tr>
+        <tr><td class="mo">n</td><td>integer, default=500</td><td>Number of subjects.</td></tr>
+        <tr><td class="mo">T</td><td>integer, default=12</td><td>Number of time points.</td></tr>
+        <tr><td class="mo">seed</td><td>integer, default=2026</td><td>Random-number seed.</td></tr>
+        <tr><td class="mo">miss_pattern</td><td>balanced/unbalanced, default=balanced</td><td>Whether all subjects are fully observed.</td></tr>
+        <tr><td class="mo">p_obs_min</td><td>numeric, default=0.6</td><td>Minimum observed fraction when unbalanced.</td></tr>
+        <tr><td class="mo">max_const</td><td>numeric, default=10</td><td>Upper censoring cap applied to both outcomes.</td></tr>
+        <tr><td class="mo">sigma1</td><td>numeric, default=1.0</td><td>Residual standard deviation, outcome 1.</td></tr>
+        <tr><td class="mo">sigma2</td><td>numeric, default=1.2</td><td>Residual standard deviation, outcome 2.</td></tr>
+      </table>
+    </div></div>
+    <div class="card"><div class="cb" style="padding-bottom:18px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">%plot_prep (observed-vs-predicted plots + posterior summary)</h3>
+      <table class="pt">
+        <tr><th>Argument</th><th>Type/Default</th><th>Description</th></tr>
+        <tr><td class="mo">T</td><td>integer <span class="req">REQUIRED</span></td><td>Number of time points.</td></tr>
+        <tr><td class="mo">LC</td><td>integer <span class="req">REQUIRED</span></td><td>Number of latent classes.</td></tr>
+        <tr><td class="mo">result</td><td>name <span class="req">REQUIRED</span></td><td>Parameter-estimates dataset from a fitting macro.</td></tr>
+        <tr><td class="mo">order</td><td>integer <span class="req">REQUIRED</span></td><td>Polynomial order used in the fit.</td></tr>
+        <tr><td class="mo">equal_sigma</td><td>T/F <span class="req">REQUIRED</span></td><td>Must match the residual-variance setting used in the fit.</td></tr>
+      </table>
+    </div></div>
+  </div>
+
+  <div class="sec"><h2>Example Fit Statistics (Joint Two-Outcome, Simulated Data)</h2><div class="rule"></div></div>
+  <div class="card"><div class="cb" style="padding-bottom:18px"><table class="pt" style="max-width:480px">
+    <tr><th>Statistic</th><th>Value</th></tr>
+    <tr><td>−2 log L</td><td>27,469</td></tr>
+    <tr><td>AIC</td><td>27,513</td></tr>
+    <tr><td>AICC</td><td>27,515</td></tr>
+    <tr><td>BIC</td><td>27,605</td></tr>
+    <tr><td>Number of parameters</td><td>22</td></tr>
+    <tr><td>Subjects (N)</td><td>500</td></tr>
+  </table><p style="font-size:12px;color:var(--muted)">Joint two-outcome example: C = 3, T = 12, second-order polynomial, simulated data. Full warm-start pipeline runs in ~11 s (the joint fit alone takes ~5.6 s).</p></div></div>
+
+  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>Validate your cap vector.</strong> Censored observations are recognized by exact equality with the supplied upper and lower bounds. If a cap value is lower than any actual observed outcome, cases at that cap are presumed to lie in the interior of the support and contribute no censored component. Always validate the cap values against the maximum of the sample for each outcome.</div></div>
 
 </div></div>
 
@@ -229,52 +466,53 @@ and P(yᵢₜ | j) depends on the outcome distribution
       <div class="mexp-icon ci-pu">🔢</div>
       <div><h2>Ordinal-Probit Latent-Class Trajectory Model</h2><div class="mexp-sub">Authors: Haiqun Lin, Anum Zafar</div></div>
     </div>
-    <p>For bounded ordered categorical outcomes such as activities of daily living (ADL) grades, frailty indices, pain severity, and cognitive screening scores, <strong>Traj2</strong> assumes a latent continuous variable Y* whose class-conditional mean is a polynomial function of time. The observed category probabilities are differences of standard-normal cumulative distribution functions evaluated at class-specific thresholds:</p>
-    <div class="eq">η_k(t) = β_k0 + β_k1·t + β_k2·t² + ...       [class-specific mean of Y*]
+    <p>For bounded, ordered scales such as activities of daily living (ADL), frailty indices, and cognitive screening scores, <strong>Traj2</strong> uses a class-specific cumulative probit. For an ordinal outcome with M ordered categories taking value m in {0, 1, ..., M−1}, each class j has a latent index that is a polynomial in time, together with class-specific thresholds:</p>
+    <div class="eq">η_jt = β_j0 + β_j1·t + ... + β_jd·t^d        [class-specific latent index]
 
-P(Y = j | class k, t) = Φ(τ_k,j − η_k(t)) − Φ(τ_k,j-1 − η_k(t))
+P(Y_t = m | X = j) = Φ(τ_j,m+1 − η_jt) − Φ(τ_j,m − η_jt)
+with τ_j,0 = −∞, τ_j,M = +∞, and Φ the standard normal CDF.
 
-Thresholds (parameterized to ensure strict ordering):
-  τ_k,1 = i_k1
-  τ_k,j = τ_k,j-1 + exp(i_k,j)   for j ≥ 2</div>
-    <p>The use of <strong>exp-incremented thresholds</strong> is a key design choice. Parameterizing threshold gaps as exp(i_k,j) rather than raw differences automatically guarantees τ_k,1 &lt; τ_k,2 &lt; τ_k,3 &lt; ... without requiring constrained optimization, which substantially improves numerical stability in PROC NLMIXED relative to a raw-threshold parameterization.</p>
-    <p><strong>Identifiability.</strong> In the cumulative probit, the location of the latent scale is determined jointly by the polynomial intercept β_k0 and the first threshold i_k,1; only one of them can be identified. PROC NLMIXED will typically report a Moore–Penrose generalized inverse and missing standard errors for one of these parameters. This is expected and does not affect estimated category probabilities, posterior assignments, or trajectory shapes. Clean standard errors are obtained by fixing all β_k0 = 0, or alternatively all i_k,1 = 0, in starting values. The library never fits α_A (Class A reference logit) for the same reason; it is pinned to zero internally.</p>
+Thresholds (built from exponential increments):
+  τ_j,1 = 0                                   [FIXED]
+  τ_j,m = τ_j,m−1 + exp(i_j,m),  m = 2, ..., M−1</div>
+    <p>Building the thresholds from <strong>exponential increments</strong> ensures the ordering τ<sub>j,m</sub> &gt; τ<sub>j,m−1</sub> in a way that standard nonlinear optimizers can handle: exp(·) &gt; 0 guarantees strict monotonicity without constrained optimization.</p>
+    <p><strong>Identification.</strong> The lowest threshold is fixed at τ<sub>j,1</sub> = 0 and the class intercept β<sub>j0</sub> is estimated freely; this identifies the location of each class's latent index, so the free threshold parameters are only the increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub>. Users wishing to provide their own starting values need only enter the increments and need not provide a value for the first threshold. The Class A mixing logit is likewise fixed to zero for identification — never include it in start_values. Fixing τ<sub>j,1</sub> = 0 removes the location aliasing between β<sub>j0</sub> and the first threshold, so the model is fully identified and standard errors are estimable: in validation, all 200 Monte Carlo replications returned non-missing, positive standard errors for every free parameter.</p>
     <div class="use">
       <span class="use-item">ADL / IADL functional status</span>
       <span class="use-item">Frailty index grades</span>
       <span class="use-item">Cognitive screening scores</span>
-      <span class="use-item">Pain severity scales</span>
-      <span class="use-item">Any 0–M bounded ordinal outcome</span>
+      <span class="use-item">Any 0–(M−1) bounded ordinal outcome</span>
     </div>
   </div>
 
   <div class="sec"><h2>Files</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card">
-      <div class="ch"><div class="ci ci-pu">📄</div><div class="cm"><h3>Ordinal-Probit SAS Program</h3><span class="fn">discrete_ordinal_final.docx</span></div><span class="badge b-sas">SAS Code</span></div>
+      <div class="ch"><div class="ci ci-pu">📄</div><div class="cm"><h3>Ordinal-Probit SAS Program</h3><span class="fn">discrete_ordinal_final.sas</span></div><span class="badge b-sas">SAS Code</span></div>
       <div class="cb">
         <ul class="kl">
-          <li><code>%sim_data</code> provides 3 distribution families: BIN4 (Binomial-like), TPOIS4 (truncated Poisson), CAT5 (categorical); optional monotone missingness via <code>miss_pattern=</code></li>
-          <li><code>%build_base_from_simwide</code> builds BASE_FILE_SRS with BENE_ID, quar1..quarT = 0..T-1, and Y1_1..Y1_T</li>
-          <li><code>%ordprob_mix_fit_one</code> runs one NLMIXED call; Class A alpha fixed to 0 (reference); exp-incremented thresholds guarantee ordered categories</li>
-          <li><code>%ordprob_mix_plot_one</code> draws the class proportion barplot (softmax weights) + predicted E[Y|class] trajectory curves</li>
-          <li>Outputs: <code>&lt;prefix&gt;_EST_Kk</code> (estimates), <code>_FIT_Kk</code> (BIC), <code>_ESTS_Kk</code> (thresholds on natural scale)</li>
+          <li><strong>Setup:</strong> <code>%include "/path/to/traj2/discrete_ordinal_final.sas";</code> — no compilation required; runs identically in desktop SAS and the CMS VRDC</li>
+          <li><code>%sim_data</code> provides 3 data-generating processes: BIN4 and TPOIS4 (class-specific trajectory structure) and CAT5 (categories drawn uniformly); optional unbalanced missingness via <code>miss_pattern=</code>; <code>cap=</code> sets the highest category index</li>
+          <li><code>%build_base_from_simwide(T=)</code> builds BASE_FILE_SRS with BENE_ID, time indices quar1–quarT (1, ..., T), and Y1_1–Y1_T</li>
+          <li><code>%ordprob_mix_fit_one</code> runs the fit: Class A mixing logit fixed to 0, first threshold fixed at 0 (β<sub>j0</sub> free), exp-incremented thresholds guarantee ordered categories</li>
+          <li>The fit produces a ParameterEstimates dataset containing class-specific threshold and polynomial coefficients, posterior class-membership probabilities for each subject, and fit statistics for comparing candidate C values</li>
+          <li><code>%ordprob_mix_plot_one</code> draws the class-proportion barplot and predicted E[Y<sub>t</sub> | class] trajectory curves</li>
         </ul>
       </div>
       <div class="cf">
-        <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/discrete_ordinal_final.docx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download Code</a>
-        <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/discrete_ordinal_final.docx" target="_blank">View on GitHub</a>
+        <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/discrete_ordinal_final.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download Code</a>
+        <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/discrete_ordinal_final.sas" target="_blank">View on GitHub</a>
       </div>
     </div>
     <div class="card">
       <div class="ch"><div class="ci ci-gr">📘</div><div class="cm"><h3>Ordinal-Probit User Guide</h3><span class="fn">discrete_ordinal_user_guide.docx</span></div><span class="badge b-guide">User Guide</span></div>
       <div class="cb">
         <ul class="kl">
-          <li>Full argument reference for all 4 macros: dist, class, n, T, seed, miss_pattern, sigma_re, cap, deg, k, qpoints, start_values, bounds</li>
-          <li>Model equations with derivation: η_k(t), exp-threshold construction, P(Y=j) as Φ differences</li>
-          <li>Identifiability section: β_k0 vs i_k,1 competition; when to expect Moore–Penrose inverse in NLMIXED log; which parameter to fix</li>
-          <li>Minimal data prep: converting any wide dataset to include quar1..quarT = 0..T-1</li>
-          <li>Pre-run checklist: 5 items before fitting on real CMS data (data types, category coding, missing pattern, qpoints choice)</li>
+          <li>Full argument reference: data, id, yvars, tvars, ttotal, m, ycodes, deg, k, maxiter, tech, start_values, bounds, outestlib, prefix</li>
+          <li>Model equations with derivation: η<sub>jt</sub>, exp-increment threshold construction with τ<sub>j,1</sub> = 0 fixed, P(Y=m) as Φ differences</li>
+          <li>Identification section: τ<sub>j,1</sub> fixed at 0 with β<sub>j0</sub> free; supply only increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub> in starting values; never include the Class A mixing logit</li>
+          <li>Minimal data prep: converting any wide dataset to include quar1–quarT = 1, ..., T</li>
+          <li>Pre-run checklist before fitting on real CMS data (data types, category coding vs. ycodes, missing pattern)</li>
         </ul>
       </div>
       <div class="cf">
@@ -286,111 +524,91 @@ Thresholds (parameterized to ensure strict ordering):
 
   <div class="sec"><h2>Quick Start</h2><div class="rule"></div></div>
   <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">SAS · Ordinal-Probit Quick Start</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
-  <pre><code><span class="c">/* 1. Simulate ordinal data */</span>
-<span class="f">%sim_data</span>(dist=BIN4, class=<span class="n">4</span>, n=<span class="n">2000</span>, T=<span class="n">12</span>, seed=<span class="n">1</span>, cap=<span class="n">4</span>);
+  <pre><code><span class="c">/* 1. Simulate a four-category ordinal outcome (cap=3 gives values 0..3) */</span>
+<span class="f">%sim_data</span>(dist=BIN4, class=<span class="n">3</span>, n=<span class="n">500</span>, T=<span class="n">12</span>, seed=<span class="n">2026</span>, cap=<span class="n">3</span>);
 
-<span class="c">/* 2. Build BASE_FILE_SRS (adds quar1..quar12 = 0..11) */</span>
+<span class="c">/* 2. Build BASE_FILE_SRS (adds time indices quar1..quar12 = 1..12) */</span>
 <span class="f">%build_base_from_simwide</span>(T=<span class="n">12</span>);
 
-<span class="c">/* 3. Set K classes, M categories, polynomial degree */</span>
-<span class="k">%let</span> K=<span class="n">4</span>; <span class="k">%let</span> M=<span class="n">4</span>; <span class="k">%let</span> DEG=<span class="n">2</span>;
-
-<span class="c">/* Optional starting values - DO NOT include alpha0_A (fixed to 0) */</span>
-<span class="k">%let</span> STARTS=<span class="f">%str</span>(alpha0_B=-<span class="n">.5</span> alpha0_C=-<span class="n">.2</span> alpha0_D=<span class="n">0</span>
-  beta_a0=<span class="n">0</span> beta_a1=<span class="n">0</span> beta_a2=<span class="n">0</span>  ia1=<span class="n">0</span> ia2=<span class="n">0</span> ia3=<span class="n">0</span>);
-
-<span class="c">/* 4. Fit model */</span>
+<span class="c">/* 3. Fit the C=3 quadratic ordinal-probit model.
+      start_values= left blank: all parameters start at zero. */</span>
 <span class="f">%ordprob_mix_fit_one</span>(
-  data=BASE_FILE_SRS,  id=BENE_ID,
-  yvars=Y1_1-Y1_12,  tvars=quar1-quar12,  ttotal=<span class="n">12</span>,
-  m=&amp;M,  ycodes=<span class="n">0 1 2 3</span>,  deg=&amp;DEG,  k=&amp;K,
-  qpoints=<span class="n">40</span>,  start_values=&amp;STARTS,
-  outestlib=work,  prefix=ordprob_K4
+  data=BASE_FILE_SRS, id=BENE_ID,
+  yvars=Y1_1-Y1_12, tvars=quar1-quar12, ttotal=<span class="n">12</span>,
+  m=<span class="n">4</span>, ycodes=<span class="n">0 1 2 3</span>, deg=<span class="n">2</span>, k=<span class="n">3</span>,
+  prefix=ordprob_T1C3
 );
 
-<span class="c">/* 5. Plot */</span>
+<span class="c">/* 4. Plot class proportions + predicted trajectories */</span>
 <span class="f">%ordprob_mix_plot_one</span>(
-  outestlib=work, prefix=ordprob_K4,
-  k=&amp;K, ttotal=<span class="n">12</span>, m=&amp;M, ycodes=<span class="n">0 1 2 3</span>
+  outestlib=work, prefix=ordprob_T1C3,
+  k=<span class="n">3</span>, ttotal=<span class="n">12</span>, m=<span class="n">4</span>, ycodes=<span class="n">0 1 2 3</span>
 );</code></pre></div>
 
-  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>Identifiability Note: Expected Behavior</strong>"Moore–Penrose inverse" warnings and missing SEs in PROC NLMIXED output are expected due to the β_k0 / i_k,1 location competition. They do not affect model fit, posterior probabilities, or predicted trajectory shapes. To get clean SEs: fix all β*0 = 0 in start_values (or fix all i*1 = 0). Never include alpha0_A in start_values; it is fixed to 0 internally.</div></div>
+  <div class="al al-info"><div class="al-icon">ℹ️</div><div class="al-body"><strong>Identification: what to supply in start_values.</strong> The lowest threshold τ<sub>j,1</sub> is fixed at 0 and β<sub>j0</sub> is freely estimated, so the model is fully identified and standard errors are estimable. If you supply your own starting values, enter only the threshold increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub> — do not provide a value for the first threshold, and never include the Class A mixing logit (fixed to 0 internally). Setting cap=3 in the simulator makes the outcome take the four values {0, 1, 2, 3}, matching m=4 and ycodes=0 1 2 3.</div></div>
+
+  <div class="sec"><h2>%ordprob_mix_fit_one Arguments</h2><div class="rule"></div></div>
+  <div class="card"><div class="cb" style="padding-bottom:18px"><table class="pt">
+    <tr><th>Argument</th><th>Type/Default</th><th>Description</th></tr>
+    <tr><td class="mo">data</td><td>name, default=BASE_FILE_SRS</td><td>Input wide-format dataset.</td></tr>
+    <tr><td class="mo">id</td><td>name, default=BENE_ID</td><td>Subject identifier variable.</td></tr>
+    <tr><td class="mo">yvars</td><td>varlist <span class="req">REQUIRED</span></td><td>Repeated-measure outcome variables (e.g., Y1_1-Y1_12).</td></tr>
+    <tr><td class="mo">tvars</td><td>varlist <span class="req">REQUIRED</span></td><td>Time-index variables (e.g., quar1-quar12).</td></tr>
+    <tr><td class="mo">ttotal</td><td>integer, default=12</td><td>Number of time points.</td></tr>
+    <tr><td class="mo">m</td><td>integer, default=4</td><td>Number of ordinal categories.</td></tr>
+    <tr><td class="mo">ycodes</td><td>list, default=0 1 2 3</td><td>Category codes for the outcome.</td></tr>
+    <tr><td class="mo">deg</td><td>integer, default=2</td><td>Polynomial degree for class-specific mean trajectories.</td></tr>
+    <tr><td class="mo">k</td><td>integer, default=4</td><td>Number of latent classes (C).</td></tr>
+    <tr><td class="mo">maxiter</td><td>integer, default=1000</td><td>Maximum optimizer iterations.</td></tr>
+    <tr><td class="mo">tech</td><td>name, default=dbldog</td><td>PROC NLMIXED optimization technique.</td></tr>
+    <tr><td class="mo">start_values</td><td>text <span class="opt">OPTIONAL</span></td><td>User-specified parameter starting values (increments only; blank = all zero).</td></tr>
+    <tr><td class="mo">bounds</td><td>text <span class="opt">OPTIONAL</span></td><td>Parameter bounds for stability (e.g., %str(-6 &lt; beta_a0 &lt; 6)).</td></tr>
+    <tr><td class="mo">outestlib</td><td>libref, default=work</td><td>Library for the output datasets.</td></tr>
+    <tr><td class="mo">prefix</td><td>name, default=ordprob_single</td><td>Prefix for output dataset names.</td></tr>
+  </table></div></div>
+
+  <div class="sec"><h2>Simulator &amp; Plotting Arguments</h2><div class="rule"></div></div>
+  <div class="grid g2">
+    <div class="card"><div class="cb" style="padding-bottom:18px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">%sim_data (ordinal simulator)</h3>
+      <table class="pt">
+        <tr><th>Argument</th><th>Type/Default</th><th>Description</th></tr>
+        <tr><td class="mo">dist</td><td>name, default=BIN4</td><td>DGP: BIN4, TPOIS4, or CAT5. BIN4 and TPOIS4 induce class-specific trajectory structure; CAT5 draws categories uniformly.</td></tr>
+        <tr><td class="mo">class</td><td>integer, default=4</td><td>Number of latent classes to simulate.</td></tr>
+        <tr><td class="mo">n</td><td>integer, default=2000</td><td>Number of subjects.</td></tr>
+        <tr><td class="mo">T</td><td>integer, default=12</td><td>Number of time points.</td></tr>
+        <tr><td class="mo">seed</td><td>integer, default=1</td><td>Random-number seed.</td></tr>
+        <tr><td class="mo">miss_pattern</td><td>balanced/unbalanced, default=balanced</td><td>Whether all subjects are fully observed.</td></tr>
+        <tr><td class="mo">p_obs_min</td><td>numeric, default=0.6</td><td>Minimum observed fraction when unbalanced.</td></tr>
+        <tr><td class="mo">sigma_re</td><td>numeric, default=0.4</td><td>Subject-level random-effect standard deviation.</td></tr>
+        <tr><td class="mo">cap</td><td>integer, default=4</td><td>Highest category index; outcome takes values 0, 1, ..., cap.</td></tr>
+      </table>
+    </div></div>
+    <div class="card"><div class="cb" style="padding-bottom:18px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">%ordprob_mix_plot_one (class-proportion + trajectory plots)</h3>
+      <table class="pt">
+        <tr><th>Argument</th><th>Type/Default</th><th>Description</th></tr>
+        <tr><td class="mo">outestlib</td><td>libref, default=work</td><td>Library holding the fit output datasets.</td></tr>
+        <tr><td class="mo">prefix</td><td>name, default=ordprob_single</td><td>Output-dataset prefix; must match the prefix= used in the fit.</td></tr>
+        <tr><td class="mo">k</td><td>integer, default=4</td><td>Number of latent classes in the fit.</td></tr>
+        <tr><td class="mo">ttotal</td><td>integer, default=12</td><td>Number of time points.</td></tr>
+        <tr><td class="mo">m</td><td>integer, default=4</td><td>Number of ordinal categories.</td></tr>
+        <tr><td class="mo">ycodes</td><td>list, default=0 1 2 3</td><td>Category codes for the outcome.</td></tr>
+      </table>
+    </div></div>
+  </div>
 
 </div></div>
 
-<!-- ==================== CONTINUOUS ==================== -->
-<div id="t-continuous" class="tab"><div class="wrap">
-
-  <div class="mexp">
-    <div class="mexp-title">
-      <div class="mexp-icon ci-am">📉</div>
-      <div><h2>Censored-Normal GBTM for Two Continuous Outcomes</h2><div class="mexp-sub">Authors: Weiyi Xia, Haiqun Lin, Anum Zafar</div></div>
-    </div>
-    <p>For continuous outcomes restricted to a bounded support (for example, utilization measures with a known per-period maximum, or biomarker readings with floor or ceiling effects), standard linear GBTM places probability mass outside the supported range and biases trajectory estimates near the boundaries. The <strong>censored-normal</strong> (Tobit) specification addresses this by treating the outcome as a latent Gaussian that is observed only within [L_t, U_t]: a value that would fall beyond a bound is recorded <em>at</em> that bound, placing a probability mass at L_t and U_t rather than discarding it. Bounds may be one-sided (lower only or upper only) or two-sided, and may vary across time points.</p>
-    <div class="eq">μ_k(t) = β_k0 + β_k1·t + β_k2·t² + ...   [class-specific mean]
-
-Censored-normal (Tobit) likelihood contribution at time t,
-with z = (y − μ_k(t)) / σ_k:
-
-  y = L_t   (lower-censored):   Φ((L_t − μ_k(t)) / σ_k)
-  L_t<y<U_t (observed exactly): (1/σ_k) · φ(z)
-  y = U_t   (upper-censored):   1 − Φ((U_t − μ_k(t)) / σ_k)
-
-The interior contributes a Gaussian density; each active bound
-contributes the probability mass of the latent tail beyond it.</div>
-    <p>The bounds (L_t, U_t) must be stored as actual data columns in BASE_FILE_SRS, not just as macro variable values. The <code>%build_base_file_srs</code> macro handles this, which is easy to overlook and causes silent errors if done manually.</p>
-    <p>The library extends single-outcome estimation to <strong>joint two-outcome</strong> models in which two co-evolving continuous measures share a common latent-class structure. Subjects in Class A have one trajectory for Outcome 1 and a separate trajectory for Outcome 2, subjects in Class B have different trajectories for each, and so on. This reveals how two correlated processes (for example, two complementary care utilization measures) co-evolve within each subpopulation. The joint formulation assumes conditional independence between the two outcomes given class and time.</p>
-    <p><strong>Why warm starts matter.</strong> The joint K-class parameter space is substantially larger than either single-outcome space. Cold starts from zero frequently land in local maxima or fail to converge. The library therefore enforces a warm-start workflow: <code>%nlmixed_1(Y=1)</code> and <code>%nlmixed_1(Y=2)</code> are run first to obtain single-outcome estimates, which are automatically written to <code>work.nlm_2y_starting</code> and read by <code>%nlmixed_MultiTraj</code> as starting values for the joint optimization.</p>
-    <div class="use">
-      <span class="use-item">Home health + inpatient (joint)</span>
-      <span class="use-item">HCC scores (bounded range)</span>
-      <span class="use-item">Cost trajectories with ceiling</span>
-      <span class="use-item">Two correlated bounded outcomes</span>
-    </div>
-  </div>
-
-  <div class="sec"><h2>Source Code</h2><div class="rule"></div></div>
-  <div class="card">
-    <div class="ch"><div class="ci ci-am">📄</div><div class="cm"><h3>Continuous 2-Outcome Trajectories</h3><span class="fn">Continuous_2_outcomes.docx</span></div><span class="badge b-sas">SAS Code</span></div>
-    <div class="cb">
-      <ul class="kl">
-        <li><strong>Step 0:</strong> Global settings only. Set <code>USE_SIM</code>, <code>T</code>, <code>class</code>, <code>order_model</code>, <code>equal</code>, <code>max_values</code>, <code>y1vars</code>, <code>y2vars</code>, <code>idvar</code></li>
-        <li><strong>Step 1:</strong> <code>%sim_data_cont</code> simulates two correlated outcomes with bounds at <code>max_values</code></li>
-        <li><strong>Step 2:</strong> <code>%build_base_file_srs</code> is the critical step, adding real CAP1..CAP&T variable columns (not just macro values)</li>
-        <li><strong>Step 3:</strong> Macro library, with <code>%Prob_cnorm</code> (censored-normal likelihood), float-control helpers, <code>%Posterior</code> (class membership)</li>
-        <li><strong>Step 4:</strong> Run order is <code>%nlmixed_1(Y=1)</code> → <code>%nlmixed_1(Y=2)</code> → <code>%nlmixed_MultiTraj</code> (reads warm starts from <code>nlm_2y_starting</code>) → <code>%plot_prep</code></li>
-      </ul>
-    </div>
-    <div class="cf">
-      <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/Continuous_2_outcomes.docx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download .docx</a>
-      <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/Continuous_2_outcomes.docx" target="_blank">View on GitHub</a>
-    </div>
-  </div>
-
-  <div class="sec"><h2>Step 0: Global Settings (Edit These Only)</h2><div class="rule"></div></div>
-  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">SAS · Global Settings</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
-  <pre><code><span class="k">%let</span> <span class="v">USE_SIM</span>     = <span class="n">1</span>;    <span class="c">/* 1=use simulator, 0=use real BASE_FILE_SRS */</span>
-<span class="k">%let</span> <span class="v">T</span>          = <span class="n">12</span>;   <span class="c">/* number of time points */</span>
-<span class="k">%let</span> <span class="v">class</span>      = <span class="n">5</span>;    <span class="c">/* number of latent classes */</span>
-<span class="k">%let</span> <span class="v">order_model</span>= <span class="n">3</span>;    <span class="c">/* 1=linear, 2=quadratic, 3=cubic */</span>
-<span class="k">%let</span> <span class="v">equal</span>      = T;   <span class="c">/* T=equal sigma across classes, F=class-specific */</span>
-<span class="k">%let</span> <span class="v">max_values</span> = <span class="n">10 10 10 10 10 10 10 10 10 10 10 10</span>; <span class="c">/* upper bounds per quarter */</span>
-<span class="k">%let</span> <span class="v">y1vars</span>     = QHH1-QHH12;    <span class="c">/* Outcome 1: e.g., home health visits */</span>
-<span class="k">%let</span> <span class="v">y2vars</span>     = QINP1-QINP12;  <span class="c">/* Outcome 2: e.g., inpatient days */</span>
-<span class="k">%let</span> <span class="v">idvar</span>      = BENE_ID;
-<span class="k">%let</span> <span class="v">tvars</span>      = quar1-quar12;</code></pre></div>
-
-  <div class="al al-tip"><div class="al-icon">💡</div><div class="al-body"><strong>Run order matters.</strong>Always run <code>%nlmixed_1(Y=1,...)</code> and <code>%nlmixed_1(Y=2,...)</code> before the joint call. The joint macro <code>%nlmixed_MultiTraj</code> reads warm starts from <code>work.nlm_2y_starting</code>, built automatically by the single-outcome runs. Skipping this causes the joint model to start cold and significantly increases risk of non-convergence.</div></div>
-
-</div></div>
-
-<!-- ==================== ZIP (UNCHANGED) ==================== -->
+<!-- ==================== ZIP ==================== -->
 <div id="t-zip" class="tab"><div class="wrap">
+
+  <div class="al al-warn"><div class="al-icon">🚧</div><div class="al-body"><strong>Prototype — not part of the current Traj2 release.</strong> The ZIP macro (%ct_zip_pois_nlmixed), with a numerically stable log-sum-exp evaluation of the zero-mass probability, is already in the repository and undergoing quality assurance. Interfaces and behavior may change before release. The released outcome families are censored-normal continuous and ordinal-probit.</div></div>
 
   <div class="mexp">
     <div class="mexp-title">
       <div class="mexp-icon ci-bl">📊</div>
-      <div><h2>Zero-Inflated Poisson (ZIP) Trajectories</h2><div class="mexp-sub">Author: Anum Zafar · Last updated 02/09/2026</div></div>
+      <div><h2>Zero-Inflated Poisson (ZIP) Trajectories</h2><div class="mexp-sub">Author: Anum Zafar · Prototype under QA · Last updated 02/09/2026</div></div>
     </div>
     <p>The ZIP model addresses a fundamental challenge in healthcare count data: the presence of far more zeros than a standard Poisson distribution can accommodate. In Medicare claims data, many beneficiaries have zero utilization in a given quarter, not because they were never at risk, but because the underlying care process generates both <strong>structural zeros</strong> (individuals who would not use the service regardless) and <strong>sampling zeros</strong> (individuals who happen not to use it in that period). ZIP separates these two processes explicitly.</p>
     <p>For each class k and time point t, ZIP models the outcome Y as a two-component mixture:</p>
@@ -413,7 +631,7 @@ where  μₖ(t) = exp(β₀ₖ + β₁ₖ·t + β₂ₖ·t²)      [mean count t
   <div class="sec"><h2>Files</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card">
-      <div class="ch"><div class="ci ci-bl">📄</div><div class="cm"><h3>ZIP Poisson SAS Program</h3><span class="fn">zip_poisson.sas</span></div><span class="badge b-sas">SAS Code</span></div>
+      <div class="ch"><div class="ci ci-bl">📄</div><div class="cm"><h3>ZIP Poisson SAS Program</h3><span class="fn">zip_poisson.sas</span></div><span class="badge b-proto">Prototype · SAS</span></div>
       <div class="cb">
         <ul class="kl">
           <li><strong>[A]</strong> <code>%sim_data</code>: bounded-count simulator (BIN4, TPOIS4, or CAT5 distributions)</li>
@@ -423,7 +641,7 @@ where  μₖ(t) = exp(β₀ₖ + β₁ₖ·t + β₂ₖ·t²)      [mean count t
           <li><strong>[E]</strong> <code>%ct_zip_plots</code>: class-specific ZIP mean curves + mixture-mean overlay</li>
           <li><strong>[F]</strong> Example run: set nclass, class_labels, order, T; then execute sections C–E</li>
         </ul>
-        <div class="tags"><span class="tag">ZIP</span><span class="tag">Poisson</span><span class="tag">Count outcomes</span><span class="tag">Zero inflation</span></div>
+        <div class="tags"><span class="tag">ZIP</span><span class="tag">Poisson</span><span class="tag">Count outcomes</span><span class="tag">Zero inflation</span><span class="tag">Under QA</span></div>
       </div>
       <div class="cf">
         <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/zip_poisson.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download .SAS</a>
@@ -450,7 +668,7 @@ where  μₖ(t) = exp(β₀ₖ + β₁ₖ·t + β₂ₖ·t²)      [mean count t
   </div>
 
   <div class="sec"><h2>Quick Start</h2><div class="rule"></div></div>
-  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">SAS · ZIP Quick Start</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
+  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">SAS · ZIP Quick Start (prototype)</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
   <pre><code><span class="c">/* 1. Simulate test data */</span>
 <span class="f">%sim_data</span>(dist=BIN4, class=<span class="n">4</span>, n=<span class="n">5000</span>, T=<span class="n">12</span>, seed=<span class="n">1</span>);
 
@@ -504,13 +722,15 @@ ods html5 close;</code></pre></div>
 
 </div></div>
 
-<!-- ==================== ZINB (UNCHANGED) ==================== -->
+<!-- ==================== ZINB ==================== -->
 <div id="t-zinb" class="tab"><div class="wrap">
+
+  <div class="al al-warn"><div class="al-icon">🚧</div><div class="al-body"><strong>Prototype — not part of the current Traj2 release.</strong> The ZINB macro (%ct_zinb_nlmixed) is already in the repository and undergoing quality assurance. Interfaces and behavior may change before release. The released outcome families are censored-normal continuous and ordinal-probit.</div></div>
 
   <div class="mexp">
     <div class="mexp-title">
       <div class="mexp-icon ci-te">📈</div>
-      <div><h2>Zero-Inflated Negative Binomial (ZINB) Trajectories</h2><div class="mexp-sub">Author: Anum Zafar · Last updated 02/09/2026</div></div>
+      <div><h2>Zero-Inflated Negative Binomial (ZINB) Trajectories</h2><div class="mexp-sub">Author: Anum Zafar · Prototype under QA · Last updated 02/09/2026</div></div>
     </div>
     <p>The ZINB model extends ZIP by relaxing the Poisson assumption that variance equals the mean. In Medicare data (where a small fraction of high-need beneficiaries accounts for a disproportionate share of utilization), count variance routinely <em>far</em> exceeds the mean even within a given class. This extra-Poisson variability is called <strong>overdispersion</strong>, and ignoring it inflates standard errors and distorts trajectory shapes.</p>
     <p>ZINB achieves this by replacing the Poisson component with a Negative Binomial (NB2) distribution. NB2 is obtained by allowing the Poisson rate λ to itself be Gamma-distributed: λ ~ Gamma(k, μ/k), then Y | λ ~ Poisson(λ). The resulting marginal distribution has mean μ and variance μ + μ²/k, where k is the class-specific <strong>dispersion parameter</strong>. As k → ∞, variance → mean and ZINB collapses to ZIP. Small k indicates severe overdispersion.</p>
@@ -532,7 +752,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   <div class="sec"><h2>Source Code &amp; ZIP vs ZINB Comparison</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card">
-      <div class="ch"><div class="ci ci-te">📄</div><div class="cm"><h3>ZINB Latent-Class Trajectories</h3><span class="fn">ZINB_LatentClass_Trajectories.docx</span></div><span class="badge b-sas">SAS Code</span></div>
+      <div class="ch"><div class="ci ci-te">📄</div><div class="cm"><h3>ZINB Latent-Class Trajectories</h3><span class="fn">ZINB_LatentClass_Trajectories.docx</span></div><span class="badge b-proto">Prototype · SAS</span></div>
       <div class="cb">
         <ul class="kl">
           <li>Gamma-Poisson mixture simulator: structural zero with prob p(t); else draws λ ~ Gamma(k, μ/k), then Y ~ Poisson(λ)</li>
@@ -559,7 +779,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   </div>
 
   <div class="sec"><h2>Quick Start</h2><div class="rule"></div></div>
-  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">SAS · ZINB Quick Start</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
+  <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">SAS · ZINB Quick Start (prototype)</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
   <pre><code><span class="c">/* ZINB-specific: add NB dispersion starting values (logk) */</span>
 <span class="k">%let</span> <span class="v">logk_A</span>=<span class="n">0.00</span>;  <span class="c">/* k = exp(0) = 1, moderate dispersion */</span>
 <span class="k">%let</span> <span class="v">logk_B</span>=<span class="n">0.18</span>;  <span class="c">/* k ≈ 1.20, slightly less dispersed */</span>
@@ -579,28 +799,32 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
 
 <!-- ==================== DOWNLOADS ==================== -->
 <div id="t-downloads" class="tab"><div class="wrap">
-  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>Repo is currently private.</strong> Download links go to GitHub raw files. If you get a 404, request collaborator access from Anum Zafar, or make the repo public under Settings → Change visibility. The header "Download All (.zip)" fetches the full archive.</div></div>
+  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>Repo is currently private.</strong> Download links go to GitHub raw files. If you get a 404, request collaborator access from Anum Zafar, or make the repo public under Settings → Change visibility. The header "Download All (.zip)" fetches the full archive. An archival release is also available at <a href="https://doi.org/10.17605/OSF.IO/6FG5J" target="_blank" style="color:var(--teal)">doi.org/10.17605/OSF.IO/6FG5J</a>.</div></div>
 
-  <div class="sec"><h2>SAS Source Code</h2><div class="rule"></div></div>
+  <div class="sec"><h2>Released SAS Source Code</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card">
-      <div class="ch"><div class="ci ci-pu">🖥</div><div class="cm"><h3>Ordinal-Probit Model</h3><span class="fn">discrete_ordinal_final.docx</span></div><span class="badge b-sas">SAS · DOCX</span></div>
-      <div class="cb"><p>Cumulative ordinal-probit latent-class GBTM with exp-incremented thresholds. Authors: Haiqun Lin, Anum Zafar.</p></div>
-      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/discrete_ordinal_final.docx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/discrete_ordinal_final.docx" target="_blank">View on GitHub</a></div>
+      <div class="ch"><div class="ci ci-pu">🖥</div><div class="cm"><h3>Ordinal-Probit Model</h3><span class="fn">discrete_ordinal_final.sas</span></div><span class="badge b-sas">SAS · Released</span></div>
+      <div class="cb"><p>Cumulative ordinal-probit latent-class GBTM with exp-incremented thresholds (τ<sub>j,1</sub> fixed at 0, β<sub>j0</sub> free). Load with <code style="font-size:11px">%include</code>. Authors: Haiqun Lin, Anum Zafar.</p></div>
+      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/discrete_ordinal_final.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/discrete_ordinal_final.sas" target="_blank">View on GitHub</a></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ci ci-am">🖥</div><div class="cm"><h3>Continuous 2-Outcome Model</h3><span class="fn">Continuous_2_outcomes.docx</span></div><span class="badge b-sas">SAS · DOCX</span></div>
-      <div class="cb"><p>Joint censored-normal GBTM for two simultaneous bounded outcomes with warm-start pipeline. Authors: Weiyi Xia, Haiqun Lin, Anum Zafar.</p></div>
-      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/Continuous_2_outcomes.docx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/Continuous_2_outcomes.docx" target="_blank">View on GitHub</a></div>
+      <div class="ch"><div class="ci ci-am">🖥</div><div class="cm"><h3>Continuous Single &amp; Two-Outcome Model</h3><span class="fn">continuous_2_outcomes.sas</span></div><span class="badge b-sas">SAS · Released</span></div>
+      <div class="cb"><p>Censored-normal GBTM: single-outcome and joint two-outcome (multi-trajectory) with warm-start pipeline. Load with <code style="font-size:11px">%include</code>. Authors: Weiyi Xia, Haiqun Lin, Anum Zafar.</p></div>
+      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/continuous_2_outcomes.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/continuous_2_outcomes.sas" target="_blank">View on GitHub</a></div>
     </div>
+  </div>
+
+  <div class="sec"><h2>Prototype Source Code (Under QA — Not Part of the Current Release)</h2><div class="rule"></div></div>
+  <div class="grid g2">
     <div class="card">
-      <div class="ch"><div class="ci ci-bl">🖥</div><div class="cm"><h3>ZIP Poisson Model</h3><span class="fn">zip_poisson.sas</span></div><span class="badge b-sas">SAS · RTF</span></div>
-      <div class="cb"><p>6 sections: simulator, input prep, starting values, ZIP modeling macros, plotting, example. Author: Anum Zafar.</p></div>
+      <div class="ch"><div class="ci ci-bl">🖥</div><div class="cm"><h3>ZIP Poisson Model</h3><span class="fn">zip_poisson.sas</span></div><span class="badge b-proto">Prototype</span></div>
+      <div class="cb"><p>6 sections: simulator, input prep, starting values, ZIP modeling macros, plotting, example. Undergoing quality assurance. Author: Anum Zafar.</p></div>
       <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/zip_poisson.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/zip_poisson.sas" target="_blank">View on GitHub</a></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ci ci-te">🖥</div><div class="cm"><h3>ZINB Model</h3><span class="fn">ZINB_LatentClass_Trajectories.docx</span></div><span class="badge b-sas">SAS · DOCX</span></div>
-      <div class="cb"><p>Zero-Inflated Negative Binomial with NB2 dispersion (logk parameter). Author: Anum Zafar.</p></div>
+      <div class="ch"><div class="ci ci-te">🖥</div><div class="cm"><h3>ZINB Model</h3><span class="fn">ZINB_LatentClass_Trajectories.docx</span></div><span class="badge b-proto">Prototype</span></div>
+      <div class="cb"><p>Zero-Inflated Negative Binomial with NB2 dispersion (logk parameter). Undergoing quality assurance. Author: Anum Zafar.</p></div>
       <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/ZINB_LatentClass_Trajectories.docx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/ZINB_LatentClass_Trajectories.docx" target="_blank">View on GitHub</a></div>
     </div>
   </div>
@@ -608,13 +832,13 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   <div class="sec"><h2>User Guides</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card">
-      <div class="ch"><div class="ci ci-gr">📘</div><div class="cm"><h3>Ordinal-Probit User Guide</h3><span class="fn">discrete_ordinal_user_guide.docx</span></div><span class="badge b-guide">User Guide</span></div>
-      <div class="cb"><p>Full argument reference, model equations, identifiability guidance, minimal data prep example, and pre-run checklist.</p></div>
+      <div class="ch"><div class="ci ci-gr">📘</div><div class="cm"><h3>Ordinal-Probit User Guide</h3><span class="fn">discrete_ordinal_user_guide.docx</span></div><span class="badge b-guide">User Guide · CC-BY 4.0</span></div>
+      <div class="cb"><p>Full argument reference (Table 4 of the paper), model equations, identification guidance (τ<sub>j,1</sub> = 0 fixed, increments only in start_values), minimal data prep example, and pre-run checklist.</p></div>
       <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/discrete_ordinal_user_guide.docx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/discrete_ordinal_user_guide.docx" target="_blank">View on GitHub</a></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ci ci-gr">📘</div><div class="cm"><h3>ZIP Poisson User Guide</h3><span class="fn">POission_Final_User_Guide_79__70_.docx</span></div><span class="badge b-guide">User Guide</span></div>
-      <div class="cb"><p>14-step guide: prerequisites, quick start, data prep, starting values, running the model, plotting, PNG export, customization, parameter naming, reproducibility checklist, 3-class mini-example.</p></div>
+      <div class="ch"><div class="ci ci-gr">📘</div><div class="cm"><h3>ZIP Poisson User Guide</h3><span class="fn">POission_Final_User_Guide_79__70_.docx</span></div><span class="badge b-guide">User Guide · CC-BY 4.0</span></div>
+      <div class="cb"><p>14-step guide: prerequisites, quick start, data prep, starting values, running the model, plotting, PNG export, customization, parameter naming, reproducibility checklist, 3-class mini-example. (Accompanies the ZIP prototype.)</p></div>
       <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/POission_Final_User_Guide_79__70_.docx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/POission_Final_User_Guide_79__70_.docx" target="_blank">View on GitHub</a></div>
     </div>
   </div>
@@ -629,7 +853,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
     <div class="card">
       <div class="ch"><div class="ci ci-am">📊</div><div class="cm"><h3>Testing Brief</h3><span class="fn">GBTM_Macros_Testing_Brief.pptx</span></div><span class="badge b-pptx">PPTX · 8 slides</span></div>
       <div class="cb"><p>8-slide analyst brief with test plan, quick-start code, customization checklist, and runtime estimates.</p></div>
-      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/GBTM_Macros_Testing_Brief.pptx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download PPTX</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/GBTM_Macros_Testing_Brief.pptx" target="_blank">View on GitHub</a></div>
+      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/GBTM_Macros_Testing_Brief.pptx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download Brief</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/GBTM_Macros_Testing_Brief.pptx" target="_blank">View on GitHub</a></div>
     </div>
   </div>
 </div></div>
@@ -638,26 +862,25 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
 <div id="t-docker" class="tab"><div class="wrap">
   <div class="dh">
     <h2>Docker: Run Traj2 Without Local Setup</h2>
-    <p>A prebuilt Docker image with the full macro library, simulators, and entrypoint scripts is published to GitHub Container Registry. Pull, mount your licensed SAS installation, and run any model with a single command.</p>
+    <p>A companion Docker container with the full macro library, simulators, and entrypoint scripts. Pull, mount your licensed SAS installation, and run any released model with a single command.</p>
     <div class="dh-meta">
-      <span class="dc">Image: ghcr.io/ru-aging/traj2:1.0.0</span>
-      <span class="dc">Requires: Licensed SAS 9.4+</span>
-      <span class="dc">Size: ~80 MB (excluding SAS)</span>
+      <span class="dc">Image: chao-lab/gbtm-macros:1.0.0</span>
+      <span class="dc">Requires: user-supplied licensed SAS 9.4+ mounted at /opt/sas</span>
     </div>
   </div>
 
-  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>SAS license required.</strong>The image does not bundle SAS, since that would violate SAS Institute's licensing terms. You mount your own licensed SAS 9.4+ installation read-only at <code>/opt/sas</code> when you run the container.</div></div>
+  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>SAS license required.</strong> The image does not bundle SAS, since that would violate SAS Institute's licensing terms. You mount your own licensed SAS 9.4+ installation read-only at <code>/opt/sas</code> when you run the container.</div></div>
 
   <div class="sec"><h2>Pull the Image</h2><div class="rule"></div></div>
   <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">Shell</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
-<pre><code>docker pull ghcr.io/ru-aging/traj2:1.0.0</code></pre></div>
+<pre><code>docker pull chao-lab/gbtm-macros:1.0.0</code></pre></div>
 
   <div class="sec"><h2>Validate Your Setup</h2><div class="rule"></div></div>
   <p style="font-size:13.5px;color:var(--muted);margin-bottom:10px">Confirm the image can find and run your SAS installation:</p>
   <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">Shell</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
 <pre><code>docker run --rm \
   -v /path/to/your/sas:/opt/sas:ro \
-  ghcr.io/ru-aging/traj2:1.0.0 validate</code></pre></div>
+  chao-lab/gbtm-macros:1.0.0 validate</code></pre></div>
 
   <div class="sec"><h2>Run a Model</h2><div class="rule"></div></div>
   <p style="font-size:13.5px;color:var(--muted);margin-bottom:10px">Fit a 4-class ordinal-probit model on data in <code>./data</code>, with outputs written to <code>./output</code>:</p>
@@ -666,10 +889,10 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   -v /path/to/your/sas:/opt/sas:ro \
   -v "$PWD/data":/opt/gbtm/data \
   -v "$PWD/output":/opt/gbtm/output \
-  ghcr.io/ru-aging/traj2:1.0.0 \
+  chao-lab/gbtm-macros:1.0.0 \
   run --model=ordinal --nclass=4 --order=2</code></pre></div>
 
-  <p style="font-size:13.5px;color:var(--muted);margin-top:14px;margin-bottom:10px">Available models: <code>ordinal</code>, <code>continuous</code>, <code>zip</code>, <code>zinb</code>.</p>
+  <p style="font-size:13.5px;color:var(--muted);margin-top:14px;margin-bottom:10px">Released models: <code>ordinal</code>, <code>continuous</code>. Prototype models (<code>zip</code>, <code>zinb</code>) are included for QA testing only.</p>
 
   <div class="sec"><h2>Or Use Docker Compose</h2><div class="rule"></div></div>
   <p style="font-size:13.5px;color:var(--muted);margin-bottom:10px">Copy <code>docker-compose.yml</code> from the repo, set <code>SAS_HOME</code> in a <code>.env</code> file, then:</p>
@@ -680,11 +903,11 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   <div class="grid g2">
     <div class="card"><div class="cb" style="padding-bottom:18px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Pre-loaded macros</h3>
-      <p style="font-size:13px">All four model families (Ordinal-Probit, Censored-Normal continuous, ZIP, ZINB), simulators, and plotting utilities at <code>/opt/gbtm/macros</code>.</p>
+      <p style="font-size:13px">Both released model families (Ordinal-Probit and Censored-Normal continuous), the ZIP/ZINB prototypes, simulators, and plotting utilities at <code>/opt/gbtm/macros</code>.</p>
     </div></div>
     <div class="card"><div class="cb" style="padding-bottom:18px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Entrypoint commands</h3>
-      <p style="font-size:13px"><code>help</code>, <code>validate</code>, <code>list</code>, <code>run</code>, and <code>shell</code>; invoke with <code>docker run … ghcr.io/ru-aging/traj2:1.0.0 &lt;command&gt;</code>.</p>
+      <p style="font-size:13px"><code>help</code>, <code>validate</code>, <code>list</code>, <code>run</code>, and <code>shell</code>; invoke with <code>docker run … chao-lab/gbtm-macros:1.0.0 &lt;command&gt;</code>.</p>
     </div></div>
     <div class="card"><div class="cb" style="padding-bottom:18px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Bring your own SAS</h3>
@@ -692,11 +915,11 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
     </div></div>
     <div class="card"><div class="cb" style="padding-bottom:18px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Reproducible tags</h3>
-      <p style="font-size:13px">Image tags match the Git release tags one-to-one. <code>v1.0.0</code> on GitHub builds <code>:1.0.0</code> on GHCR. <code>:latest</code> tracks the default branch.</p>
+      <p style="font-size:13px">Image tags match the Git release tags one-to-one; <code>:latest</code> tracks the default branch.</p>
     </div></div>
   </div>
 
-  <div class="al al-info"><div class="al-icon">ℹ️</div><div class="al-body"><strong>Linux/amd64 only.</strong>The image is built for x86_64. ARM (Apple Silicon) users need to invoke Docker with <code>--platform linux/amd64</code>; emulation works but is slower.</div></div>
+  <div class="al al-info"><div class="al-icon">ℹ️</div><div class="al-body"><strong>Linux/amd64 only.</strong> The image is built for x86_64. ARM (Apple Silicon) users need to invoke Docker with <code>--platform linux/amd64</code>; emulation works but is slower.</div></div>
 </div></div>
 
 <!-- ==================== QA ==================== -->
@@ -706,39 +929,39 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
     <tr><th>ID</th><th>Module</th><th>Scenario</th><th>Expected Result</th></tr>
     <tr><td class="mo">G01</td><td>General</td><td>PROC NLMIXED + ODS Graphics run</td><td>No license errors; plot renders</td></tr>
     <tr><td class="mo">G02</td><td>General</td><td>WORK library write access</td><td>WORK writable; no permission errors</td></tr>
-    <tr><td class="mo">O01</td><td>Ordinal</td><td>Simulator + base build</td><td>BASE_FILE_SRS with BENE_ID, quar1–quar12, Y1_1–Y1_12</td></tr>
+    <tr><td class="mo">O01</td><td>Ordinal</td><td>Simulator + base build</td><td>BASE_FILE_SRS with BENE_ID, quar1–quar12 (values 1–12), Y1_1–Y1_12</td></tr>
     <tr><td class="mo">O03</td><td>Ordinal</td><td>4-class fit + plotting</td><td>Proportion barplot + 4 predicted trajectories</td></tr>
     <tr><td class="mo">O06</td><td>Ordinal</td><td>Category mismatch (Y outside ycodes)</td><td>Error or near-zero probabilities; behavior documented</td></tr>
-    <tr><td class="mo">O07</td><td>Ordinal</td><td>Identifiability / SE behavior</td><td>"Moore–Penrose inverse" + missing SEs, expected</td></tr>
-    <tr><td class="mo">O08</td><td>Ordinal</td><td>start_values= overrides</td><td>Single PARMS; defaults + overrides; no duplicates</td></tr>
-    <tr><td class="mo">Z01</td><td>ZIP</td><td>Simulator basic run (BIN4)</td><td>SIM_LONG, SIM_WIDE created; y within 0..cap</td></tr>
-    <tr><td class="mo">Z04</td><td>ZIP</td><td>2-class baseline fit</td><td>Convergence; pe_zip and fit_zip exist</td></tr>
-    <tr><td class="mo">Z06</td><td>ZIP</td><td>4-class fit + plots</td><td>4 class curves + mixture mean render</td></tr>
-    <tr><td class="mo">Z07</td><td>ZIP</td><td>6-class fit (user guide example)</td><td>Convergence; AIC/BIC in fit_zip</td></tr>
-    <tr><td class="mo">Z09</td><td>ZIP</td><td>10-class stress test (A–J)</td><td>Single PARMS statement; 10 trajectories</td></tr>
-    <tr><td class="mo">Z10</td><td>ZIP</td><td>Mismatched nclass vs class_labels</td><td>SAS error or non-convergence documented</td></tr>
-    <tr><td class="mo">Z11</td><td>ZIP</td><td>Missing Y values handled</td><td>Model runs; missing skipped; no math errors</td></tr>
-    <tr><td class="mo">Z12</td><td>ZIP</td><td>PNG export via ODS HTML5</td><td>PNG in WORK; opens correctly</td></tr>
-    <tr><td class="mo">Z13</td><td>ZIP</td><td>All starts default to 0</td><td>Single PARMS, all 0 starts; no duplicates in log</td></tr>
-    <tr><td class="mo">Z15</td><td>ZIP</td><td>bounds= stabilizes fit</td><td>Convergence; bounds appear in NLMIXED log</td></tr>
+    <tr><td class="mo">O07</td><td>Ordinal</td><td>Identification / SE behavior</td><td>With τ_j,1 fixed at 0 and β_j0 free, all SEs estimable (non-missing, positive); no Moore–Penrose warnings</td></tr>
+    <tr><td class="mo">O08</td><td>Ordinal</td><td>start_values= overrides (increments only)</td><td>Single PARMS; defaults + overrides; no duplicates; first threshold never supplied</td></tr>
+    <tr><td class="mo">Z01</td><td>ZIP (proto)</td><td>Simulator basic run (BIN4)</td><td>SIM_LONG, SIM_WIDE created; y within 0..cap</td></tr>
+    <tr><td class="mo">Z04</td><td>ZIP (proto)</td><td>2-class baseline fit</td><td>Convergence; pe_zip and fit_zip exist</td></tr>
+    <tr><td class="mo">Z06</td><td>ZIP (proto)</td><td>4-class fit + plots</td><td>4 class curves + mixture mean render</td></tr>
+    <tr><td class="mo">Z07</td><td>ZIP (proto)</td><td>6-class fit (user guide example)</td><td>Convergence; AIC/BIC in fit_zip</td></tr>
+    <tr><td class="mo">Z09</td><td>ZIP (proto)</td><td>10-class stress test (A–J)</td><td>Single PARMS statement; 10 trajectories</td></tr>
+    <tr><td class="mo">Z10</td><td>ZIP (proto)</td><td>Mismatched nclass vs class_labels</td><td>SAS error or non-convergence documented</td></tr>
+    <tr><td class="mo">Z11</td><td>ZIP (proto)</td><td>Missing Y values handled</td><td>Model runs; missing skipped; no math errors</td></tr>
+    <tr><td class="mo">Z12</td><td>ZIP (proto)</td><td>PNG export via ODS HTML5</td><td>PNG in WORK; opens correctly</td></tr>
+    <tr><td class="mo">Z13</td><td>ZIP (proto)</td><td>All starts default to 0</td><td>Single PARMS, all 0 starts; no duplicates in log</td></tr>
+    <tr><td class="mo">Z15</td><td>ZIP (proto)</td><td>bounds= stabilizes fit</td><td>Convergence; bounds appear in NLMIXED log</td></tr>
   </table></div></div>
 
   <div class="sec"><h2>Runtime Estimates</h2><div class="rule"></div></div>
   <div class="grid g2">
-    <div class="card"><div class="cb" style="padding-bottom:18px"><h3 style="font-size:14px;font-weight:700;margin-bottom:10px">⏱ Hands-On Analyst Time</h3><ul class="kl">
+    <div class="card"><div class="cb" style="padding-bottom:18px"><h3 style="font-size:14px;font-weight:700;margin-bottom:10px">⏱ Hands-On Analyst Time (QA plan)</h3><ul class="kl">
       <li>Setup + sanity checks (G01–G02): <strong>15–30 min</strong></li>
       <li>Ordinal 4/6-class fits + confirm outputs: <strong>30–60 min</strong></li>
-      <li>ZIP 4/6-class fits + confirm outputs: <strong>20–40 min</strong></li>
+      <li>ZIP prototype 4/6-class fits + confirm outputs: <strong>20–40 min</strong></li>
       <li>Edge cases + log documentation: <strong>30–60 min</strong></li>
       <li>Package results (logs + screenshots): <strong>10–20 min</strong></li>
     </ul></div></div>
-    <div class="card"><div class="cb" style="padding-bottom:18px"><h3 style="font-size:14px;font-weight:700;margin-bottom:10px">🖥 Compute Wall-Clock Time</h3><ul class="kl">
-      <li>Ordinal 4-class (qpoints=40): <strong>~10–45 min</strong></li>
-      <li>Ordinal 6-class: <strong>~20–90 min</strong></li>
-      <li>ZIP 4-class (qpoints=1): <strong>~2–10 min</strong></li>
-      <li>ZIP 6-class: <strong>~5–25 min</strong></li>
-      <li>Total range: <strong>~40 min – 2.5 hrs</strong> (always run K=4 first)</li>
-    </ul></div></div>
+    <div class="card"><div class="cb" style="padding-bottom:18px"><h3 style="font-size:14px;font-weight:700;margin-bottom:10px">🖥 Published Fitting Times (SAS 9.4, server-side)</h3><table class="pt">
+      <tr><th>Example</th><th>N</th><th>Classes</th><th>T</th><th>Params</th><th>Wall-clock</th></tr>
+      <tr><td>Ordinal example</td><td>500</td><td>3</td><td>12</td><td>17</td><td>2.3 s</td></tr>
+      <tr><td>Joint two-outcome</td><td>500</td><td>3</td><td>12</td><td>22</td><td>11 s</td></tr>
+      <tr><td>Monte Carlo, per replication</td><td>2,500</td><td>3</td><td>12</td><td>22</td><td>19 s</td></tr>
+      <tr><td>VRDC application</td><td>181,463</td><td>10</td><td>20</td><td>59</td><td>53 min</td></tr>
+    </table><p style="font-size:12px;color:var(--muted)">The joint example timing refers to the complete warm-start pipeline (2 single-outcome fits + 1 joint fit); the joint fit alone takes ~5.6 s. Timings are server-side (Rutgers virtual analytic server; VRDC application on a CMS analytic server).</p></div></div>
   </div>
 
   <div class="sec"><h2>Download Testing Assets</h2><div class="rule"></div></div>
@@ -757,9 +980,13 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
 </div></div>
 
 <footer>
-  Community Health and Aging Outcome (CHAO) Lab · Rutgers University ·
+  Community Health and Aging Outcomes (CHAO) Lab · Institute for Health, Health Care Policy and Aging Research · Rutgers, The State University of New Jersey<br>
   <a href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model" target="_blank">GitHub Repository</a> ·
-  Last updated April 2026
+  <a href="https://ru-aging.github.io/AgingTrajectory_Library_NLMIXED-Model/" target="_blank">Documentation</a> ·
+  <a href="https://doi.org/10.17605/OSF.IO/6FG5J" target="_blank">Archival Release (OSF)</a> ·
+  MIT License (source code) · CC-BY 4.0 (documentation)<br>
+  Research reported here was funded by the National Institute on Aging of the National Institutes of Health under award numbers R01AG066139 and R33AG068931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the NIH.<br>
+  Last updated July 2026
 </footer>
 
 <script>

@@ -117,7 +117,7 @@ footer a{color:#64748b;text-decoration:none}
   <div class="hdr-top">
     <div class="lab">Community Health and Aging Outcomes (CHAO) Lab · Rutgers University</div>
     <h1>Traj2 <span>GBTM Macro Library</span> · Documentation Portal</h1>
-    <p>A native macro library for single and multi-outcome group-based trajectory modeling in SAS. The current release implements censored-normal continuous (single- and joint two-outcome) and ordinal-probit pipelines via PROC NLMIXED, with no externally compiled code — runs as-is in the CMS VRDC and other secure SAS environments. ZIP/ZINB count-outcome prototypes are in the repository and undergoing quality assurance.</p>
+    <p>A native macro library for single and multi-outcome group-based trajectory modeling in SAS. The current release implements censored-normal continuous (single- and joint two-outcome) and ordinal-probit pipelines via PROC NLMIXED, with no externally compiled code: runs as-is in the CMS VRDC and other secure SAS environments. ZIP/ZINB count-outcome prototypes are in the repository and undergoing quality assurance.</p>
     <div class="chips">
       <span class="chip">📅 February 2026</span>
       <span class="chip">👩‍💻 Anum Zafar · Weiyi Xia · Haiqun Lin · Bobby Jones · Olga F. Jarrín</span>
@@ -170,7 +170,7 @@ footer a{color:#64748b;text-decoration:none}
       <div class="mexp-icon ci-bl">🧭</div>
       <div><h2>Group-Based Trajectory Modeling</h2><div class="mexp-sub">Nagin (1999) · Finite Mixture Model · Maximum Likelihood via PROC NLMIXED</div></div>
     </div>
-    <p>Group-based trajectory modeling (GBTM) is a finite mixture model that stratifies the sample into a small number of latent groups, gives each group its own polynomial time trend, and jointly estimates the class shapes and mixing weights by maximum likelihood (Nagin 1999). Rather than estimating a single average trajectory for everyone — which typically fails to capture the heterogeneity visible in longitudinal data — GBTM partitions the population into C latent classes, each characterized by its own trajectory shape estimated as a polynomial function of time. These classes represent <strong>patterns rather than a typology</strong>: they are longitudinal strata, not sharply bounded natural categories.</p>
+    <p>Group-based trajectory modeling (GBTM) is a finite mixture model that stratifies the sample into a small number of latent groups, gives each group its own polynomial time trend, and jointly estimates the class shapes and mixing weights by maximum likelihood (Nagin 1999). Rather than estimating a single average trajectory for everyone, which typically fails to capture the heterogeneity visible in longitudinal data: GBTM partitions the population into C latent classes, each characterized by its own trajectory shape estimated as a polynomial function of time. These classes represent <strong>patterns rather than a typology</strong>: they are longitudinal strata, not sharply bounded natural categories.</p>
     <p>Each subject's observed longitudinal sequence contributes to the likelihood through two components: the <strong>class-membership probability</strong> π<sub>j</sub> (multinomial, constrained to sum to 1, with a clear interpretation as the expected class proportion) and the <strong>class-conditional distribution</strong> of the observed data given membership. Parameters are estimated jointly by maximum likelihood using the SAS internal optimizers of PROC NLMIXED (dual quasi-Newton and Newton-Raphson). The polynomial order can be linear, quadratic, cubic, or any order, and can differ between classes.</p>
     <div class="eq">P(Y) = Σ_{j=1..C} π_j · Π_{k=1..K} Π_{t=1..T} p(Y_t^k | X = j)
 
@@ -178,12 +178,12 @@ where X is the latent class (1..C), K ∈ {1,2} outcomes, T time points,
 and p(Y_t^k | X=j) is the class-conditional density
 (censored normal or cumulative ordinal probit in this release)</div>
     <p><strong>Assumptions.</strong> (1) Conditional independence over time: given class membership, responses at different time points are independent. (2) Conditional independence across outcomes: given class membership, there is no association between the two outcomes. Skipping missing time points in the likelihood is valid under ignorable missingness (missing at random); data missing not at random would require an explicit missingness model (Dodge et al. 2008).</p>
-    <p>The current release implements <strong>two outcome families</strong>: bounded ordinal scales (class-specific cumulative probit with exp-incremented thresholds) and continuous measures with bounded support (class-specific censored normal, with built-in estimation of joint two-outcome trajectories following the multi-trajectory framework of Nagin et al. 2018). Zero-inflated count prototypes (ZIP and ZINB) are in the repository and undergoing quality assurance — see Planned Extensions below.</p>
+    <p>The current release implements <strong>two outcome families</strong>: bounded ordinal scales (class-specific cumulative probit with exp-incremented thresholds) and continuous measures with bounded support (class-specific censored normal, with built-in estimation of joint two-outcome trajectories following the multi-trajectory framework of Nagin et al. 2018). Zero-inflated count prototypes (ZIP and ZINB) are in the repository and undergoing quality assurance: see Planned Extensions below.</p>
   </div>
 
   <div class="sec"><h2>Why a Native Implementation?</h2><div class="rule"></div></div>
   <div class="mexp">
-    <p>The well-known SAS procedure <strong>PROC TRAJ</strong> implements GBTM but relies on an externally compiled C dynamic-link library, which prevents its use in environments that restrict externally compiled code — most importantly the CMS <strong>Virtual Research Data Center (VRDC)</strong>, where an increasing amount of Medicare and Medicaid research is conducted, as well as VA data enclaves and other secure custodial platforms. <strong>Traj2</strong> expresses the GBTM marginal likelihood directly in PROC NLMIXED (included in SAS/STAT in every standard SAS distribution) with no compiled components, so the macros run as-is in the VRDC and with any version of SAS 9.4 and newer. Because the likelihoods are written in SAS macro language, analysts can read, edit, and extend them — adding outcome types the compiled procedure does not support, and diagnosing convergence problems that a black-box estimator would hide.</p>
+    <p>The well-known SAS procedure <strong>PROC TRAJ</strong> implements GBTM but relies on an externally compiled C dynamic-link library, which prevents its use in environments that restrict externally compiled code, most importantly the CMS <strong>Virtual Research Data Center (VRDC)</strong>, where an increasing amount of Medicare and Medicaid research is conducted, as well as VA data enclaves and other secure custodial platforms. <strong>Traj2</strong> expresses the GBTM marginal likelihood directly in PROC NLMIXED (included in SAS/STAT in every standard SAS distribution) with no compiled components, so the macros run as-is in the VRDC and with any version of SAS 9.4 and newer. Because the likelihoods are written in SAS macro language, analysts can read, edit, and extend them, adding outcome types the compiled procedure does not support, and diagnosing convergence problems that a black-box estimator would hide.</p>
   </div>
 
   <div class="sec"><h2>Models at a Glance</h2><div class="rule"></div></div>
@@ -241,7 +241,7 @@ and p(Y_t^k | X=j) is the class-conditional density
     </div>
     <div class="ov">
       <div class="oi">🎲</div><h3>Monte Carlo Bias &amp; Coverage</h3>
-      <p>Over 200 independent replications from the three-class censored-normal DGP (N = 2,500 each), the joint two-outcome model shows a maximum absolute bias of ≈ 0.011 on a 0–100 scale, and empirical 95% CI coverage from 0.930 to 0.975 (mean 0.953) — consistent with nominal coverage. A Monte Carlo scaffold with the design and seed is distributed with the package.</p>
+      <p>Over 200 independent replications from the three-class censored-normal DGP (N = 2,500 each), the joint two-outcome model shows a maximum absolute bias of ≈ 0.011 on a 0–100 scale, and empirical 95% CI coverage from 0.930 to 0.975 (mean 0.953), consistent with nominal coverage. A Monte Carlo scaffold with the design and seed is distributed with the package.</p>
       <span class="ob" style="background:#d1fae5;color:#065f46">Near-nominal coverage</span>
     </div>
     <div class="ov">
@@ -263,7 +263,7 @@ and p(Y_t^k | X=j) is the class-conditional density
       <div><h2>2019 Medicare Decedent Cohort · CMS VRDC</h2><div class="mexp-sub">Lin, April-Sanders, Zafar &amp; Jarrín (2026), manuscript submitted for publication</div></div>
     </div>
     <p>Using the ordinal-probit pipeline (<strong>%ordprob_mix_fit_one</strong>), cognitive function during the final five years of life was classified in a 10% random sample (<strong>N = 181,463</strong>) of Medicare beneficiaries older than 50 years who died in 2019. Assessments were quarterly over <strong>T = 20 quarters</strong>, in four categories of cognitive impairment (none, memory loss, mild, moderate-to-severe/dementia), with each class trajectory fitted as a quadratic function of time on the cumulative-probit scale.</p>
-    <p>Models with 2–11 classes were fit; by BIC, a <strong>ten-class solution</strong> was preferred. Recovered trajectories ranged from a large group with near-stable cognition (35.9% of the sample) to a group severely impaired for the entire duration (12.1%). Reproducibility was confirmed by refitting over several different 10% random samples, each returning the same ten-class solution. The entire analysis was carried out <strong>inside the restricted CMS VRDC</strong>, where PROC TRAJ's compiled binary is unavailable — precisely the setting that motivated Traj2 — and demonstrates scalability: 181,463 subjects, 20 time points, ten latent classes (59 parameters), fit in ~53 minutes wall-clock.</p>
+    <p>Models with 2–11 classes were fit; by BIC, a <strong>ten-class solution</strong> was preferred. Recovered trajectories ranged from a large group with near-stable cognition (35.9% of the sample) to a group severely impaired for the entire duration (12.1%). Reproducibility was confirmed by refitting over several different 10% random samples, each returning the same ten-class solution. The entire analysis was carried out <strong>inside the restricted CMS VRDC</strong>, where PROC TRAJ's compiled binary is unavailable, precisely the setting that motivated Traj2, and demonstrates scalability: 181,463 subjects, 20 time points, ten latent classes (59 parameters), fit in ~53 minutes wall-clock.</p>
   </div>
 
   <div class="sec"><h2>Planned Extensions (Under Testing)</h2><div class="rule"></div></div>
@@ -299,12 +299,12 @@ and p(Y_t^k | X=j) is the class-conditional density
       <div class="mexp-icon ci-am">📉</div>
       <div><h2>Censored-Normal GBTM: Single &amp; Joint Two-Outcome</h2><div class="mexp-sub">Authors: Weiyi Xia, Haiqun Lin, Anum Zafar</div></div>
     </div>
-    <p>For continuous outcomes with a lower and/or upper bound — common in clinical biomarker data that cannot be measured below the limit of quantitation, and in bounded count data approximated as continuous — <strong>Traj2</strong> uses a censored-normal (Tobit) density. With the class-specific latent mean μ<sub>jt</sub> = β<sub>j0</sub> + β<sub>j1</sub>t + ... + β<sub>jd</sub>t<sup>d</sup>, and φ, Φ the standard normal density and CDF, the class-conditional contribution at time t is:</p>
+    <p>For continuous outcomes with a lower and/or upper bound, common in clinical biomarker data that cannot be measured below the limit of quantitation, and in bounded count data approximated as continuous, <strong>Traj2</strong> uses a censored-normal (Tobit) density. With the class-specific latent mean μ<sub>jt</sub> = β<sub>j0</sub> + β<sub>j1</sub>t + ... + β<sub>jd</sub>t<sup>d</sup>, and φ, Φ the standard normal density and CDF, the class-conditional contribution at time t is:</p>
     <div class="eq">p(Y_t | X = j) =
   σ_j⁻¹ φ((Y_t − μ_jt)/σ_j)    if L < Y_t < U   (observed exactly)
   Φ((L − μ_jt)/σ_j)            if Y_t = L        (lower-censored)
   1 − Φ((U − μ_jt)/σ_j)        if Y_t = U        (upper-censored)</div>
-    <p>The density over the interior is <strong>not renormalized</strong> over [L, U]; the bounds carry positive probability mass — as opposed to a truncated normal, which would renormalize the interior density and give the bounds no mass. This matches the <strong>CNORM family in PROC TRAJ</strong>. Censoring is determined by an <em>exact equality</em> of Y<sub>t</sub> to a bound: the user-supplied cap vector must exactly match the ceiling of the data. If a cap value is lower than any actual observed outcome, cases at that cap are treated as interior and contribute no censored component — always validate the cap values against the maximum of the sample.</p>
+    <p>The density over the interior is <strong>not renormalized</strong> over [L, U]; the bounds carry positive probability mass, as opposed to a truncated normal, which would renormalize the interior density and give the bounds no mass. This matches the <strong>CNORM family in PROC TRAJ</strong>. Censoring is determined by an <em>exact equality</em> of Y<sub>t</sub> to a bound: the user-supplied cap vector must exactly match the ceiling of the data. If a cap value is lower than any actual observed outcome, cases at that cap are treated as interior and contribute no censored component, always validate the cap values against the maximum of the sample.</p>
     <p>The <strong>joint two-outcome</strong> model links two co-evolving continuous measures through a shared latent-class structure, following the multi-trajectory framework of Nagin et al. (2018): the latent class is a subject-level attribute, and each class has one trajectory per outcome. The model assumes conditional independence over time and across the two outcomes, given class membership.</p>
     <p><strong>Why warm starts matter.</strong> The joint optimization is more prone to convergence failure because of its sensitivity to starting values. Traj2 therefore uses a warm-start pipeline: the two outcomes are first fit separately with <code>%nlmixed_1</code>, their parameter estimates are stacked (dropping the mixing intercepts) into <code>work.nlm_2y_starting</code>, and <code>%nlmixed_MultiTraj</code> reads these per-parameter starting values via the <code>/ data=</code> clause on the PARMS statement, while <code>%starting_value_alpha</code> provides neutral starting values for the mixing intercepts.</p>
     <div class="use">
@@ -320,7 +320,7 @@ and p(Y_t^k | X=j) is the class-conditional density
     <div class="ch"><div class="ci ci-am">📄</div><div class="cm"><h3>Continuous Single &amp; Two-Outcome Trajectories</h3><span class="fn">continuous_2_outcomes.sas</span></div><span class="badge b-sas">SAS Code</span></div>
     <div class="cb">
       <ul class="kl">
-        <li><strong>Setup:</strong> <code>%include "/path/to/traj2/continuous_2_outcomes.sas";</code> — no compilation or external package installation required; runs identically in desktop SAS and the CMS VRDC</li>
+        <li><strong>Setup:</strong> <code>%include "/path/to/traj2/continuous_2_outcomes.sas";</code>, no compilation or external package installation required; runs identically in desktop SAS and the CMS VRDC</li>
         <li><strong>Global settings:</strong> set <code>USE_SIM</code>, <code>T</code>, <code>class</code>, <code>order_model</code>, <code>equal</code>, <code>max_values</code>, <code>y1vars</code>, <code>y2vars</code>, <code>idvar</code>, <code>tvars</code>; once set, these are read by every macro in the workflow</li>
         <li><strong>Simulation:</strong> with <code>USE_SIM=1</code>, sourcing the library calls <code>%sim_data_cont</code> and assembles the wide-format <code>BASE_FILE_SRS</code> table automatically</li>
         <li><strong>Starting values:</strong> produced by helper macros <code>%starting_value_alpha</code> (class-membership intercepts, class A fixed to 0 for identification) and <code>%starting_value_beta_sigma</code> (polynomial coefficients and residual-scale parameters at neutral values)</li>
@@ -476,7 +476,7 @@ Thresholds (built from exponential increments):
   τ_j,1 = 0                                   [FIXED]
   τ_j,m = τ_j,m−1 + exp(i_j,m),  m = 2, ..., M−1</div>
     <p>Building the thresholds from <strong>exponential increments</strong> ensures the ordering τ<sub>j,m</sub> &gt; τ<sub>j,m−1</sub> in a way that standard nonlinear optimizers can handle: exp(·) &gt; 0 guarantees strict monotonicity without constrained optimization.</p>
-    <p><strong>Identification.</strong> The lowest threshold is fixed at τ<sub>j,1</sub> = 0 and the class intercept β<sub>j0</sub> is estimated freely; this identifies the location of each class's latent index, so the free threshold parameters are only the increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub>. Users wishing to provide their own starting values need only enter the increments and need not provide a value for the first threshold. The Class A mixing logit is likewise fixed to zero for identification — never include it in start_values. Fixing τ<sub>j,1</sub> = 0 removes the location aliasing between β<sub>j0</sub> and the first threshold, so the model is fully identified and standard errors are estimable: in validation, all 200 Monte Carlo replications returned non-missing, positive standard errors for every free parameter.</p>
+    <p><strong>Identification.</strong> The lowest threshold is fixed at τ<sub>j,1</sub> = 0 and the class intercept β<sub>j0</sub> is estimated freely; this identifies the location of each class's latent index, so the free threshold parameters are only the increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub>. Users wishing to provide their own starting values need only enter the increments and need not provide a value for the first threshold. The Class A mixing logit is likewise fixed to zero for identification, never include it in start_values. Fixing τ<sub>j,1</sub> = 0 removes the location aliasing between β<sub>j0</sub> and the first threshold, so the model is fully identified and standard errors are estimable: in validation, all 200 Monte Carlo replications returned non-missing, positive standard errors for every free parameter.</p>
     <div class="use">
       <span class="use-item">ADL / IADL functional status</span>
       <span class="use-item">Frailty index grades</span>
@@ -491,7 +491,7 @@ Thresholds (built from exponential increments):
       <div class="ch"><div class="ci ci-pu">📄</div><div class="cm"><h3>Ordinal-Probit SAS Program</h3><span class="fn">discrete_ordinal_final.sas</span></div><span class="badge b-sas">SAS Code</span></div>
       <div class="cb">
         <ul class="kl">
-          <li><strong>Setup:</strong> <code>%include "/path/to/traj2/discrete_ordinal_final.sas";</code> — no compilation required; runs identically in desktop SAS and the CMS VRDC</li>
+          <li><strong>Setup:</strong> <code>%include "/path/to/traj2/discrete_ordinal_final.sas";</code>, no compilation required; runs identically in desktop SAS and the CMS VRDC</li>
           <li><code>%sim_data</code> provides 3 data-generating processes: BIN4 and TPOIS4 (class-specific trajectory structure) and CAT5 (categories drawn uniformly); optional unbalanced missingness via <code>miss_pattern=</code>; <code>cap=</code> sets the highest category index</li>
           <li><code>%build_base_from_simwide(T=)</code> builds BASE_FILE_SRS with BENE_ID, time indices quar1–quarT (1, ..., T), and Y1_1–Y1_T</li>
           <li><code>%ordprob_mix_fit_one</code> runs the fit: Class A mixing logit fixed to 0, first threshold fixed at 0 (β<sub>j0</sub> free), exp-incremented thresholds guarantee ordered categories</li>
@@ -545,7 +545,7 @@ Thresholds (built from exponential increments):
   k=<span class="n">3</span>, ttotal=<span class="n">12</span>, m=<span class="n">4</span>, ycodes=<span class="n">0 1 2 3</span>
 );</code></pre></div>
 
-  <div class="al al-info"><div class="al-icon">ℹ️</div><div class="al-body"><strong>Identification: what to supply in start_values.</strong> The lowest threshold τ<sub>j,1</sub> is fixed at 0 and β<sub>j0</sub> is freely estimated, so the model is fully identified and standard errors are estimable. If you supply your own starting values, enter only the threshold increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub> — do not provide a value for the first threshold, and never include the Class A mixing logit (fixed to 0 internally). Setting cap=3 in the simulator makes the outcome take the four values {0, 1, 2, 3}, matching m=4 and ycodes=0 1 2 3.</div></div>
+  <div class="al al-info"><div class="al-icon">ℹ️</div><div class="al-body"><strong>Identification: what to supply in start_values.</strong> The lowest threshold τ<sub>j,1</sub> is fixed at 0 and β<sub>j0</sub> is freely estimated, so the model is fully identified and standard errors are estimable. If you supply your own starting values, enter only the threshold increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub>, do not provide a value for the first threshold, and never include the Class A mixing logit (fixed to 0 internally). Setting cap=3 in the simulator makes the outcome take the four values {0, 1, 2, 3}, matching m=4 and ycodes=0 1 2 3.</div></div>
 
   <div class="sec"><h2>%ordprob_mix_fit_one Arguments</h2><div class="rule"></div></div>
   <div class="card"><div class="cb" style="padding-bottom:18px"><table class="pt">
@@ -603,7 +603,7 @@ Thresholds (built from exponential increments):
 <!-- ==================== ZIP ==================== -->
 <div id="t-zip" class="tab"><div class="wrap">
 
-  <div class="al al-warn"><div class="al-icon">🚧</div><div class="al-body"><strong>Prototype — not part of the current Traj2 release.</strong> The ZIP macro (%ct_zip_pois_nlmixed), with a numerically stable log-sum-exp evaluation of the zero-mass probability, is already in the repository and undergoing quality assurance. Interfaces and behavior may change before release. The released outcome families are censored-normal continuous and ordinal-probit.</div></div>
+  <div class="al al-warn"><div class="al-icon">🚧</div><div class="al-body"><strong>Prototype, not part of the current Traj2 release.</strong> The ZIP macro (%ct_zip_pois_nlmixed), with a numerically stable log-sum-exp evaluation of the zero-mass probability, is already in the repository and undergoing quality assurance. Interfaces and behavior may change before release. The released outcome families are censored-normal continuous and ordinal-probit.</div></div>
 
   <div class="mexp">
     <div class="mexp-title">
@@ -725,7 +725,7 @@ ods html5 close;</code></pre></div>
 <!-- ==================== ZINB ==================== -->
 <div id="t-zinb" class="tab"><div class="wrap">
 
-  <div class="al al-warn"><div class="al-icon">🚧</div><div class="al-body"><strong>Prototype — not part of the current Traj2 release.</strong> The ZINB macro (%ct_zinb_nlmixed) is already in the repository and undergoing quality assurance. Interfaces and behavior may change before release. The released outcome families are censored-normal continuous and ordinal-probit.</div></div>
+  <div class="al al-warn"><div class="al-icon">🚧</div><div class="al-body"><strong>Prototype, not part of the current Traj2 release.</strong> The ZINB macro (%ct_zinb_nlmixed) is already in the repository and undergoing quality assurance. Interfaces and behavior may change before release. The released outcome families are censored-normal continuous and ordinal-probit.</div></div>
 
   <div class="mexp">
     <div class="mexp-title">
@@ -815,7 +815,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
     </div>
   </div>
 
-  <div class="sec"><h2>Prototype Source Code (Under QA — Not Part of the Current Release)</h2><div class="rule"></div></div>
+  <div class="sec"><h2>Prototype Source Code (Under QA, Not Part of the Current Release)</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card">
       <div class="ch"><div class="ci ci-bl">🖥</div><div class="cm"><h3>ZIP Poisson Model</h3><span class="fn">zip_poisson.sas</span></div><span class="badge b-proto">Prototype</span></div>

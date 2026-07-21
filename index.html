@@ -63,7 +63,8 @@ svg.ico{width:14px;height:14px;fill:currentColor;flex-shrink:0}
 .cpbtn{background:rgba(255,255,255,.1);color:#94a3b8;border:none;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer}
 .cpbtn:hover{background:rgba(255,255,255,.2);color:#fff}
 pre{padding:16px;overflow-x:auto;line-height:1.75}
-code{font-family:'Courier New',monospace;color:#e2e8f0}
+code{font-family:'Courier New',monospace;color:var(--navy2);background:var(--light);padding:1px 5px;border-radius:3px}
+pre code{color:#e2e8f0;background:none;padding:0;border-radius:0}
 .k{color:#93c5fd}.s{color:#86efac}.n{color:#fcd34d}.f{color:#c4b5fd}.v{color:#fdba74}.c{color:#5a6a7e}
 .pt{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
 .pt th{background:var(--navy);color:#fff;padding:9px 14px;text-align:left;font-size:11px;letter-spacing:.8px;text-transform:uppercase}
@@ -802,8 +803,6 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
 
 <!-- ==================== DOWNLOADS ==================== -->
 <div id="t-downloads" class="tab"><div class="wrap">
-  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>Repo is currently private.</strong> Download links go to GitHub raw files. If you get a 404, request collaborator access from Anum Zafar, or make the repo public under Settings → Change visibility. The header "Download All (.zip)" fetches the full archive. An archival release is also available at <a href="https://doi.org/10.17605/OSF.IO/6FG5J" target="_blank" style="color:var(--teal)">doi.org/10.17605/OSF.IO/6FG5J</a>.</div></div>
-
   <div class="sec"><h2>Released SAS Source Code</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card">
@@ -811,10 +810,14 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
       <div class="cb"><p>Cumulative ordinal-probit latent-class GBTM with exp-incremented thresholds (τ<sub>j,1</sub> fixed at 0, β<sub>j0</sub> free). Load with <code style="font-size:11px">%include</code>. Authors: Haiqun Lin, Anum Zafar.</p></div>
       <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/ordinal_probit.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/ordinal_probit.sas" target="_blank">View on GitHub</a></div>
     </div>
-    <div class="cf">
-      <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/continuous_2outcomes.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download .SAS</a>
-      <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/continuous_2outcomes.sas" target="_blank">View on GitHub</a>
-      <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/Data%20Dictionary%20continuous_2outcomes.pdf" download>Data Dictionary (PDF)</a>
+    <div class="card">
+      <div class="ch"><div class="ci ci-am">🖥</div><div class="cm"><h3>Continuous Single &amp; Two-Outcome Model</h3><span class="fn">continuous_2outcomes.sas</span></div><span class="badge b-sas">SAS · Released</span></div>
+      <div class="cb"><p>Censored-normal GBTM: single-outcome and joint two-outcome (multi-trajectory) with warm-start pipeline. Load with <code style="font-size:11px">%include</code>. Authors: Weiyi Xia, Haiqun Lin, Anum Zafar.</p></div>
+      <div class="cf">
+        <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/continuous_2outcomes.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download .SAS</a>
+        <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/continuous_2outcomes.sas" target="_blank">View on GitHub</a>
+        <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/Data%20Dictionary%20continuous_2outcomes.pdf" download>Data Dictionary (PDF)</a>
+      </div>
     </div>
   </div>
 

@@ -285,7 +285,7 @@ and p(Y_t^k | X=j) is the class-conditional density
     <tr><td><strong>Repository</strong></td><td class="mo"><a href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model" target="_blank" style="color:var(--teal)">https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model</a></td></tr>
     <tr><td><strong>Archival release</strong></td><td class="mo"><a href="https://doi.org/10.17605/OSF.IO/6FG5J" target="_blank" style="color:var(--teal)">https://doi.org/10.17605/OSF.IO/6FG5J</a></td></tr>
     <tr><td><strong>License</strong></td><td>MIT License (source code); CC-BY 4.0 (documentation)</td></tr>
-    <tr><td><strong>Docker container</strong></td><td class="mo">chao-lab/gbtm-macros:1.0.0</td></tr>
+    <tr><td><strong>Docker container</strong></td><td class="mo">chaolab/gbtm-macros:1.0.0</td></tr>
     <tr><td><strong>Requirements</strong></td><td>SAS 9.4 or newer with PROC NLMIXED (SAS/STAT); runs on Windows, Linux, and within the CMS VRDC; no compiled components outside SAS.</td></tr>
   </table></div></div>
 
@@ -867,7 +867,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
     <h2>Docker: Run Traj2 Without Local Setup</h2>
     <p>A companion Docker container with the full macro library, simulators, and entrypoint scripts. Pull, mount your licensed SAS installation, and run any released model with a single command.</p>
     <div class="dh-meta">
-      <span class="dc">Image: chao-lab/gbtm-macros:1.0.0</span>
+      <span class="dc">Image: chaolab/gbtm-macros:1.0.0</span>
       <span class="dc">Requires: user-supplied licensed SAS 9.4+ mounted at /opt/sas</span>
     </div>
   </div>
@@ -876,14 +876,14 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
 
   <div class="sec"><h2>Pull the Image</h2><div class="rule"></div></div>
   <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">Shell</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
-<pre><code>docker pull chao-lab/gbtm-macros:1.0.0</code></pre></div>
+<pre><code>docker pull chaolab/gbtm-macros:1.0.0</code></pre></div>
 
   <div class="sec"><h2>Validate Your Setup</h2><div class="rule"></div></div>
   <p style="font-size:13.5px;color:var(--muted);margin-bottom:10px">Confirm the image can find and run your SAS installation:</p>
   <div class="codeblock"><div class="codeblock-head"><span class="codeblock-lbl">Shell</span><button class="cpbtn" onclick="cp(this)">Copy</button></div>
 <pre><code>docker run --rm \
   -v /path/to/your/sas:/opt/sas:ro \
-  chao-lab/gbtm-macros:1.0.0 validate</code></pre></div>
+  chaolab/gbtm-macros:1.0.0 validate</code></pre></div>
 
   <div class="sec"><h2>Run a Model</h2><div class="rule"></div></div>
   <p style="font-size:13.5px;color:var(--muted);margin-bottom:10px">Fit a 4-class ordinal-probit model on data in <code>./data</code>, with outputs written to <code>./output</code>:</p>
@@ -892,7 +892,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   -v /path/to/your/sas:/opt/sas:ro \
   -v "$PWD/data":/opt/gbtm/data \
   -v "$PWD/output":/opt/gbtm/output \
-  chao-lab/gbtm-macros:1.0.0 \
+  chaolab/gbtm-macros:1.0.0 \
   run --model=ordinal --nclass=4 --order=2</code></pre></div>
 
   <p style="font-size:13.5px;color:var(--muted);margin-top:14px;margin-bottom:10px">Released models: <code>ordinal</code>, <code>continuous</code>. Prototype models (<code>zip</code>, <code>zinb</code>) are included for QA testing only.</p>
@@ -910,7 +910,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
     </div></div>
     <div class="card"><div class="cb" style="padding-bottom:18px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Entrypoint commands</h3>
-      <p style="font-size:13px"><code>help</code>, <code>validate</code>, <code>list</code>, <code>run</code>, and <code>shell</code>; invoke with <code>docker run … chao-lab/gbtm-macros:1.0.0 &lt;command&gt;</code>.</p>
+      <p style="font-size:13px"><code>help</code>, <code>validate</code>, <code>list</code>, <code>run</code>, and <code>shell</code>; invoke with <code>docker run … chaolab/gbtm-macros:1.0.0 &lt;command&gt;</code>.</p>
     </div></div>
     <div class="card"><div class="cb" style="padding-bottom:18px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Bring your own SAS</h3>

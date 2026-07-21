@@ -15,8 +15,8 @@
 =============================================================*/
 %let USE_SIM     = 1;            /* 1 = run simulator, 0 = use your real BASE_FILE_SRS */
 %let T           = 12;           /* number of time points */
-%let class       = 5;            /* number of latent classes */
-%let order_model = 3;            /* 1=linear, 2=quadratic, 3=cubic */
+%let class       = 3;            /* number of latent classes */
+%let order_model = 2;            /* 1=linear, 2=quadratic, 3=cubic */
 %let equal       = T;            /* T=equal sigma across classes (per outcome), F=class-specific */
 
 /* censoring caps, numeric list length T */

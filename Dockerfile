@@ -32,14 +32,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN mkdir -p ${GBTM_MACROS}/docs ${GBTM_DATA} ${GBTM_OUTPUT}
 COPY traj2_macro.sas             ${GBTM_MACROS}/
 COPY traj2_main_macro.sas        ${GBTM_MACROS}/
-COPY ordinal_probit.sas  ${GBTM_MACROS}/
-COPY continuous_2outcomes.sas   ${GBTM_MACROS}/
+COPY ordinal_probit.sas          ${GBTM_MACROS}/
+COPY continuous_2outcomes.sas    ${GBTM_MACROS}/
 COPY zip_poisson.sas             ${GBTM_MACROS}/
 COPY zinb.sas                    ${GBTM_MACROS}/
-COPY ordinal_probit.docx        ${GBTM_MACROS}/docs/
-COPY continuous_2outcomes.docx         ${GBTM_MACROS}/docs/
-COPY poisson_model_complete_35_.rtf     ${GBTM_MACROS}/docs/
-COPY ZINB_LatentClass_Trajectories.docx ${GBTM_MACROS}/docs/
+COPY "Data Dictionary ordinal_probit.pdf"        ${GBTM_MACROS}/docs/
+COPY "Data Dictionary continuous_2outcomes.pdf"  ${GBTM_MACROS}/docs/
+COPY "Data Dictionary zip_poisson.pdf"           ${GBTM_MACROS}/docs/
+COPY "Data Dictionary zinb.pdf"                  ${GBTM_MACROS}/docs/
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 WORKDIR ${GBTM_HOME}

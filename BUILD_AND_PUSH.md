@@ -13,8 +13,8 @@ chao-lab/gbtm-macros:<version>
    (Docker Hub does not auto-create org repositories on first push.)
 2. Two GitHub Actions secrets on this repo
    (**Settings → Secrets and variables → Actions**):
-   - `DOCKERHUB_USERNAME` — a Docker Hub account with push access to the `chao-lab` org.
-   - `DOCKERHUB_TOKEN` — a Docker Hub **access token** (not the account password).
+   - `DOCKERHUB_USERNAME` : a Docker Hub account with push access to the `chao-lab` org.
+   - `DOCKERHUB_TOKEN` : a Docker Hub **access token** (not the account password).
 
 ## Automated path (recommended)
 

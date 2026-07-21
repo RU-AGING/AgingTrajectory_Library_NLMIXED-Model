@@ -36,10 +36,10 @@ COPY ordinal_probit.sas          ${GBTM_MACROS}/
 COPY continuous_2outcomes.sas    ${GBTM_MACROS}/
 COPY zip_poisson.sas             ${GBTM_MACROS}/
 COPY zinb.sas                    ${GBTM_MACROS}/
-COPY ["Data Dictionary ordinal_probit.pdf", "${GBTM_MACROS}/docs/"]
-COPY ["Data Dictionary continuous_2outcomes.pdf", "${GBTM_MACROS}/docs/"]
-COPY ["Data Dictionary zip_poisson.pdf", "${GBTM_MACROS}/docs/"]
-COPY ["Data Dictionary zinb.pdf", "${GBTM_MACROS}/docs/"]
+COPY ["Data_Dictionary_ordinal_probit.pdf", "${GBTM_MACROS}/docs/"]
+COPY ["Data_Dictionary_continuous_2outcomes.pdf", "${GBTM_MACROS}/docs/"]
+COPY ["Data_Dictionary_zip_poisson.pdf", "${GBTM_MACROS}/docs/"]
+COPY ["Data_Dictionary_zinb.pdf", "${GBTM_MACROS}/docs/"]
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 WORKDIR ${GBTM_HOME}

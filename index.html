@@ -317,10 +317,10 @@ and p(Y_t^k | X=j) is the class-conditional density
 
   <div class="sec"><h2>Source Code</h2><div class="rule"></div></div>
   <div class="card">
-    <div class="ch"><div class="ci ci-am">📄</div><div class="cm"><h3>Continuous Single &amp; Two-Outcome Trajectories</h3><span class="fn">continuous_2_outcomes.sas</span></div><span class="badge b-sas">SAS Code</span></div>
+    <div class="ch"><div class="ci ci-am">📄</div><div class="cm"><h3>Continuous Single &amp; Two-Outcome Trajectories</h3><span class="fn">continuous_2outcomes.sas</span></div><span class="badge b-sas">SAS Code</span></div>
     <div class="cb">
       <ul class="kl">
-        <li><strong>Setup:</strong> <code>%include "/path/to/traj2/continuous_2_outcomes.sas";</code>, no compilation or external package installation required; runs identically in desktop SAS and the CMS VRDC</li>
+        <li><strong>Setup:</strong> <code>%include "/path/to/traj2/continuous_2outcomes.sas";</code>, no compilation or external package installation required; runs identically in desktop SAS and the CMS VRDC</li>
         <li><strong>Global settings:</strong> set <code>USE_SIM</code>, <code>T</code>, <code>class</code>, <code>order_model</code>, <code>equal</code>, <code>max_values</code>, <code>y1vars</code>, <code>y2vars</code>, <code>idvar</code>, <code>tvars</code>; once set, these are read by every macro in the workflow</li>
         <li><strong>Simulation:</strong> with <code>USE_SIM=1</code>, sourcing the library calls <code>%sim_data_cont</code> and assembles the wide-format <code>BASE_FILE_SRS</code> table automatically</li>
         <li><strong>Starting values:</strong> produced by helper macros <code>%starting_value_alpha</code> (class-membership intercepts, class A fixed to 0 for identification) and <code>%starting_value_beta_sigma</code> (polynomial coefficients and residual-scale parameters at neutral values)</li>
@@ -328,8 +328,8 @@ and p(Y_t^k | X=j) is the class-conditional density
       </ul>
     </div>
     <div class="cf">
-      <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/continuous_2_outcomes.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download .SAS</a>
-      <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/continuous_2_outcomes.sas" target="_blank">View on GitHub</a>
+      <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/continuous_2outcomes.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download .SAS</a>
+      <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/continuous_2outcomes.sas" target="_blank">View on GitHub</a>
     </div>
   </div>
 
@@ -488,10 +488,10 @@ Thresholds (built from exponential increments):
   <div class="sec"><h2>Files</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card">
-      <div class="ch"><div class="ci ci-pu">📄</div><div class="cm"><h3>Ordinal-Probit SAS Program</h3><span class="fn">discrete_ordinal_final.sas</span></div><span class="badge b-sas">SAS Code</span></div>
+      <div class="ch"><div class="ci ci-pu">📄</div><div class="cm"><h3>Ordinal-Probit SAS Program</h3><span class="fn">ordinal_probit.sas</span></div><span class="badge b-sas">SAS Code</span></div>
       <div class="cb">
         <ul class="kl">
-          <li><strong>Setup:</strong> <code>%include "/path/to/traj2/discrete_ordinal_final.sas";</code>, no compilation required; runs identically in desktop SAS and the CMS VRDC</li>
+          <li><strong>Setup:</strong> <code>%include "/path/to/traj2/ordinal_probit.sas";</code>, no compilation required; runs identically in desktop SAS and the CMS VRDC</li>
           <li><code>%sim_data</code> provides 3 data-generating processes: BIN4 and TPOIS4 (class-specific trajectory structure) and CAT5 (categories drawn uniformly); optional unbalanced missingness via <code>miss_pattern=</code>; <code>cap=</code> sets the highest category index</li>
           <li><code>%build_base_from_simwide(T=)</code> builds BASE_FILE_SRS with BENE_ID, time indices quar1–quarT (1, ..., T), and Y1_1–Y1_T</li>
           <li><code>%ordprob_mix_fit_one</code> runs the fit: Class A mixing logit fixed to 0, first threshold fixed at 0 (β<sub>j0</sub> free), exp-incremented thresholds guarantee ordered categories</li>
@@ -500,8 +500,8 @@ Thresholds (built from exponential increments):
         </ul>
       </div>
       <div class="cf">
-        <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/discrete_ordinal_final.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download Code</a>
-        <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/discrete_ordinal_final.sas" target="_blank">View on GitHub</a>
+        <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/ordinal_probit.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download Code</a>
+        <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/ordinal_probit.sas" target="_blank">View on GitHub</a>
       </div>
     </div>
     <div class="card">
@@ -752,7 +752,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   <div class="sec"><h2>Source Code &amp; ZIP vs ZINB Comparison</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card">
-      <div class="ch"><div class="ci ci-te">📄</div><div class="cm"><h3>ZINB Latent-Class Trajectories</h3><span class="fn">ZINB_LatentClass_Trajectories.docx</span></div><span class="badge b-proto">Prototype · SAS</span></div>
+      <div class="ch"><div class="ci ci-te">📄</div><div class="cm"><h3>ZINB Latent-Class Trajectories</h3><span class="fn">zinb.sas</span></div><span class="badge b-proto">Prototype · SAS</span></div>
       <div class="cb">
         <ul class="kl">
           <li>Gamma-Poisson mixture simulator: structural zero with prob p(t); else draws λ ~ Gamma(k, μ/k), then Y ~ Poisson(λ)</li>
@@ -763,8 +763,8 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
         </ul>
       </div>
       <div class="cf">
-        <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/ZINB_LatentClass_Trajectories.docx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download .docx</a>
-        <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/ZINB_LatentClass_Trajectories.docx" target="_blank">View on GitHub</a>
+        <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/zinb.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download .docx</a>
+        <a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/zinb.sas" target="_blank">View on GitHub</a>
       </div>
     </div>
     <div class="card"><div class="cb" style="padding-bottom:18px"><table class="pt">
@@ -804,14 +804,14 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   <div class="sec"><h2>Released SAS Source Code</h2><div class="rule"></div></div>
   <div class="grid g2">
     <div class="card">
-      <div class="ch"><div class="ci ci-pu">🖥</div><div class="cm"><h3>Ordinal-Probit Model</h3><span class="fn">discrete_ordinal_final.sas</span></div><span class="badge b-sas">SAS · Released</span></div>
+      <div class="ch"><div class="ci ci-pu">🖥</div><div class="cm"><h3>Ordinal-Probit Model</h3><span class="fn">ordinal_probit.sas</span></div><span class="badge b-sas">SAS · Released</span></div>
       <div class="cb"><p>Cumulative ordinal-probit latent-class GBTM with exp-incremented thresholds (τ<sub>j,1</sub> fixed at 0, β<sub>j0</sub> free). Load with <code style="font-size:11px">%include</code>. Authors: Haiqun Lin, Anum Zafar.</p></div>
-      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/discrete_ordinal_final.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/discrete_ordinal_final.sas" target="_blank">View on GitHub</a></div>
+      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/ordinal_probit.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/ordinal_probit.sas" target="_blank">View on GitHub</a></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ci ci-am">🖥</div><div class="cm"><h3>Continuous Single &amp; Two-Outcome Model</h3><span class="fn">continuous_2_outcomes.sas</span></div><span class="badge b-sas">SAS · Released</span></div>
+      <div class="ch"><div class="ci ci-am">🖥</div><div class="cm"><h3>Continuous Single &amp; Two-Outcome Model</h3><span class="fn">continuous_2outcomes.sas</span></div><span class="badge b-sas">SAS · Released</span></div>
       <div class="cb"><p>Censored-normal GBTM: single-outcome and joint two-outcome (multi-trajectory) with warm-start pipeline. Load with <code style="font-size:11px">%include</code>. Authors: Weiyi Xia, Haiqun Lin, Anum Zafar.</p></div>
-      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/continuous_2_outcomes.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/continuous_2_outcomes.sas" target="_blank">View on GitHub</a></div>
+      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/continuous_2outcomes.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/continuous_2outcomes.sas" target="_blank">View on GitHub</a></div>
     </div>
   </div>
 
@@ -823,9 +823,9 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
       <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/zip_poisson.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/zip_poisson.sas" target="_blank">View on GitHub</a></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ci ci-te">🖥</div><div class="cm"><h3>ZINB Model</h3><span class="fn">ZINB_LatentClass_Trajectories.docx</span></div><span class="badge b-proto">Prototype</span></div>
+      <div class="ch"><div class="ci ci-te">🖥</div><div class="cm"><h3>ZINB Model</h3><span class="fn">zinb.sas</span></div><span class="badge b-proto">Prototype</span></div>
       <div class="cb"><p>Zero-Inflated Negative Binomial with NB2 dispersion (logk parameter). Undergoing quality assurance. Author: Anum Zafar.</p></div>
-      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/ZINB_LatentClass_Trajectories.docx" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/ZINB_LatentClass_Trajectories.docx" target="_blank">View on GitHub</a></div>
+      <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/zinb.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/zinb.sas" target="_blank">View on GitHub</a></div>
     </div>
   </div>
 

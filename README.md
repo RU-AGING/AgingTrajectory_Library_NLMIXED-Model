@@ -25,7 +25,7 @@ Full documentation, model equations, quick-start examples, and download links ar
 
 ## Quick start (Docker)
 
-The easiest way to use Traj2 is via the prebuilt Docker image. The image bundles all macros, simulators, and entrypoint scripts; it does **not** bundle SAS, which is proprietary — mount your licensed SAS installation at `/opt/sas`:
+The easiest way to use Traj2 is via the prebuilt Docker image. The image bundles all macros, simulators, and entrypoint scripts; it does **not** bundle SAS, which is proprietary : mount your licensed SAS installation at `/opt/sas`:
 
 ```bash
 docker pull chao-lab/gbtm-macros:1.0.0
@@ -44,10 +44,10 @@ Released models: `ordinal`, `continuous`. Prototypes (QA testing only): `zip`, `
 
 Open one of the `.sas` files in your SAS session and follow the example block at the bottom of each:
 
-- `discrete_ordinal_final.sas` — Ordinal-Probit GBTM
-- `continuous_2_outcomes.sas` — Censored-normal GBTM (single + joint two-outcome)
-- `zip_poisson.sas` — Zero-Inflated Poisson trajectories (prototype, under QA)
-- `zinb.sas` — Zero-Inflated Negative Binomial trajectories (prototype, under QA)
+- `discrete_ordinal_final.sas` : Ordinal-Probit GBTM
+- `continuous_2_outcomes.sas` : Censored-normal GBTM (single + joint two-outcome)
+- `zip_poisson.sas` : Zero-Inflated Poisson trajectories (prototype, under QA)
+- `zinb.sas` : Zero-Inflated Negative Binomial trajectories (prototype, under QA)
 
 Each file is self-contained, includes an optional simulator, and follows a `set globals → simulate or load data → fit → plot` workflow.
 
@@ -73,10 +73,10 @@ If you use Traj2 in your research, please cite:
 
 ## Authors
 
-- **Anum Zafar** — Macro library architecture; ordinal-probit; ZIP/ZINB prototypes; documentation
-- **Weiyi Xia** — Two-outcome continuous model
-- **Haiqun Lin** — Methodology; ordinal-probit and censored-normal models
-- **Olga F. Jarrín** — Principal Investigator, CHAO Lab
+- **Anum Zafar** : Macro library architecture; ordinal-probit; ZIP/ZINB prototypes; documentation
+- **Weiyi Xia** : Two-outcome continuous model
+- **Haiqun Lin** : Methodology; ordinal-probit and censored-normal models
+- **Olga F. Jarrín** : Principal Investigator, CHAO Lab
 
 ## License
 

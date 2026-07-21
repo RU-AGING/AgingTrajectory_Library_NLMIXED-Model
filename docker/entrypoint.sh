@@ -2,7 +2,7 @@
 #
 # Traj2 entrypoint
 # Usage:
-#   docker run … ghcr.io/ru-aging/traj2:VERSION <command> [args]
+#   docker run … chao-lab/gbtm-macros:VERSION <command> [args]
 #
 # Commands:
 #   help        Show this help (default)
@@ -52,7 +52,7 @@ Quick start:
     -v /path/to/your/sas:/opt/sas:ro \
     -v "$PWD/data":/opt/gbtm/data \
     -v "$PWD/output":/opt/gbtm/output \
-    ghcr.io/ru-aging/traj2:1.0.0 validate
+    chao-lab/gbtm-macros:1.0.0 validate
 
 Commands:
   help                    Show this help
@@ -60,6 +60,7 @@ Commands:
   list                    List available macros
   run --model MODEL       Run a model. MODEL is one of:
                             ordinal | continuous | zip | zinb
+                          (ordinal, continuous released; zip, zinb prototypes)
       --nclass N          Number of latent classes (required for run)
       --order N           Polynomial order (default 2)
       --T N               Number of time points (default 12)
@@ -76,12 +77,12 @@ Example — fit a 4-class ordinal model:
     -v /opt/sas:/opt/sas:ro \
     -v "$PWD/data":/opt/gbtm/data \
     -v "$PWD/output":/opt/gbtm/output \
-    ghcr.io/ru-aging/traj2:1.0.0 \
+    chao-lab/gbtm-macros:1.0.0 \
     run --model=ordinal --nclass=4 --order=2
 
 Citation:
-  Lin, H., Zafar, A., Xia, W., Jones, B., & Jarrín, O. F. (2026).
-  Traj2: A Native Macro for Single- and Multi-Outcome Group-Based
+  Zafar, A., Xia, W., Lin, H., & Jarrín, O. F. (2026).
+  Traj2: A Native Macro Library for Single and Multi-Outcome Group-Based
   Trajectory Modeling in SAS. JSS (in preparation).
 
 EOF

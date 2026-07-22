@@ -6,7 +6,7 @@
 
 services:
   gbtm:
-    image: chao-lab/gbtm-macros:1.0.0
+    image: chaolab/gbtm-macros:1.0.0
     environment:
       - GBTM_MODEL=${GBTM_MODEL:-ordinal}
       - GBTM_NCLASS=${GBTM_NCLASS:-4}

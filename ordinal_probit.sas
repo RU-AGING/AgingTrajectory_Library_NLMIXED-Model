@@ -320,11 +320,11 @@ Author:     Haiqun Lin, Anum Zafar
 %mend;
 
 /*============================== EXAMPLE: SINGLE RUN =========================*/
-/* EITHER: build simulated data… */
+/* EITHER: build simulated data */
 %sim_data();                  /* comment this out if using your own data */
 %build_base_from_simwide(T=12);
 
-/* …OR: point DATA= to your wide table and ensure:
+/* OR: point DATA= to your wide table and ensure:
    - yvars = your wide outcomes (e.g., Y1_1-Y1_12)
    - tvars = quar1-quar12 with values 0..11 (create them if needed)
    - id    = your subject ID (rename to BENE_ID or pass id=)      */

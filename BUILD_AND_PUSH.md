@@ -8,12 +8,12 @@ rutgerschaolab/gbtm-macros:<version>
 
 ## Prerequisites (one-time)
 
-1. A Docker Hub organization named `chaolab` with a repository
+1. A Docker Hub organization named `rutgerschaolab` with a repository
    `gbtm-macros`. Create the repository on Docker Hub and set it to **Public**.
    (Docker Hub does not auto-create org repositories on first push.)
 2. Two GitHub Actions secrets on this repo
    (**Settings → Secrets and variables → Actions**):
-   - `DOCKERHUB_USERNAME` : a Docker Hub account with push access to the `chaolab` org.
+   - `DOCKERHUB_USERNAME` : a Docker Hub account with push access to the `rutgerschaolab` org.
    - `DOCKERHUB_TOKEN` : a Docker Hub **access token** (not the account password).
 
 ## Automated path (recommended)
@@ -66,7 +66,7 @@ so those commands cannot be smoke-tested without it.
 ## Troubleshooting
 
 - **401/403 on push**: the `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN` secrets are
-  missing or expired, or the account lacks push access to the `chaolab` org.
+  missing or expired, or the account lacks push access to the `rutgerschaolab` org.
 - **"repository does not exist"**: create `rutgerschaolab/gbtm-macros` on Docker Hub
   first (Prerequisites #1).
 - **Image name rejected**: Docker Hub names must be lowercase; `rutgerschaolab/gbtm-macros`

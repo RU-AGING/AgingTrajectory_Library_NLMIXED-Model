@@ -3,7 +3,7 @@
 The image is published to Docker Hub at:
 
 ```
-chaolab/gbtm-macros:<version>
+rutgerschaolab/gbtm-macros:<version>
 ```
 
 ## Prerequisites (one-time)
@@ -34,7 +34,7 @@ git push origin v1.0.0
 
 The workflow takes ~5–10 minutes. Watch progress in the **Actions** tab on
 GitHub. When it succeeds, the image appears on Docker Hub under
-`chaolab/gbtm-macros`.
+`rutgerschaolab/gbtm-macros`.
 
 ## Manual path (if you need to push from a laptop)
 
@@ -45,19 +45,19 @@ You shouldn't normally need this, but for the record:
 echo "$DOCKERHUB_TOKEN" | docker login -u <your-dockerhub-username> --password-stdin
 
 # 2. Build, tag, push.
-docker build -t chaolab/gbtm-macros:1.0.0 .
-docker push chaolab/gbtm-macros:1.0.0
+docker build -t rutgerschaolab/gbtm-macros:1.0.0 .
+docker push rutgerschaolab/gbtm-macros:1.0.0
 
 # Optional 'latest' tag.
-docker tag chaolab/gbtm-macros:1.0.0 chaolab/gbtm-macros:latest
-docker push chaolab/gbtm-macros:latest
+docker tag rutgerschaolab/gbtm-macros:1.0.0 rutgerschaolab/gbtm-macros:latest
+docker push rutgerschaolab/gbtm-macros:latest
 ```
 
 ## Verifying the published image
 
 ```bash
-docker pull chaolab/gbtm-macros:1.0.0
-docker run --rm chaolab/gbtm-macros:1.0.0 help
+docker pull rutgerschaolab/gbtm-macros:1.0.0
+docker run --rm rutgerschaolab/gbtm-macros:1.0.0 help
 ```
 
 `validate` and `run` require a SAS installation mounted at `/opt/sas`,
@@ -67,9 +67,9 @@ so those commands cannot be smoke-tested without it.
 
 - **401/403 on push**: the `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN` secrets are
   missing or expired, or the account lacks push access to the `chaolab` org.
-- **"repository does not exist"**: create `chaolab/gbtm-macros` on Docker Hub
+- **"repository does not exist"**: create `rutgerschaolab/gbtm-macros` on Docker Hub
   first (Prerequisites #1).
-- **Image name rejected**: Docker Hub names must be lowercase; `chaolab/gbtm-macros`
+- **Image name rejected**: Docker Hub names must be lowercase; `rutgerschaolab/gbtm-macros`
   already is.
 - **"unauthorized" pulling a public image**: run `docker logout` first, then pull
   without credentials.

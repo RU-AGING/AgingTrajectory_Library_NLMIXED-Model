@@ -2,12 +2,16 @@
 TITLE:  Ordinal-Probit Latent Class (Single-Run: simulate -> fit -> plot)
 WHAT:
   1) %sim_data (optional): make simulated data SIM_WIDE.
-  2) %build_base_from_simwide: build BASE_FILE_SRS with quar1..quarT and BENE_ID.
+  2) %build_base_from_simwide: build BASE_FILE_SRS with quar1..quarT
+     (values 1..T) and BENE_ID.
   3) %ordprob_mix_fit_one: ONE NLMIXED run (K fixed). Class A alpha fixed to 0.
-     - Ordered thresholds via cumulative exp() increments
+     - First threshold fixed at 0 for identification; class intercept beta_*0
+       is free (this mirrors the original NLM_COG cognitive macro).
+     - Remaining thresholds built via cumulative exp() increments (monotonic).
      - Exactly ONE PARMS statement: defaults + user overrides (no duplicates)
   4) %ordprob_mix_plot_one: class proportions + predicted mean trajectories.
-Author:     Haiqun Lin, Anum Zafar
+NOTE:   This file defines macros only; %includeing it executes nothing.
+Author:Haiqun Lin,Weiyi Xia,Anum Zafar
 
 ==============================================================================*/
 
@@ -76,7 +80,7 @@ Author:     Haiqun Lin, Anum Zafar
     data BASE_FILE_SRS;
       set sim_wide;
       array quar[&T] quar1-quar&T;
-      do i=1 to &T; quar[i]=i-1; end;
+      do i=1 to &T; quar[i]=i; end;
       drop i;
       rename id = BENE_ID;
     run;
@@ -101,19 +105,22 @@ Author:     Haiqun Lin, Anum Zafar
   %end;
 %mend;
 
-/* Build defaults for (K,M,deg), skipping anything overridden */
+/* Build defaults for (K,M,deg), skipping anything overridden.
+   IDENTIFICATION: the first threshold is fixed at 0 (NOT a parameter) and the
+   class intercept beta_*0 is left free. So we emit beta_*0 .. beta_*deg and the
+   threshold INCREMENTS i*2 .. i*(m-1).  We do NOT emit i*1. */
 %macro _make_default_parms(k, m, deg);
   %local c L l j s m1; %let s=; %let m1=%eval(&m-1);
   %do c=1 %to &k;
     %let L=%CL(&c); %let l=%lowcase(&L);
     /* mixing: skip A (fixed to 0) and skip if user overrode */
     %if &c>1 %then %if not %symexist(OV_alpha0_&L) %then %let s=&s alpha0_&L.=0;
-    /* betas */
+    /* betas (intercept beta_&l.0 is free and carries the class location) */
     %if not %symexist(OV_beta_&l.0) %then %let s=&s beta_&l.0=0;
     %if &deg>=1 %then %do; %if not %symexist(OV_beta_&l.1) %then %let s=&s beta_&l.1=0; %end;
     %if &deg>=2 %then %do j=2 %to &deg; %if not %symexist(OV_beta_&l.&j) %then %let s=&s beta_&l.&j.=0; %end;
-    /* threshold increments i l1..i l(m-1) */
-    %if &m1>=1 %then %do j=1 %to &m1; %if not %symexist(OV_i&l.&j) %then %let s=&s i&l.&j.=0; %end;
+    /* threshold increments only (i*2..i*(m-1)); first threshold fixed at 0 */
+    %if &m1>=2 %then %do j=2 %to &m1; %if not %symexist(OV_i&l.&j) %then %let s=&s i&l.&j.=0; %end;
   %end;
   &s
 %mend;
@@ -124,7 +131,7 @@ Author:     Haiqun Lin, Anum Zafar
   yvars=Y1_1-Y1_12, tvars=quar1-quar12, ttotal=12,
   m=4, ycodes=0 1 2 3, deg=2,
   k=4, qpoints=40, maxiter=1000, tech=dbldog,
-  start_values=,                     /* e.g., %str(alpha0_B=-0.5 beta_a0=0.1 ia1=0 ia2=0 ia3=0) */
+  start_values=,                     /* e.g., %str(alpha0_B=-0.5 beta_a0=0.1 ia2=0 ia3=0) */
   bounds=,                           /* e.g., %str(-6 < beta_a0 beta_b0 beta_c0 beta_d0 < 6)    */
   outestlib=work, prefix=ordprob_single
 );
@@ -134,6 +141,20 @@ Author:     Haiqun Lin, Anum Zafar
   %if not %sysfunc(exist(&data)) %then %do;
     %put ERROR: DATA=&data not found. Create it (e.g., run %sim_data and %build_base_from_simwide) or point DATA= to your table.;
     %return;
+  %end;
+
+  /* Clear override flags (OV_*) left over from any earlier call in this
+     session, so a previous run's start_values cannot silently drop
+     parameters from this run's PARMS statement. */
+  %local _ovlist _ovi;
+  %let _ovlist=;
+  proc sql noprint;
+    select name into :_ovlist separated by ' '
+    from dictionary.macros
+    where scope='GLOBAL' and name like 'OV_%';
+  quit;
+  %if %length(&_ovlist) %then %do _ovi=1 %to %sysfunc(countw(&_ovlist,%str( )));
+    %symdel %scan(&_ovlist,&_ovi,%str( )) / nowarn;
   %end;
 
   /* ycodes -> macro vars */
@@ -183,8 +204,8 @@ Author:     Haiqun Lin, Anum Zafar
           %if &d>=1 %then %do; eta_&U = eta_&U + beta_&L.1*(tval); %end;
           %if &d>=2 %then %do j=2 %to &d; eta_&U = eta_&U + beta_&L.&j.*((tval)**&j); %end;
 
-          /* ordered thresholds: th1 = iL1; thj = th(j-1) + exp(iLj) */
-          th1_&U = i&L.1;
+          /* ordered thresholds: th1 = 0 (fixed); thj = th(j-1) + exp(iLj) */
+          th1_&U = 0;
           %if &m1>=2 %then %do j=2 %to &m1;
             %if &j=2 %then %do; th&j._&U = th1_&U + exp(i&L.&j); %end;
             %else %do;          th&j._&U = th%eval(&j-1)_&U + exp(i&L.&j); %end;
@@ -213,12 +234,13 @@ Author:     Haiqun Lin, Anum Zafar
     dummy=0;
     model dummy ~ general(log(mix));
 
-    /* thresholds on natural scale for convenience */
+    /* thresholds on natural scale for convenience.
+       threshold1 is fixed at 0 (not estimated); report threshold2..(m-1).
+       threshold_jj = exp(iL2) + ... + exp(iL_jj). */
     %do c=1 %to &k; %let U=%CL(&c); %let L=%lowcase(&U);
-      estimate "threshold1_&L"  i&L.1;
       %if &m1>=2 %then %do _jj=2 %to &m1;
-        %local _expr; %let _expr = i&L.1;
-        %do j=2 %to &_jj; %let _expr = &_expr + exp(i&L.&j); %end;
+        %local _expr; %let _expr = exp(i&L.2);
+        %do j=3 %to &_jj; %let _expr = &_expr + exp(i&L.&j); %end;
         estimate "threshold&_jj._&L" &_expr;
       %end;
     %end;
@@ -257,10 +279,10 @@ Author:     Haiqun Lin, Anum Zafar
   data mix_props; set mix_props; pie = expa / &_sumexp; run;
 
   proc sgplot data=mix_props;
-    vbar class / response=pie datalabel;
-    yaxis grid label='Mixing proportion pi_c';
+    format pie 5.3;
+    vbar class / response=pie datalabel barwidth=0.6;
+    yaxis grid label='Mixing proportion' min=0;
     xaxis label='Class';
-    title "Estimated Class Proportions (K=&k)";
   run;
 
   /* Predicted trajectories */
@@ -275,6 +297,7 @@ Author:     Haiqun Lin, Anum Zafar
   proc sort data=_betas; by CL IDX; run;
   proc transpose data=_betas out=betas_w prefix=beta_; by CL; id IDX; var Estimate; run;
 
+  /* thresholds: ESTS holds threshold2..threshold(m-1); threshold1 is fixed 0 */
   proc sql;
     create table _ths as
     select upcase(scan(Label,2,'_')) as CL length=1,
@@ -296,7 +319,9 @@ Author:     Haiqun Lin, Anum Zafar
     array th th_1-th_99;
     array p  p1-p&m;
 
-    do tval=0 to %eval(&ttotal-1);
+    th_1 = 0;  /* first threshold fixed at 0 (matches the fit) */
+
+    do tval=1 to &ttotal;
       eta=0; do j=1 to dim(b); if not missing(b[j]) then eta + b[j]*(tval**(j-1)); end;
 
       p[1] = probnorm(th[1] - eta);
@@ -312,43 +337,48 @@ Author:     Haiqun Lin, Anum Zafar
   run;
 
   proc sgplot data=pred_long;
-    series x=tval y=EY / group=class markers;
-    xaxis integer label='Quarter (t)';
+    series x=tval y=EY / group=class markers
+           lineattrs=(thickness=2) markerattrs=(size=8);
+    xaxis values=(1 to &ttotal by 1) label='Quarter (t)';
     yaxis label='E[Y_t | class]';
-    title "Predicted Mean Trajectories by Class (K=&k)";
+    keylegend / title='Class';
   run;
 %mend;
 
-/*============================== EXAMPLE: SINGLE RUN =========================*/
-/* EITHER: build simulated data */
-%sim_data();                  /* comment this out if using your own data */
-%build_base_from_simwide(T=12);
+/*============================== USAGE NOTES =================================*/
+/* This file defines macros only; %include-ing it executes nothing.
 
-/* OR: point DATA= to your wide table and ensure:
-   - yvars = your wide outcomes (e.g., Y1_1-Y1_12)
-   - tvars = quar1-quar12 with values 0..11 (create them if needed)
-   - id    = your subject ID (rename to BENE_ID or pass id=)      */
+   Typical workflow (see the worked example in the accompanying paper):
 
-%let K   = 4;
-%let M   = 4;
-%let DEG = 2;
+     %include "ordinal_probit.sas";
 
-/* Optional: user starts (list only what you want; do NOT include alpha0_A) */
-%let STARTS = %str(
-  alpha0_B=-0.5 alpha0_C=-0.2 alpha0_D=0
-  beta_a0=0  beta_a1=0  beta_a2=0
-  ia1=0 ia2=0 ia3=0
-);
+     %sim_data(dist=BIN4, class=3, n=500, T=12, seed=2026, cap=3);
+     %build_base_from_simwide(T=12);
 
-/* Fit ONE model */
-%ordprob_mix_fit_one(
-  data=BASE_FILE_SRS, id=BENE_ID,
-  yvars=Y1_1-Y1_12, tvars=quar1-quar12, ttotal=12,
-  m=&M, ycodes=0 1 2 3, deg=&DEG, k=&K,
-  qpoints=40, maxiter=1000, tech=dbldog,
-  start_values=&STARTS,              /* leave blank to start all at zero */
-  outestlib=work, prefix=ordprob_single
-);
+     %ordprob_mix_fit_one(
+       data=BASE_FILE_SRS, id=BENE_ID,
+       yvars=Y1_1-Y1_12, tvars=quar1-quar12, ttotal=12,
+       m=4, ycodes=0 1 2 3, deg=2, k=3,
+       prefix=ordprob_T1C3
+     );
 
-/* Plot */
-%ordprob_mix_plot_one(outestlib=work, prefix=ordprob_single, k=&K, ttotal=12, m=&M, ycodes=0 1 2 3);
+     %ordprob_mix_plot_one(
+       outestlib=work, prefix=ordprob_T1C3,
+       k=3, ttotal=12, m=4, ycodes=0 1 2 3
+     );
+
+   To use your own data instead of the simulator:
+     - yvars = your wide-format outcome columns (e.g., Y1_1-Y1_12)
+     - tvars = quar1-quar12 holding numeric time values 1..T
+       (create them if needed)
+     - id    = your subject identifier (or rename it to BENE_ID)
+
+   Identification: the first threshold is fixed at 0 and the class intercept
+   beta_*0 is free. The free threshold parameters are the INCREMENTS i*2,
+   i*3, ... (there is no i*1). If you pass start values for thresholds, start
+   from i*2, e.g.
+
+     start_values=%str(alpha0_B=-0.5 beta_a0=0.1 ib2=0 ib3=0)
+
+   never alpha0_A (it is fixed to 0 for identification).
+*/

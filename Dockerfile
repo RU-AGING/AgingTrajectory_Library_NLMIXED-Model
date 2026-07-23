@@ -30,8 +30,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         tzdata \
     && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p ${GBTM_MACROS}/docs ${GBTM_DATA} ${GBTM_OUTPUT}
-COPY traj2_macro.sas             ${GBTM_MACROS}/
-COPY traj2_main_macro.sas        ${GBTM_MACROS}/
 COPY ordinal_probit.sas          ${GBTM_MACROS}/
 COPY continuous_2outcomes.sas    ${GBTM_MACROS}/
 COPY zip_poisson.sas             ${GBTM_MACROS}/

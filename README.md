@@ -1,6 +1,6 @@
 # Traj2: Group-Based Trajectory Modeling SAS Macro Library
 
-[![Docker Image](https://img.shields.io/badge/docker-chao--lab%2Fgbtm--macros-blue?logo=docker)](https://hub.docker.com/r/chao-lab/gbtm-macros)
+[![Docker Image](https://img.shields.io/badge/docker-rutgerschaolab%2Fgbtm--macros-blue?logo=docker)](https://hub.docker.com/r/rutgerschaolab/gbtm-macros)
 [![Documentation](https://img.shields.io/badge/docs-portal-teal)](https://ru-aging.github.io/AgingTrajectory_Library_NLMIXED-Model/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -28,13 +28,13 @@ Full documentation, model equations, quick-start examples, and download links ar
 The easiest way to use Traj2 is via the prebuilt Docker image. The image bundles all macros, simulators, and entrypoint scripts; it does **not** bundle SAS, which is proprietary : mount your licensed SAS installation at `/opt/sas`:
 
 ```bash
-docker pull chao-lab/gbtm-macros:1.0.0
+docker pull rutgerschaolab/gbtm-macros:1.0.0
 
 docker run --rm \
   -v /path/to/your/sas:/opt/sas:ro \
   -v "$PWD/data":/opt/gbtm/data \
   -v "$PWD/output":/opt/gbtm/output \
-  chao-lab/gbtm-macros:1.0.0 \
+  rutgerschaolab/gbtm-macros:1.0.0 \
   run --model=ordinal --nclass=4 --order=2
 ```
 

@@ -2,7 +2,7 @@
 #
 # Traj2 entrypoint
 # Usage:
-#   docker run … chaolab/gbtm-macros:VERSION <command> [args]
+#   docker run … rutgerschaolab/gbtm-macros:VERSION <command> [args]
 #
 # Commands:
 #   help        Show this help (default)
@@ -52,7 +52,7 @@ Quick start:
     -v /path/to/your/sas:/opt/sas:ro \
     -v "$PWD/data":/opt/gbtm/data \
     -v "$PWD/output":/opt/gbtm/output \
-    chaolab/gbtm-macros:1.0.0 validate
+    rutgerschaolab/gbtm-macros:1.0.0 validate
 
 Commands:
   help                    Show this help
@@ -77,7 +77,7 @@ Example — fit a 4-class ordinal model:
     -v /opt/sas:/opt/sas:ro \
     -v "$PWD/data":/opt/gbtm/data \
     -v "$PWD/output":/opt/gbtm/output \
-    chaolab/gbtm-macros:1.0.0 \
+    rutgerschaolab/gbtm-macros:1.0.0 \
     run --model=ordinal --nclass=4 --order=2
 
 Citation:

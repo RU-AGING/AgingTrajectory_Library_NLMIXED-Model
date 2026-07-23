@@ -9,7 +9,7 @@
 # installation read-only at /opt/sas at runtime.
 FROM ubuntu:22.04
 LABEL org.opencontainers.image.title="Traj2"
-LABEL org.opencontainers.image.description="Group-Based Trajectory Modeling SAS macro library — ordinal-probit and censored-normal continuous (released); ZIP and ZINB (prototypes, under QA)"
+LABEL org.opencontainers.image.description="Group-Based Trajectory Modeling SAS macro library: ordinal-probit and censored-normal continuous (released); ZIP and ZINB (prototypes, under QA)"
 LABEL org.opencontainers.image.source="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="CHAO Lab, Rutgers University"

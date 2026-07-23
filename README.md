@@ -44,8 +44,8 @@ Released models: `ordinal`, `continuous`. Prototypes (QA testing only): `zip`, `
 
 Open one of the `.sas` files in your SAS session and follow the example block at the bottom of each:
 
-- `discrete_ordinal_final.sas` : Ordinal-Probit GBTM
-- `continuous_2_outcomes.sas` : Censored-normal GBTM (single + joint two-outcome)
+- `ordinal_probit.sas` : Ordinal-Probit GBTM
+- `continuous_2outcomes.sas` : Censored-normal GBTM (single + joint two-outcome)
 - `zip_poisson.sas` : Zero-Inflated Poisson trajectories (prototype, under QA)
 - `zinb.sas` : Zero-Inflated Negative Binomial trajectories (prototype, under QA)
 
@@ -55,12 +55,10 @@ Each file is self-contained, includes an optional simulator, and follows a `set 
 
 | File | Purpose |
 |---|---|
-| `discrete_ordinal_final.sas`, `continuous_2_outcomes.sas`, `zip_poisson.sas`, `zinb.sas` | Plain-text SAS macro files (one per model family) |
-| `traj2_macro.sas`, `traj2_main_macro.sas` | Earlier macro library files |
-| `discrete_ordinal_final.docx`, `Continuous_2_outcomes.docx`, `poisson_model_complete_35_.rtf`, `ZINB_LatentClass_Trajectories.docx` | Documented model code (human-readable reference) |
-| `discrete_ordinal_user_guide.docx`, `POission_Final_User_Guide_79__70_.docx` | User guides |
-| `TRAJ2_QA_47_.xlsx` | 47 QA test cases |
-| `GBTM_Macros_Testing_Brief.pptx` | Analyst testing brief |
+| `ordinal_probit.sas`, `continuous_2outcomes.sas`, `zip_poisson.sas`, `zinb.sas` | Plain-text SAS macro files (one per model family) |
+| `Data_Dictionary_continuous_2outcomes.pdf`, `Data_Dictionary_ordinal_probit.pdf`, `Data_Dictionary_zinb.pdf`, `Data_Dictionary_zip_poisson.pdf` | Data Dictionary |
+| `continuous_2outcomes_user_guide.pdf`,`ordinal_probit_user_guide.pdf`,`zinb_user_guide.pdf`, `zinb_user_guide.pdf` | User guides |
+| `TRAJ2_QA_test_cases.xlsx` | QA test cases |
 | `Dockerfile`, `docker-compose.yml`, `docker/entrypoint.sh` | Docker image build files |
 | `BUILD_AND_PUSH.md` | Instructions for rebuilding and publishing the Docker image |
 | `index.html` | GitHub Pages documentation portal source |

@@ -1,3 +1,6 @@
+/*Copyright (c) 2026 Community Health and Aging Outcomes (CHAO) Lab, Rutgers University.
+Released under the MIT License. Full text in LICENSE at
+https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;*/
 /*****************************************************************************************************************************************
 * Community Health and Aging Outcome (CHAO) Lab - Rutgers, The State University of New Jersey                                           *
 * Title:   Group-Based Trajectory Modeling using PROC NLMIXED (Two Continuous Outcomes)                                                  *

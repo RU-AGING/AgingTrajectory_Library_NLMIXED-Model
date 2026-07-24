@@ -1,326 +1,356 @@
-/*===============================================================================
- Program:    ZINB_LatentClass_Trajectories.sas
- Purpose:    Fit Zero-Inflated Negative Binomial (ZINB) latent-class trajectory
-             models (growth-mixture) in PROC NLMIXED with user-controlled starting
-             values, and produce class curves plus a mixture-mean plot.
+/*Copyright (c) 2026 Community Health and Aging Outcomes (CHAO) Lab, Rutgers University.
+Released under the MIT License. Full text in LICENSE at
+https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;*/
 
- Status:     Prototype (undergoing QA), as described in the Traj2 paper.
+*PROJECT NAME: Traj2 Zero-Inflated Negative Binomial Latent-Class Trajectories
+LAST UPDATED DATE: 24 JUL 2026
+DATA SOURCES: NONE. This file defines macros only. INPUT IS the optional simulator OR your own wide TABLE
+STATUS: PROTOTYPE, undergoing quality assurance. NOT part of the current Traj2 release
+PURPOSE: Zero-Inflated Negative Binomial growth-mixture trajectory models fitted BY PROC NLMIXED, with
+user-controlled starting values. ZINB extends ZIP BY replacing the Poisson component with an NB2
+distribution, so the variance IS mu + mu squared over k rather than mu, which accommodates the
+overdispersion routinely seen IN Medicare claims. Provides
+(a)an optional ZINB simulator
+(b)a fitting MACRO over a common latent-class structure
+(c)class-specific MEAN curves AND a mixture-MEAN plot
+AUTHOR: Anum Zafar
+##########################################################################################################################
+*Execution Environment: SAS 9.4 OR later, PROC NLMIXED FROM SAS/STAT. No compiled components         *
+*This file defines macros only, apart FROM the demo IN STEP 5. RUN STEP 5 only WHEN you want the demo*
+*Comments inside the code-generator macros must stay IN slash-star form. A star-semicolon comment    *
+*inside a text-returning MACRO IS emitted INTO the statement it builds AND IS a syntax error         *
+##########################################################################################################################
+### CODE OVERVIEW ##
+#STEP 1:Optional simulator. SIM_DATA builds SIM_LONG, SIM_WIDE AND BASE_FILE_SRS
+#STEP 2:Starting values. Edit only this block
+#STEP 3:Code-generator library AND the fitting MACRO CT_ZINB_NLMIXED
+#STEP 4:Plotting. CT_ZINB_PLOTS draws class curves AND the mixture MEAN
+#STEP 5:Example RUN, a three-class demo
+##########################################################################################################################;
 
- Author:     Anum Zafar
- Last edit:  2026-02-09
-===============================================================================*/
-
-/*===============================================================================
- [A] OPTIONAL SIMULATOR: ZINB toy data; also builds BASE_FILE_SRS ([B])
-===============================================================================*/
-%macro sim_data(
-  class=5, n=500, T=12, seed=2026,
-  miss_pattern=balanced, p_obs_min=0.6, order=2, p_order=0
+/*##########################################################################################################################
+/*##########################################################################################################################
+*STEP 1: OPTIONAL SIMULATOR
+##########################################################################################################################
+Builds SIM_LONG, SIM_WIDE and BASE_FILE_SRS for the worked example. Structural zeros are drawn with
+probability p(t), otherwise a Gamma-Poisson mixture supplies the count, so the simulated data carry the
+same overdispersion the model is meant to absorb.
+##########################################################################################################################*/
+%MACRO sim_data(
+  class=5, N=500, T=12, seed=2026,
+  miss_pattern=balanced, p_obs_min=0.6, ORDER=2, p_order=0
 );
 
-  data sim_long;
-    call streaminit(&seed);
-    do id=1 to &n;
-      class = ceil(rand('uniform') * &class);
+  DATA sim_long;
+    CALL STREAMINIT(&seed);
+    DO ID=1 TO &n;
+      class = CEIL(RAND('uniform') * &class);
 
-      if "&miss_pattern"="balanced" then do; first_t=1; last_t=&T; end;
-      else do;
-        frac=rand('uniform')*(1-&p_obs_min) + &p_obs_min;
-        n_obs=ceil(&T*frac); first_t=1; last_t=n_obs;
-      end;
+      IF "&miss_pattern"="balanced" THEN DO; first_t=1; last_t=&T; END;
+      ELSE DO;
+        frac=RAND('uniform')*(1-&p_obs_min) + &p_obs_min;
+        n_obs=CEIL(&T*frac); first_t=1; last_t=n_obs;
+      END;
 
-      select (class);
-        when (1) do; b0=-0.4; b1=0.05; b2= 0.00; g0=-1.5; g1=0; g2=0; k=1.2; end;
-        when (2) do; b0=-0.2; b1=0.10; b2= 0.00; g0=-1.0; g1=0; g2=0; k=0.8; end;
-        when (3) do; b0= 0.0; b1=0.06; b2= 0.01; g0=-0.8; g1=0; g2=0; k=0.6; end;
-        when (4) do; b0=-0.6; b1=0.16; b2=-0.01; g0=-1.2; g1=0; g2=0; k=1.0; end;
-        otherwise do; b0=-0.1; b1=0.03; b2=0.02; g0=-0.6; g1=0; g2=0; k=0.9; end;
-      end;
+      SELECT (class);
+        WHEN (1) DO; b0=-0.4; b1=0.05; b2= 0.00; g0=-1.5; g1=0; g2=0; k=1.2; END;
+        WHEN (2) DO; b0=-0.2; b1=0.10; b2= 0.00; g0=-1.0; g1=0; g2=0; k=0.8; END;
+        WHEN (3) DO; b0= 0.0; b1=0.06; b2= 0.01; g0=-0.8; g1=0; g2=0; k=0.6; END;
+        WHEN (4) DO; b0=-0.6; b1=0.16; b2=-0.01; g0=-1.2; g1=0; g2=0; k=1.0; END;
+        OTHERWISE DO; b0=-0.1; b1=0.03; b2=0.02; g0=-0.6; g1=0; g2=0; k=0.9; END;
+      END;
 
-      do t=1 to &T;
-        qtr=t; obs=(t>=first_t and t<=last_t); y=.;
-        if obs then do;
-          eta = b0 + b1*t %if &order>=2 %then + b2*(t*t); ;
-          mu  = exp(eta);
+      DO t=1 TO &T;
+        qtr=t; obs=(t>=first_t AND t<=last_t); y=.;
+        IF obs THEN DO;
+          eta = b0 + b1*t %IF &order>=2 %THEN + b2*(t*t); ;
+          mu  = EXP(eta);
 
           logitp = g0
-                   %if &p_order>=1 %then + g1*t;
-                   %if &p_order>=2 %then + g2*(t*t);
+                   %IF &p_order>=1 %THEN + g1*t;
+                   %IF &p_order>=2 %THEN + g2*(t*t);
                    ;
-          p = 1/(1+exp(-logitp));
+          p = 1/(1+EXP(-logitp));
 
-          u = rand('uniform');
-          if u < p then y=0;
-          else do;
-            lambda = rand('gamma', k, mu/k);  /* shape=k, scale=mu/k => mean=mu */
-            y = rand('poisson', lambda);
-          end;
-        end;
-        output;
-      end;
-    end;
-    keep id class qtr y obs;
-  run;
+          u = RAND('uniform');
+          IF u < p THEN y=0;
+          ELSE DO;
+            lambda = RAND('gamma', k, mu/k);  /* shape=k, scale=mu/k => mean=mu */
+y = RAND('poisson', lambda);
+END;
+END;
+OUTPUT;
+END;
+END;
+KEEP ID class qtr y obs;
+RUN;
 
-  proc sort data=sim_long; by id qtr; run;
+PROC SORT DATA=sim_long; BY ID qtr; RUN;
 
-  proc transpose data=sim_long(where=(obs=1)) out=sim_wide prefix=Y_;
-    by id; id qtr; var y;
-  run;
+PROC TRANSPOSE DATA=sim_long(WHERE=(obs=1)) OUT=sim_wide PREFIX=Y_;
+BY ID; ID qtr; VAR y;
+RUN;
 
-  /* [B] Build BASE_FILE_SRS with SUM_Q1..SUM_Q12, BENE_ID, and quar1..quarT=1..T */
-  data BASE_FILE_SRS;
-    set sim_wide;
-    rename
-      id = BENE_ID
-      Y_1 = SUM_Q1  Y_2 = SUM_Q2  Y_3 = SUM_Q3  Y_4 = SUM_Q4  Y_5 = SUM_Q5  Y_6 = SUM_Q6
-      Y_7 = SUM_Q7  Y_8 = SUM_Q8  Y_9 = SUM_Q9  Y_10= SUM_Q10 Y_11= SUM_Q11 Y_12= SUM_Q12
-    ;
-  run;
+/* [B] Build BASE_FILE_SRS with SUM_Q1..SUM_Q12, BENE_ID, and quar1..quarT=1..T */
+DATA BASE_FILE_SRS;
+SET sim_wide;
+RENAME
+ID = BENE_ID
+Y_1 = SUM_Q1  Y_2 = SUM_Q2  Y_3 = SUM_Q3  Y_4 = SUM_Q4  Y_5 = SUM_Q5  Y_6 = SUM_Q6
+Y_7 = SUM_Q7  Y_8 = SUM_Q8  Y_9 = SUM_Q9  Y_10= SUM_Q10 Y_11= SUM_Q11 Y_12= SUM_Q12
+;
+RUN;
 
-  data BASE_FILE_SRS;
-    set BASE_FILE_SRS;
-    array quar[&T] quar1-quar&T;
-    do _i=1 to &T; quar[_i]=_i; end;
-    drop _i;
-  run;
+DATA BASE_FILE_SRS;
+SET BASE_FILE_SRS;
+ARRAY quar[&T] quar1-quar&T;
+DO _i=1 TO &T; quar[_i]=_i; END;
+DROP _i;
+RUN;
 
-%mend sim_data;
+%MEND sim_data;
 
-/*===============================================================================
- [C] STARTING VALUES (USER EDITS HERE). Unset values default to 0.
-     Class A is reference for mixing (no alpha0_A). k = exp(logk) > 0.
-===============================================================================*/
-%let alpha0_B = -0.50;
-%let alpha0_C = -0.80;
+/*##########################################################################################################################
+/*##########################################################################################################################
+*STEP 2: STARTING VALUES, EDIT ONLY THIS BLOCK
+##########################################################################################################################
+Any parameter left unset defaults to 0. logk starts at 0, meaning k = 1 and moderate dispersion.
+##########################################################################################################################*/
+%LET alpha0_B = -0.50;
+%LET alpha0_C = -0.80;
 
-%let beta0_A = -0.40; %let beta1_A = 0.06; %let beta2_A = 0;
-%let beta0_B = -0.20; %let beta1_B = 0.10; %let beta2_B = 0;
+%LET beta0_A = -0.40; %LET beta1_A = 0.06; %LET beta2_A = 0;
+%LET beta0_B = -0.20; %LET beta1_B = 0.10; %LET beta2_B = 0;
 
-%let gamma0_A = -1.20;
-%let gamma0_B = -0.80;
+%LET gamma0_A = -1.20;
+%LET gamma0_B = -0.80;
 
-%let logk_A  = 0.00;
-%let logk_B  = 0.18;
+%LET logk_A  = 0.00;
+%LET logk_B  = 0.18;
 
-/*===============================================================================
- [D] MODELING MACROS
-===============================================================================*/
-%macro _ct_nwords(list);
-  %sysfunc(countw(%superq(list), %str( )))
-%mend;
+/*##########################################################################################################################
+/*##########################################################################################################################
+*STEP 3: CODE-GENERATOR LIBRARY AND FITTING MACRO
+##########################################################################################################################
+These macros return TEXT that is spliced into the PROC NLMIXED program. Comments inside them must be
+slash-star only. A star-semicolon comment here lands inside the PARMS or model statement being built
+and is a syntax error.
+##########################################################################################################################*/
+%MACRO _ct_nwords(list);
+  %SYSFUNC(COUNTW(%SUPERQ(list), %STR( )))
+%MEND _ct_nwords;
 
-%macro _ct_abort(msg);
-  %put ERROR: &msg;
-  %abort cancel;
-%mend;
+%MACRO _ct_abort(msg);
+  %PUT ERROR: &msg;
+  %ABORT cancel;
+%MEND _ct_abort;
 
-%macro _emit_parm(name, default);
-  %if %symexist(&name) %then %do;
-    %if %length(%superq(&name)) %then %do;
-      &name = %superq(&name)
-    %end;
-    %else %do;
+%MACRO _emit_parm(name, default);
+  %IF %SYMEXIST(&name) %THEN %DO;
+    %IF %LENGTH(%SUPERQ(&name)) %THEN %DO;
+      &name = %SUPERQ(&name)
+    %END;
+    %ELSE %DO;
       &name = &default
-    %end;
-  %end;
-  %else %do;
+    %END;
+  %END;
+  %ELSE %DO;
     &name = &default
-  %end;
-%mend;
+  %END;
+%MEND _emit_parm;
 
-%macro _ct_array_from_list(name, list, T);
-  array &name.[&T] &list.;
-%mend;
+%MACRO _ct_array_from_list(name, list, T);
+  ARRAY &name.[&T] &list.;
+%MEND _ct_array_from_list;
 
-%macro _ct_declare_mu_arrays(nclass, class_labels, T);
-  %local k lab;
-  %do k=1 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
-    array mu_&lab.[&T] _temporary_;
-  %end;
-%mend;
+%MACRO _ct_declare_mu_arrays(nclass, class_labels, T);
+  %LOCAL k lab;
+  %DO k=1 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
+    ARRAY mu_&lab.[&T] _temporary_;
+  %END;
+%MEND _ct_declare_mu_arrays;
 
-%macro _ct_declare_pi_arrays(nclass, class_labels, T);
-  %local k lab;
-  %do k=1 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
-    array pi_&lab.[&T] _temporary_;
-  %end;
-%mend;
+%MACRO _ct_declare_pi_arrays(nclass, class_labels, T);
+  %LOCAL k lab;
+  %DO k=1 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
+    ARRAY pi_&lab.[&T] _temporary_;
+  %END;
+%MEND _ct_declare_pi_arrays;
 
-%macro _ct_declare_zip_arrays(nclass, class_labels, T);
-  %local k lab;
-  %do k=1 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
-    array logitp_&lab.[&T] _temporary_;
-    array p_&lab.[&T]      _temporary_;
-  %end;
-%mend;
+%MACRO _ct_declare_zip_arrays(nclass, class_labels, T);
+  %LOCAL k lab;
+  %DO k=1 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
+    ARRAY logitp_&lab.[&T] _temporary_;
+    ARRAY p_&lab.[&T]      _temporary_;
+  %END;
+%MEND _ct_declare_zip_arrays;
 
-%macro _ct_parms_all(nclass, class_labels, order, p_order);
-  parms
-  %local k lab;
+%MACRO _ct_parms_all(nclass, class_labels, ORDER, p_order);
+  PARMS
+  %LOCAL k lab;
 
-  %do k=2 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
-    %_emit_parm(%sysfunc(catx(_,alpha0,&lab)), 0)
-  %end;
+  %DO k=2 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
+    %_emit_parm(%SYSFUNC(catx(_,alpha0,&lab)), 0)
+  %END;
 
-  %do k=1 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
-    %_emit_parm(%sysfunc(catx(_,beta0,&lab)), 0)
-    %_emit_parm(%sysfunc(catx(_,beta1,&lab)), 0)
-    %if &order>=2 %then %_emit_parm(%sysfunc(catx(_,beta2,&lab)), 0);
-    %if &order>=3 %then %_emit_parm(%sysfunc(catx(_,beta3,&lab)), 0);
-  %end;
+  %DO k=1 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
+    %_emit_parm(%SYSFUNC(catx(_,beta0,&lab)), 0)
+    %_emit_parm(%SYSFUNC(catx(_,beta1,&lab)), 0)
+    %IF &order>=2 %THEN %_emit_parm(%SYSFUNC(catx(_,beta2,&lab)), 0);
+    %IF &order>=3 %THEN %_emit_parm(%SYSFUNC(catx(_,beta3,&lab)), 0);
+  %END;
 
-  %if &p_order>=0 %then %do;
-    %do k=1 %to &nclass;
-      %let lab=%scan(&class_labels, &k, %str( ));
-      %_emit_parm(%sysfunc(catx(_,gamma0,&lab)), 0)
-      %if &p_order>=1 %then %_emit_parm(%sysfunc(catx(_,gamma1,&lab)), 0);
-      %if &p_order>=2 %then %_emit_parm(%sysfunc(catx(_,gamma2,&lab)), 0);
-      %if &p_order>=3 %then %_emit_parm(%sysfunc(catx(_,gamma3,&lab)), 0);
-    %end;
-  %end;
+  %IF &p_order>=0 %THEN %DO;
+    %DO k=1 %TO &nclass;
+      %LET lab=%SCAN(&class_labels, &k, %STR( ));
+      %_emit_parm(%SYSFUNC(catx(_,gamma0,&lab)), 0)
+      %IF &p_order>=1 %THEN %_emit_parm(%SYSFUNC(catx(_,gamma1,&lab)), 0);
+      %IF &p_order>=2 %THEN %_emit_parm(%SYSFUNC(catx(_,gamma2,&lab)), 0);
+      %IF &p_order>=3 %THEN %_emit_parm(%SYSFUNC(catx(_,gamma3,&lab)), 0);
+    %END;
+  %END;
 
-  %do k=1 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
-    %_emit_parm(%sysfunc(catx(_,logk,&lab)), 0)
-  %end;
+  %DO k=1 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
+    %_emit_parm(%SYSFUNC(catx(_,logk,&lab)), 0)
+  %END;
   ;
-%mend;
+%MEND _ct_parms_all;
 
-%macro _ct_fill_mu_poly(nclass, class_labels, order, T);
-  %local k lab;
-  do i=1 to &T; t=i;
-    %do k=1 %to &nclass;
-      %let lab=%scan(&class_labels, &k, %str( ));
+%MACRO _ct_fill_mu_poly(nclass, class_labels, ORDER, T);
+  %LOCAL k lab;
+  DO i=1 TO &T; t=i;
+    %DO k=1 %TO &nclass;
+      %LET lab=%SCAN(&class_labels, &k, %STR( ));
       eta_&lab = beta0_&lab + beta1_&lab*t
-                 %if &order>=2 %then + beta2_&lab*(t*t);
-                 %if &order>=3 %then + beta3_&lab*(t*t*t);
+                 %IF &order>=2 %THEN + beta2_&lab*(t*t);
+                 %IF &order>=3 %THEN + beta3_&lab*(t*t*t);
                  ;
-      mu_&lab.[i] = exp(eta_&lab);
-    %end;
-  end;
-%mend;
+      mu_&lab.[i] = EXP(eta_&lab);
+    %END;
+  END;
+%MEND _ct_fill_mu_poly;
 
-%macro _ct_fill_zip_poly(nclass, class_labels, p_order, T);
-  %local k lab;
-  do i=1 to &T; t=i;
-    %do k=1 %to &nclass;
-      %let lab=%scan(&class_labels, &k, %str( ));
+%MACRO _ct_fill_zip_poly(nclass, class_labels, p_order, T);
+  %LOCAL k lab;
+  DO i=1 TO &T; t=i;
+    %DO k=1 %TO &nclass;
+      %LET lab=%SCAN(&class_labels, &k, %STR( ));
       logitp_&lab.[i] = gamma0_&lab
-                        %if &p_order>=1 %then + gamma1_&lab*t;
-                        %if &p_order>=2 %then + gamma2_&lab*(t*t);
-                        %if &p_order>=3 %then + gamma3_&lab*(t*t*t);
+                        %IF &p_order>=1 %THEN + gamma1_&lab*t;
+                        %IF &p_order>=2 %THEN + gamma2_&lab*(t*t);
+                        %IF &p_order>=3 %THEN + gamma3_&lab*(t*t*t);
                         ;
-      p_&lab.[i] = 1/(1+exp(-logitp_&lab.[i]));
-    %end;
-  end;
-%mend;
+      p_&lab.[i] = 1/(1+EXP(-logitp_&lab.[i]));
+    %END;
+  END;
+%MEND _ct_fill_zip_poly;
 
-%macro _ct_accumulate_zinb_ll(nclass, class_labels, T);
-  %local k lab;
-  do i=1 to &T;
-    if not missing(Y[i]) then do;
+%MACRO _ct_accumulate_zinb_ll(nclass, class_labels, T);
+  %LOCAL k lab;
+  DO i=1 TO &T;
+    IF NOT MISSING(Y[i]) THEN DO;
 
-      %do k=1 %to &nclass;
-        %let lab=%scan(&class_labels, &k, %str( ));
+      %DO k=1 %TO &nclass;
+        %LET lab=%SCAN(&class_labels, &k, %STR( ));
 
-        k_&lab = exp(logk_&lab);
+        k_&lab = EXP(logk_&lab);
 
-        lp = -log(1 + exp(-logitp_&lab.[i]));
-        lq = -log(1 + exp( logitp_&lab.[i]));
+        lp = -LOG(1 + EXP(-logitp_&lab.[i]));
+        lq = -LOG(1 + EXP( logitp_&lab.[i]));
 
-        logNB = lgamma(Y[i] + k_&lab) - lgamma(k_&lab) - lgamma(Y[i]+1)
-                + k_&lab*(log(k_&lab) - log(k_&lab + mu_&lab.[i]))
-                + Y[i]*(log(mu_&lab.[i]) - log(k_&lab + mu_&lab.[i]));
+        logNB = LGAMMA(Y[i] + k_&lab) - LGAMMA(k_&lab) - LGAMMA(Y[i]+1)
+                + k_&lab*(LOG(k_&lab) - LOG(k_&lab + mu_&lab.[i]))
+                + Y[i]*(LOG(mu_&lab.[i]) - LOG(k_&lab + mu_&lab.[i]));
 
-        logNB0 = k_&lab*(log(k_&lab) - log(k_&lab + mu_&lab.[i]));
+        logNB0 = k_&lab*(LOG(k_&lab) - LOG(k_&lab + mu_&lab.[i]));
 
-        if Y[i]=0 then do;
+        IF Y[i]=0 THEN DO;
           a = lp;
           b = lq + logNB0;
-          m0 = max(a,b);
-          pi_&lab.[i] = m0 + log(exp(a-m0) + exp(b-m0));
-        end;
-        else do;
+          m0 = MAX(a,b);
+          pi_&lab.[i] = m0 + LOG(EXP(a-m0) + EXP(b-m0));
+        END;
+        ELSE DO;
           pi_&lab.[i] = lq + logNB;
-        end;
+        END;
 
-      %end;
+      %END;
 
-    end;
-  end;
-%mend;
+    END;
+  END;
+%MEND _ct_accumulate_zinb_ll;
 
-%macro _ct_mixture_ll(nclass, class_labels, T);
-  %local k lab;
+%MACRO _ct_mixture_ll(nclass, class_labels, T);
+  %LOCAL k lab;
 
   den = 1;
-  %do k=2 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
-    den = den + exp(alpha0_&lab);
-  %end;
+  %DO k=2 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
+    den = den + EXP(alpha0_&lab);
+  %END;
 
-  %do k=1 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
-    %if &k=1 %then %do; w_&lab = 1/den; %end;
-    %else %do;          w_&lab = exp(alpha0_&lab)/den; %end;
-  %end;
+  %DO k=1 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
+    %IF &k=1 %THEN %DO; w_&lab = 1/den; %END;
+    %ELSE %DO;          w_&lab = EXP(alpha0_&lab)/den; %END;
+  %END;
 
-  %do k=1 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
+  %DO k=1 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
     prod_&lab = 0;
-    do i=1 to &T;
-      if not missing(pi_&lab.[i]) then prod_&lab + pi_&lab.[i];
-    end;
-  %end;
+    DO i=1 TO &T;
+      IF NOT MISSING(pi_&lab.[i]) THEN prod_&lab + pi_&lab.[i];
+    END;
+  %END;
 
-  m = prod_%scan(&class_labels, 1, %str( ));
-  %do k=2 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
-    m = max(m, prod_&lab);
-  %end;
+  m = prod_%SCAN(&class_labels, 1, %STR( ));
+  %DO k=2 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
+    m = MAX(m, prod_&lab);
+  %END;
 
   sum_exp = 0;
-  %do k=1 %to &nclass;
-    %let lab=%scan(&class_labels, &k, %str( ));
-    sum_exp + w_&lab * exp(prod_&lab - m);
-  %end;
+  %DO k=1 %TO &nclass;
+    %LET lab=%SCAN(&class_labels, &k, %STR( ));
+    sum_exp + w_&lab * EXP(prod_&lab - m);
+  %END;
 
-  ll = m + log(sum_exp);
-%mend;
+  ll = m + LOG(sum_exp);
+%MEND _ct_mixture_ll;
 
-%macro ct_zinb_nlmixed(
-  data=BASE_FILE_SRS,
-  id=BENE_ID,
+%MACRO ct_zinb_nlmixed(
+  DATA=BASE_FILE_SRS,
+  ID=BENE_ID,
   yvars=SUM_Q1-SUM_Q12,
   nclass=5,
   class_labels=A B C D E,
-  order=2,
+  ORDER=2,
   p_order=0,
   T=12,
   tech=newrap,
   maxiter=500,
   pe_out=pe_zinb,
   fit_out=fit_zinb,
-  bounds=
+  BOUNDS=
 );
 
-  %if %eval(%_ct_nwords(&class_labels) ne &nclass) %then %do;
+  %IF %EVAL(%_ct_nwords(&class_labels) NE &nclass) %THEN %DO;
     %_ct_abort(nclass=&nclass but class_labels=&class_labels has %_ct_nwords(&class_labels) labels. Fix mismatch.);
-  %end;
+  %END;
 
-  ods listing;
-  ods output ParameterEstimates=&pe_out FitStatistics=&fit_out;
+  ODS LISTING;
+  ODS OUTPUT ParameterEstimates=&pe_out FitStatistics=&fit_out;
 
-  proc nlmixed data=&data qpoints=1 tech=&tech maxiter=&maxiter;
+  PROC NLMIXED DATA=&data qpoints=1 tech=&tech maxiter=&maxiter;
     %_ct_parms_all(&nclass, &class_labels, &order, &p_order);
 
-    %if %length(&bounds) %then %do; bounds &bounds; %end;
+    %IF %LENGTH(&bounds) %THEN %DO; BOUNDS &bounds; %END;
 
     %_ct_array_from_list(Y, &yvars, &T);
     %_ct_declare_mu_arrays(&nclass, &class_labels, &T);
@@ -334,144 +364,166 @@
     %_ct_mixture_ll(&nclass, &class_labels, &T);
 
     one = 1;
-    model one ~ general(ll);
-    id &id;
-  run;
+    MODEL one ~ GENERAL(ll);
+    ID &id;
+  RUN;
 
-  ods output close;
+  ODS OUTPUT CLOSE;
 
-%mend ct_zinb_nlmixed;
+%MEND ct_zinb_nlmixed;
 
-/*===============================================================================
- [E] PLOTTING MACRO
-===============================================================================*/
-%macro ct_zinb_plots(pe=pe_zinb, T=12, out_traj=traj_zinb, out_mix=mix_zinb);
+/*##########################################################################################################################
+/*##########################################################################################################################
+*STEP 4: PLOTTING
+##########################################################################################################################
+Reconstructs E[Y | class, t] = (1 - p(t)) * mu(t) per class, then overlays the mixture mean.
+##########################################################################################################################*/
+%MACRO ct_zinb_plots(pe=pe_zinb, T=12, out_traj=traj_zinb, out_mix=mix_zinb);
 
-  ods listing;
+  ODS LISTING;
 
-  proc sql;
-    create table _betas as
-    select scan(Parameter,2,'_') as class length=32,
-           input(compress(substr(Parameter,5),,'kd'), best.) as deg,
-           Estimate
-    from &pe
-    where upcase(substr(Parameter,1,4))='BETA';
-  quit;
-  proc sort data=_betas; by class deg; run;
-  proc transpose data=_betas out=_betas_w prefix=b;
-    by class; id deg; var Estimate;
-  run;
+  PROC SQL;
+    CREATE TABLE _betas AS
+    SELECT SCAN(Parameter,2,'_') AS class LENGTH=32,
+           INPUT(COMPRESS(SUBSTR(Parameter,5),,'kd'), best.) AS deg,
+           ESTIMATE
+    FROM &pe
+    WHERE UPCASE(SUBSTR(Parameter,1,4))='BETA';
+  QUIT;
+  PROC SORT DATA=_betas; BY class deg; RUN;
+  PROC TRANSPOSE DATA=_betas OUT=_betas_w PREFIX=b;
+    BY class; ID deg; VAR ESTIMATE;
+  RUN;
 
-  proc sql;
-    create table _alphas as
-    select scan(Parameter,2,'_') as class length=32,
-           Estimate as alpha
-    from &pe
-    where upcase(substr(Parameter,1,6))='ALPHA0';
-  quit;
-  proc sort data=_alphas; by class; run;
+  PROC SQL;
+    CREATE TABLE _alphas AS
+    SELECT SCAN(Parameter,2,'_') AS class LENGTH=32,
+           ESTIMATE AS alpha
+    FROM &pe
+    WHERE UPCASE(SUBSTR(Parameter,1,6))='ALPHA0';
+  QUIT;
+  PROC SORT DATA=_alphas; BY class; RUN;
 
   /* FIX: gamma degree digit sits at position 6 ("gamma" is 5 chars), not 7 */
-  proc sql;
-    create table _gammas as
-    select scan(Parameter,2,'_') as class length=32,
-           input(compress(substr(Parameter,6),,'kd'), best.) as deg,
-           Estimate
-    from &pe
-    where upcase(substr(Parameter,1,5))='GAMMA';
-  quit;
-  proc sort data=_gammas; by class deg; run;
-  proc transpose data=_gammas out=_gammas_w prefix=g;
-    by class; id deg; var Estimate;
-  run;
+PROC SQL;
+CREATE TABLE _gammas AS
+SELECT SCAN(Parameter,2,'_') AS class LENGTH=32,
+INPUT(COMPRESS(SUBSTR(Parameter,6),,'kd'), best.) AS deg,
+ESTIMATE
+FROM &pe
+WHERE UPCASE(SUBSTR(Parameter,1,5))='GAMMA';
+QUIT;
+PROC SORT DATA=_gammas; BY class deg; RUN;
+PROC TRANSPOSE DATA=_gammas OUT=_gammas_w PREFIX=g;
+BY class; ID deg; VAR ESTIMATE;
+RUN;
 
-  proc sql;
-    create table _logk as
-    select scan(Parameter,2,'_') as class length=32,
-           Estimate as logk
-    from &pe
-    where upcase(substr(Parameter,1,4))='LOGK';
-  quit;
-  proc sort data=_logk; by class; run;
+PROC SQL;
+CREATE TABLE _logk AS
+SELECT SCAN(Parameter,2,'_') AS class LENGTH=32,
+ESTIMATE AS logk
+FROM &pe
+WHERE UPCASE(SUBSTR(Parameter,1,4))='LOGK';
+QUIT;
+PROC SORT DATA=_logk; BY class; RUN;
 
-  data _classes;
-    merge _betas_w(in=b) _alphas(in=a) _gammas_w(in=g) _logk(in=k);
-    by class;
-    if missing(alpha) then alpha=0;
-    exp_alpha = exp(alpha);
-    k_nb = exp(coalesce(logk,0));
-  run;
+DATA _classes;
+MERGE _betas_w(IN=b) _alphas(IN=a) _gammas_w(IN=g) _logk(IN=k);
+BY class;
+IF MISSING(alpha) THEN alpha=0;
+exp_alpha = EXP(alpha);
+k_nb = EXP(COALESCE(logk,0));
+RUN;
 
-  proc sql noprint;
-    select sum(exp_alpha) into :_den from _classes;
-  quit;
+PROC SQL NOPRINT;
+SELECT SUM(exp_alpha) INTO :_den FROM _classes;
+QUIT;
 
-  data &out_traj;
-    set _classes;
-    length class $32;
-    do t=1 to &T;
-      eta    = coalesce(b0,0) + coalesce(b1,0)*t + coalesce(b2,0)*(t*t) + coalesce(b3,0)*(t*t*t);
-      mu     = exp(eta);
+DATA &out_traj;
+SET _classes;
+LENGTH class $32;
+DO t=1 TO &T;
+eta    = COALESCE(b0,0) + COALESCE(b1,0)*t + COALESCE(b2,0)*(t*t) + COALESCE(b3,0)*(t*t*t);
+mu     = EXP(eta);
 
-      logitp = coalesce(g0,0) + coalesce(g1,0)*t + coalesce(g2,0)*(t*t) + coalesce(g3,0)*(t*t*t);
-      p      = 1/(1+exp(-logitp));
+logitp = COALESCE(g0,0) + COALESCE(g1,0)*t + COALESCE(g2,0)*(t*t) + COALESCE(g3,0)*(t*t*t);
+p      = 1/(1+EXP(-logitp));
 
-      w      = exp_alpha / &_den;
+w      = exp_alpha / &_den;
 
-      mu_zinb = (1-p)*mu;
-      output;
-    end;
+mu_zinb = (1-p)*mu;
+OUTPUT;
+END;
 
-    keep class t mu p mu_zinb w k_nb;
-  run;
+KEEP class t mu p mu_zinb w k_nb;
+RUN;
 
-  proc sql;
-    create table &out_mix as
-    select t, sum(w*mu_zinb) as mu_mix_zinb
-    from &out_traj
-    group by t;
-  quit;
+PROC SQL;
+CREATE TABLE &out_mix AS
+SELECT t, SUM(w*mu_zinb) AS mu_mix_zinb
+FROM &out_traj
+GROUP BY t;
+QUIT;
 
-  proc sgplot data=&out_traj;
-    series x=t y=mu_zinb / group=class lineattrs=(thickness=2);
-    xaxis integer label="Quarter" min=1 max=&T;
-    yaxis label="Expected count (ZINB mean)";
-    title "Latent-Class ZINB Trajectories";
-  run;
+PROC SGPLOT DATA=&out_traj;
+SERIES x=t y=mu_zinb / GROUP=class lineattrs=(thickness=2);
+XAXIS integer LABEL="Quarter" MIN=1 MAX=&T;
+YAXIS LABEL="Expected count (ZINB mean)";
+TITLE "Latent-Class ZINB Trajectories";
+RUN;
 
-  proc sort data=&out_traj; by t; run;
-  data _traj_all;
-    merge &out_traj &out_mix;
-    by t;
-  run;
+PROC SORT DATA=&out_traj; BY t; RUN;
+DATA _traj_all;
+MERGE &out_traj &out_mix;
+BY t;
+RUN;
 
-  proc sgplot data=_traj_all;
-    series x=t y=mu_mix_zinb / lineattrs=(pattern=shortdash thickness=3) name="mix" legendlabel="Mixture mean";
-    series x=t y=mu_zinb     / group=class lineattrs=(thickness=2);
-    keylegend / position=topright;
-    xaxis integer label="Quarter" min=1 max=&T;
-    yaxis label="Expected count (ZINB mean)";
-    title "Latent-Class ZINB Trajectories with Mixture Mean";
-  run;
+PROC SGPLOT DATA=_traj_all;
+SERIES x=t y=mu_mix_zinb / lineattrs=(pattern=shortdash thickness=3) name="mix" legendlabel="Mixture mean";
+SERIES x=t y=mu_zinb     / GROUP=class lineattrs=(thickness=2);
+KEYLEGEND / position=topright;
+XAXIS integer LABEL="Quarter" MIN=1 MAX=&T;
+YAXIS LABEL="Expected count (ZINB mean)";
+TITLE "Latent-Class ZINB Trajectories with Mixture Mean";
+RUN;
 
-%mend ct_zinb_plots;
+%MEND ct_zinb_plots;
 
-/*===============================================================================
- [F] EXAMPLE RUN (3-class demo)
-===============================================================================*/
-%let T=12;
+/*##########################################################################################################################
+/*##########################################################################################################################
+*STEP 5: EXAMPLE RUN, THREE-CLASS DEMO
+##########################################################################################################################
+Executes on submit. Comment this block out to use the file as a macro library only.
+##########################################################################################################################*/
+%LET T=12;
 
-%sim_data(class=3, n=500, T=&T, seed=1, miss_pattern=balanced);
+%sim_data(class=3, N=500, T=&T, seed=1, miss_pattern=balanced);
 
 %ct_zinb_nlmixed(
-  data=BASE_FILE_SRS,
-  id=BENE_ID,
+  DATA=BASE_FILE_SRS,
+  ID=BENE_ID,
   yvars=SUM_Q1-SUM_Q12,
   nclass=3,
   class_labels=A B C,
-  order=2,
+  ORDER=2,
   p_order=0,
   T=&T
 );
 
 %ct_zinb_plots(pe=pe_zinb, T=&T);
+
+/*##########################################################################################################################
+*END
+##########################################################################################################################
+OUTPUT DATASETS
+sim_long, sim_wide      simulated data from SIM_DATA
+BASE_FILE_SRS           the fitting contract, wide format with SUM_Q1 to SUM_QT and BENE_ID
+pe_zinb                 parameter estimates from CT_ZINB_NLMIXED
+fit_zinb                fit statistics including AIC and BIC for choosing the class count
+traj_zinb, mix_zinb     class curves and mixture mean from CT_ZINB_PLOTS
+
+NOTE ON STATUS
+  This is a prototype undergoing quality assurance and is not part of the current Traj2 release.
+  Interfaces and behaviour may change. The released outcome families are ordinal-probit and
+  censored-normal continuous.
+##########################################################################################################################*/

@@ -3,7 +3,7 @@ Released under the MIT License. Full text in LICENSE at
 https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;*/
 
 *PROJECT NAME: Traj2 Zero-Inflated Negative Binomial Latent-Class Trajectories
-LAST UPDATED DATE: 24 JUL 2026
+/*LAST UPDATED DATE: 24 JUL 2026
 DATA SOURCES: NONE. This file defines macros only. INPUT IS the optional simulator OR your own wide TABLE
 STATUS: PROTOTYPE, undergoing quality assurance. NOT part of the current Traj2 release
 PURPOSE: Zero-Inflated Negative Binomial growth-mixture trajectory models fitted BY PROC NLMIXED, with

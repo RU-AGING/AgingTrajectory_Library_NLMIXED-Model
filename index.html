@@ -247,12 +247,12 @@ and p(Y_t^k | X=j) is the class-conditional density
     </div>
     <div class="ov">
       <div class="oi">📐</div><h3>Ordinal-Probit Recovery</h3>
-      <p>Over 200 replications (N = 2,500, T = 12, true C = 3), worst-class trajectory RMSE is 0.029 on the 0–3 scale; class assignment agrees with truth 91.0% of the time (vs. a 45% majority-class baseline); and BIC selected the true C = 3 in 100% of replications. All 200 replications returned fully estimable standard errors for every free parameter.</p>
+      <p>Over 200 replications (N = 2,500, T = 12, true C = 3), worst-class trajectory RMSE is 0.029 on the 0–3 scale; class assignment agrees with truth 91.4% of the time (vs. a 45% majority-class baseline); and BIC selected the true C = 3 in 100% of replications. All 200 replications returned fully estimable standard errors for every free parameter.</p>
       <span class="ob" style="background:#ede9fe;color:#5b21b6">Shape · Class · C recovered</span>
     </div>
     <div class="ov">
       <div class="oi">🔁</div><h3>Cross-Implementation Check (lcmm)</h3>
-      <p>Because PROC TRAJ lacks a cumulative-probit family, the ordinal model was checked against the R package lcmm on a matched design: fitted E[Y | class] trajectories agree to a maximum absolute difference of 0.012 (mean 0.003) across 36 class-by-time points, class proportions differ by at most 1 percentage point, and −2 log L is essentially identical (68,517 vs. 68,520).</p>
+     <p>Because PROC TRAJ lacks a cumulative-probit family, the ordinal model was checked against the R package lcmm on a matched design: fitted E[Y | class] trajectories agree to a maximum absolute difference of 0.015 (mean 0.005) across 36 class-by-time points, class proportions differ by at most 2 percentage points, and −2 log L is essentially identical (47,071 vs. 47,076).</p>
       <span class="ob" style="background:#ede9fe;color:#5b21b6">Independent implementation</span>
     </div>
   </div>

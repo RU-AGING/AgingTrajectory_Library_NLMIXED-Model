@@ -1,5 +1,6 @@
-
-
+#Copyright (c) 2026 Community Health and Aging Outcomes (CHAO) Lab, Rutgers University.
+#Released under the MIT License. Full text in LICENSE at
+#https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;
 ##########################################################################################################################
 # PROJECT NAME: Traj2 Ordinal Cross-Check, R Side
 # LAST UPDATED DATE: 24 JUL 2026

@@ -1,0 +1,64 @@
+cff-version: 1.2.0
+title: "Traj2: A Native Macro Library for Single and Multi-Outcome Group-Based Trajectory Modeling in SAS"
+message: "If you use this software, please cite both the software and the accompanying paper."
+type: software
+version: 1.0.0
+date-released: 2026-07-24
+license: MIT
+repository-code: "https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model"
+url: "https://ru-aging.github.io/AgingTrajectory_Library_NLMIXED-Model/"
+identifiers:
+  - type: doi
+    value: 10.17605/OSF.IO/6FG5J
+    description: Archival release on OSF
+abstract: >-
+  A SAS-native macro library for group-based trajectory modeling (GBTM),
+  implemented entirely in PROC NLMIXED with no externally compiled code, so it
+  runs in secure research environments such as the CMS Virtual Research Data
+  Center where PROC TRAJ cannot be installed. The current release covers two
+  outcome families: bounded ordinal scales via a class-specific cumulative
+  probit with exp-incremented thresholds, and continuous measures with bounded
+  support via a class-specific censored normal, including joint two-outcome
+  trajectory estimation.
+keywords:
+  - group-based trajectory modeling
+  - latent classes
+  - longitudinal data
+  - finite mixture model
+  - ordinal probit
+  - censored normal
+  - joint trajectory
+  - SAS
+  - NLMIXED
+authors:
+  - family-names: Zafar
+    given-names: Anum
+    affiliation: Rutgers University
+  - family-names: Xia
+    given-names: Weiyi
+    affiliation: Rutgers University
+  - family-names: Lin
+    given-names: Haiqun
+    affiliation: Rutgers University
+  - family-names: "Jarrin Montaner"
+    given-names: "Olga F."
+    affiliation: Rutgers University
+preferred-citation:
+  type: article
+  title: "Traj2: A Native Macro Library for Single and Multi-Outcome Group-Based Trajectory Modeling in SAS"
+  journal: Journal of Statistical Software
+  year: 2026
+  notes: In preparation
+  authors:
+    - family-names: Zafar
+      given-names: Anum
+      affiliation: Rutgers University
+    - family-names: Xia
+      given-names: Weiyi
+      affiliation: Rutgers University
+    - family-names: Lin
+      given-names: Haiqun
+      affiliation: Rutgers University
+    - family-names: "Jarrin Montaner"
+      given-names: "Olga F."
+      affiliation: Rutgers University

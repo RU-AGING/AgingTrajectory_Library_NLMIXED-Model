@@ -1,3 +1,6 @@
+/*Copyright (c) 2026 Community Health and Aging Outcomes (CHAO) Lab, Rutgers University.
+Released under the MIT License. Full text in LICENSE at
+https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;
 *PROJECT NAME: Traj2 Ordinal-Probit Group-Based Trajectory Macros
 LAST UPDATED DATE: 23 JUL 2026
 DATA SOURCES: NONE. This file defines macros only. Input is either the optional simulator or a user table
@@ -20,7 +23,7 @@ AUTHOR: Haiqun Lin, Weiyi Xia, Anum Zafar
 #STEP 4:Model fit. ORDPROB_MIX_FIT_ONE runs one NLMIXED fit at a fixed class count
 #STEP 5:Plots. ORDPROB_MIX_PLOT_ONE draws class proportions and predicted mean trajectories
 ##########################################################################################################################;
-
+*/
 /*##########################################################################################################################
 *STEP 1: OPTIONAL SIMULATOR
 ##########################################################################################################################

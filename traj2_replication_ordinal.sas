@@ -1,4 +1,4 @@
-*************************************************************************************************************************
+/*************************************************************************************************************************
 *************************************************************************************************************************
 COMMUNITY HEALTH AND AGING OUTCOMES (CHAO) LAB - INSTITUTE FOR HEALTH, HEALTH CARE POLICY & AGING RESEARCH - 
 RUTGERS, THE STATE UNIVERSITY OF NEW JERSEY                  
@@ -461,7 +461,7 @@ DELETE oa_EST_K&KTRUE. oa_ESTS_K&KTRUE. oa_FIT_K&KTRUE.
   %DO kk=&KMIN. %TO &KMAX.; oak&kk._EST_K&kk. oak&kk._ESTS_K&kk. oak&kk._FIT_K&kk. %END; ;
 QUIT;
 
-%IF %SYSFUNC(MOD(&r.,25))=0 %THEN %PUT NOTE: ===== completed replication &r. of &NREP. =====;
+%IF %SYSFUNC(MOD(&r.,25))=0 %THEN %PUT ===== completed replication &r. of &NREP. =====;
 %END;
 
 OPTIONS NOTES SOURCE SOURCE2 MPRINT;
@@ -683,11 +683,6 @@ VAR classnum t EY_traj2;
 FORMAT EY_traj2 8.4;
 RUN;
 
-TITLE 'QC 6. Cross-check data: simulated class sizes';
-TITLE2 "compare with the generating proportions &PA., &PB., &PC.";
-PROC FREQ DATA=BASE_FILE_SRS;
-TABLES trueclass / NOCUM;
-RUN;
 
 %END;
 

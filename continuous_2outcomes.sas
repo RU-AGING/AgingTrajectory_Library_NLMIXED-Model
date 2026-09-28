@@ -624,15 +624,24 @@ MERGE avg(RENAME=(ESTIMATE=avg)) pred2;
 BY outcome quar class;
 RUN;
 
-TITLE 'Predicted vs Averaged Observed by Latent Class';
+/*TITLE 'Predicted vs Averaged Observed by Latent Class';
 PROC SGPANEL DATA=data_plot;
 PANELBY outcome;
 SERIES  x=quar y=pred / GROUP=class name="pred";
 SCATTER x=quar y=avg  / GROUP=class name="obs";
 KEYLEGEND "pred" / TITLE="Predicted";
 KEYLEGEND "obs"  / TITLE="Averaged Observed";
-RUN;
+RUN;*/
 TITLE;
+    proc sgpanel data=data_plot;
+    panelby outcome / novarname;
+    series  x=quar y=pred / group=class name="pred";
+    scatter x=quar y=avg  / group=class name="obs";
+    colaxis label="Quarter";
+    rowaxis label="Visits per quarter";
+    keylegend "pred" / title="Predicted";
+    keylegend "obs"  / title="Averaged Observed";
+  run;
 
 TITLE 'Averaged Posterior Class Membership';
 PROC MEANS DATA=pred_membership_y MEAN MISSING;

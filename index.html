@@ -118,7 +118,7 @@ footer a{color:#64748b;text-decoration:none}
   <div class="hdr-top">
     <div class="lab">Community Health and Aging Outcomes (CHAO) Lab · Rutgers University</div>
     <h1>Traj2 <span>GBTM Macro Library</span> · Documentation Portal</h1>
-    <p>A native macro library for single and multi-outcome group-based trajectory modeling in SAS. The current release implements censored-normal continuous (single- and joint two-outcome) and ordinal-probit pipelines via PROC NLMIXED, with no externally compiled code: runs as-is in the CMS VRDC and other secure SAS environments. ZIP/ZINB count-outcome prototypes are in the repository and undergoing quality assurance.</p>
+    <p>A native macro library for single and joint two-outcome group-based trajectory modeling in SAS. The current release implements censored-normal continuous (single- and joint two-outcome) and ordinal-probit pipelines via PROC NLMIXED, with no externally compiled code: runs as-is in the CMS VRDC and other secure SAS environments. ZIP/ZINB count-outcome prototypes are in the repository and undergoing quality assurance.</p>
     <div class="chips">
       <span class="chip">📅 July 2026</span>
       <span class="chip">👩‍💻 Anum Zafar · Weiyi Xia · Haiqun Lin · Olga F. Jarrín</span>
@@ -162,7 +162,7 @@ footer a{color:#64748b;text-decoration:none}
   <div class="sec"><h2>Citation</h2><div class="rule"></div></div>
  <div class="cite">
     <p>If you use Traj2 in your research, please cite:</p>
-    <div class="ref">Zafar, A., Xia, W., Lin, H., &amp; Jarrín, O. F. (2026). <em>Traj2: A Native Macro Library for Single and Multi-Outcome Group-Based Trajectory Modeling in SAS</em> [Software]. <a href="https://doi.org/10.17605/OSF.IO/6FG5J">https://doi.org/10.17605/OSF.IO/6FG5J</a></div>
+    <div class="ref">Zafar, A., Xia, W., Lin, H., &amp; Jarrín, O. F. (2026). <em>Traj2: A Native Macro Library for Single and Joint Two-Outcome Group-Based Trajectory Modeling in SAS</em> [Software]. <a href="https://doi.org/10.17605/OSF.IO/6FG5J">https://doi.org/10.17605/OSF.IO/6FG5J</a></div>
   </div>
   <div class="sec"><h2>What is GBTM?</h2><div class="rule"></div></div>
   <div class="mexp">
@@ -236,7 +236,7 @@ and p(Y_t^k | X=j) is the class-conditional density
   <div class="grid g2">
     <div class="ov">
       <div class="oi">🎯</div><h3>Agreement with PROC TRAJ</h3>
-      <p>On identical simulated data (N = 10,000, three-class quadratic censored-normal), the single-outcome fit matches PROC TRAJ with a maximum absolute coefficient difference of 1.0 × 10⁻⁴ across all nine coefficients. The joint two-outcome (multi-trajectory) fit matches to ≈ 5 × 10⁻⁴ across all 22 parameters; class proportions agree to three decimals and −2 log L differs by about 0.2.</p>
+      <p>On identical simulated data (N = 10,000, three-class quadratic censored-normal), the single-outcome fit matches PROC TRAJ with a maximum absolute coefficient difference of 1.1 × 10⁻⁴ across all nine coefficients, class proportions agree to three decimals, and −2 log L differs by about 0.1. The joint two-outcome (multi-trajectory) fit matches to 4.6 × 10⁻⁴ across the 20 trajectory and residual-SD parameters, and class proportions differ by at most 0.0034.</p>
       <span class="ob" style="background:#d1fae5;color:#065f46">Numerical-tolerance match</span>
     </div>
     <div class="ov">
@@ -262,7 +262,7 @@ and p(Y_t^k | X=j) is the class-conditional density
       <div class="mexp-icon ci-te">🧠</div>
       <div><h2>2019 Medicare Decedent Cohort · CMS VRDC</h2><div class="mexp-sub">Lin, April-Sanders, Zafar &amp; Jarrín (2026), manuscript submitted for publication</div></div>
     </div>
-    <p>Using the ordinal-probit pipeline (<strong>%ordprob_mix_fit_one</strong>), cognitive function during the final five years of life was classified in a 10% random sample (<strong>N = 181,463</strong>) of Medicare beneficiaries older than 50 years who died in 2019. Assessments were quarterly over <strong>T = 20 quarters</strong>, in four categories of cognitive impairment (none, memory loss, mild, moderate-to-severe/dementia), with each class trajectory fitted as a quadratic function of time on the cumulative-probit scale.</p>
+    <p>Using the ordinal-probit pipeline (<strong>%ordprob_mix_fit_one</strong>), cognitive function during the final five years of life was classified in a 10% random sample (<strong>N = 181,463</strong>) of Medicare beneficiaries aged 50 and older who died in 2019. Assessments were quarterly over <strong>T = 20 quarters</strong>, in four categories of cognitive impairment (none, memory loss, mild, moderate-to-severe/dementia), with each class trajectory fitted as a quadratic function of time on the cumulative-probit scale.</p>
     <p>Models with 2–11 classes were fit; by BIC, a <strong>ten-class solution</strong> was preferred. Recovered trajectories ranged from a large group with near-stable cognition (35.9% of the sample) to a group severely impaired for the entire duration (12.1%). Reproducibility was confirmed by refitting over several different 10% random samples, each returning the same ten-class solution. The entire analysis was carried out <strong>inside the restricted CMS VRDC</strong>, where PROC TRAJ's compiled binary is unavailable, precisely the setting that motivated Traj2, and demonstrates scalability: 181,463 subjects, 20 time points, ten latent classes (59 parameters), fit in ~53 minutes wall-clock.</p>
   </div>
 
@@ -942,7 +942,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
     <tr><td class="mo">O01</td><td>Ordinal</td><td>Simulator + base build</td><td>BASE_FILE_SRS with BENE_ID, quar1–quar12 (values 1–12), Y1_1–Y1_12</td></tr>
     <tr><td class="mo">O03</td><td>Ordinal</td><td>4-class fit + plotting</td><td>Proportion barplot + 4 predicted trajectories</td></tr>
     <tr><td class="mo">O06</td><td>Ordinal</td><td>Category mismatch (Y outside ycodes)</td><td>Error or near-zero probabilities; behavior documented</td></tr>
-    <tr><td class="mo">O07</td><td>Ordinal</td><td>Identification / SE behavior</td><td>With τ_j,1 fixed at 0 and β_j0 free, all SEs estimable (non-missing, positive); no Moore–Penrose warnings</td></tr>
+    <tr><td class="mo">O07</td><td>Ordinal</td><td>Identification / SE behavior</td><td>With τ_j,1 fixed at 0 and β_j0 free, all SEs estimable (non-missing, positive)</td></tr>
     <tr><td class="mo">O08</td><td>Ordinal</td><td>start_values= overrides (increments only)</td><td>Single PARMS; defaults + overrides; no duplicates; first threshold never supplied</td></tr>
     <tr><td class="mo">Z01</td><td>ZIP (proto)</td><td>Simulator basic run (BIN4)</td><td>SIM_LONG, SIM_WIDE created; y within 0..cap</td></tr>
     <tr><td class="mo">Z04</td><td>ZIP (proto)</td><td>2-class baseline fit</td><td>Convergence; pe_zip and fit_zip exist</td></tr>

@@ -57,17 +57,34 @@ Each file is self-contained, includes an optional simulator, and follows a `set 
 |---|---|
 | `ordinal_probit.sas`, `continuous_2outcomes.sas`, `zip_poisson.sas`, `zinb.sas` | Plain-text SAS macro files (one per model family) |
 | `Data_Dictionary_continuous_2outcomes.pdf`, `Data_Dictionary_ordinal_probit.pdf`, `Data_Dictionary_zinb.pdf`, `Data_Dictionary_zip_poisson.pdf` | Data Dictionary |
-| `continuous_2outcomes_user_guide.pdf`,`ordinal_probit_user_guide.pdf`,`zinb_user_guide.pdf`, `zinb_user_guide.pdf` | User guides |
+| `continuous_2outcomes_user_guide.pdf`, `ordinal_probit_user_guide.pdf`, `zip_poisson_user_guide.pdf`, `zinb_user_guide.pdf` | User guides |
+| `traj2_replication_continuous.sas`, `traj2_replication_ordinal.sas`, `traj2_lcmm_crosscheck.R`, `traj2_threshold_check.sas`, `traj2_threshold_lcmm.R` | Scripts that reproduce the published results (see below) |
 | `TRAJ2_QA_test_cases.xlsx` | QA test cases |
 | `Dockerfile`, `docker-compose.yml`, `docker/entrypoint.sh` | Docker image build files |
 | `BUILD_AND_PUSH.md` | Instructions for rebuilding and publishing the Docker image |
 | `index.html` | GitHub Pages documentation portal source |
 
+## Reproducing the published results
+
+All results are based on simulated data with fixed random-number seeds, so they reproduce exactly. Edit the path block at the top of each script, then run:
+
+| Paper section | Run | Output |
+|---|---|---|
+| MethodsX Sections 2.9 and 3.1 (censored-normal, agreement with `PROC TRAJ`) | `traj2_replication_continuous.sas` | Tables 10 to 13, Figures 3 and 4 |
+| MethodsX Sections 2.8 and 3.2 (ordinal, agreement with R `lcmm`) | `traj2_replication_ordinal.sas`, then `traj2_lcmm_crosscheck.R` | Table 14, Figures 1, 2 and 5 |
+| MethodsX Section 3.3 (class-specific thresholds) | `traj2_threshold_check.sas`, then `traj2_threshold_lcmm.R` | Tables 15 and 16, Figure 6 |
+
+The `PROC TRAJ` comparison needs the compiled `PROC TRAJ` binary; set `RUN_TRAJ=0` where it is not installed. The R scripts need R 4.x and the `lcmm` package.
+
 ## Citation
 
 If you use Traj2 in your research, please cite:
 
-> Zafar, A., Xia, W., Lin, H., & Jarrín, O. F. (2026). *Traj2: A Native Macro Library for Single and Multi-Outcome Group-Based Trajectory Modeling in SAS.* Journal of Statistical Software (in preparation).
+> Zafar, A., Xia, W., Lin, H., & Jarrín, O. F. (2026). *Traj2: Censored-normal and ordinal-probit group-based trajectory modeling in SAS for restricted data environments.* MethodsX (submitted).
+
+> Zafar, A., Xia, W., Lin, H., & Jarrín, O. F. (2026). *Traj2: A native macro library for single and joint two-outcome group-based trajectory modeling in SAS.* Computer Methods and Programs in Biomedicine (submitted).
+
+Software archive: Zafar, A., Xia, W., Lin, H., & Jarrín, O. F. (2026). *Traj2 SAS macro library.* OSF. https://doi.org/10.17605/OSF.IO/6FG5J
 
 ## Authors
 

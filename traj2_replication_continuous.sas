@@ -2,11 +2,15 @@
 Released under the MIT License. Full text in LICENSE at
 https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;
 *PROJECT NAME: Traj2 Replication, Continuous Censored-Normal Outcome Family
-LAST UPDATED DATE: 23 JUL 2026
+LAST UPDATED DATE: 30 SEP 2026 (Figure 4 title removed, censoring rates added to QC 3)
 DATA SOURCES: NONE. All input is simulated in STEP 2 from the data generating process declared in STEP 0
-PURPOSE: Single standalone script reproducing the continuous-outcome tables and figures in
-Traj2: A Native Macro Library for Single and Multi-Outcome Group-Based Trajectory Modeling in SAS
-Zafar, Xia, Lin, Jarrin, Journal of Statistical Software. Produces
+PURPOSE: Single standalone script reproducing the continuous-outcome results in Traj2: Censored-normal
+and ordinal-probit group-based trajectory modeling in SAS for restricted data environments, Zafar, Xia,
+Lin, Jarrin, MethodsX, and in its companion article.
+TABLE NUMBERING: the table and figure numbers below follow an earlier draft. In the MethodsX article,
+STEP 3 gives Section 3.1 (Tables 11, 12, 13 and Figure 4, censoring rates in QC 3) and STEP 5 gives
+Section 2.9 (Table 10 and Figure 3). STEP 4 and the Table 9 output belong to the companion article.
+Produces
 (a)STEP 3, Tables 9, 11, 12, 13 and Figures 3 and 4. Validation run, N=10,000, SEED_VAL=20260609
 (b)STEP 4, Table 10. Monte Carlo bias and coverage, 200 replications, N=2,500, SEED_MC=770000
 (c)STEP 5, Table 17 and Figure 7. Worked example of paper Sections 5.2 and 5.3, N=500
@@ -41,8 +45,8 @@ AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 
 %LET RUN_VALIDATION=1;   *1=run STEP 3, Tables 9 11 12 13 and Figures 3 and 4;
 %LET RUN_TRAJ=1;         *1=also run the PROC TRAJ half of STEP 3. Set to 0 inside the VRDC;
-%LET RUN_MC=1;           *1=run STEP 4, Table 10. This is the slow one;
-%LET RUN_EXAMPLE=1;      *1=run STEP 5, Table 17 and Figure 7;
+%LET RUN_MC=0;           *1=run STEP 4, Table 10. This is the slow one;
+%LET RUN_EXAMPLE=0;      *1=run STEP 5, Table 17 and Figure 7;
 
 %LET SEED_VAL=20260609;  *seed behind Tables 9 11 12 13 and Figures 3 and 4;
 %LET NVAL=10000;         *subjects in the validation data set;
@@ -474,15 +478,19 @@ END;
 KEEP class quar mu_true mu_t2 mu_tr;
 RUN;
 
-TITLE 'Figure 4. Fitted class trajectories on the latent scale';
-TITLE2 'lines = truth, filled circles = Traj2, x = PROC TRAJ (markers sit on the lines)';
+
+OPTIONS NODATE NONUMBER;
+*no TITLE here: the figure caption in the paper carries the description;
+TITLE;
+TITLE2;
 ODS GRAPHICS ON / IMAGENAME="fig_traj_overlay";
+
 PROC SGPLOT DATA=curve_src;
 SERIES X=quar Y=mu_true / GROUP=class LINEATTRS=(THICKNESS=2) NAME="ln";
 SCATTER X=quar Y=mu_t2 / GROUP=class MARKERATTRS=(SYMBOL=CIRCLEFILLED SIZE=9);
 SCATTER X=quar Y=mu_tr / GROUP=class MARKERATTRS=(SYMBOL=X SIZE=11);
 KEYLEGEND "ln" / TITLE="Latent class";
-XAXIS LABEL="Quarter (t)";
+XAXIS LABEL="Quarter (t)" VALUES=(1 TO 12 BY 1);
 YAXIS LABEL="Mean trajectory (latent scale)";
 RUN;
 TITLE;
@@ -1125,10 +1133,27 @@ PROC PRINT DATA=joint_pi NOOBS;
 FORMAT pi 6.4;
 RUN;
 
+*percent of values at each bound, one row per outcome and time point;
+DATA cens_long;
+SET val_data;
+LENGTH outcome $3 bound $6;
+ARRAY H[12] QHH1-QHH12;
+ARRAY P[12] QINP1-QINP12;
+DO j=1 TO 12;
+outcome='HH';
+IF H[j]=0 THEN bound='At 0'; ELSE IF H[j]=&DGP_CAP. THEN bound='At 100'; ELSE bound='Inside';
+OUTPUT;
+outcome='INP';
+IF P[j]=0 THEN bound='At 0'; ELSE IF P[j]=&DGP_CAP. THEN bound='At 100'; ELSE bound='Inside';
+OUTPUT;
+END;
+KEEP outcome bound;
+RUN;
+
 TITLE 'QC 3. Censoring check on the validation data';
-TITLE2 'both bounds must carry mass, otherwise the censored normal reduces to a plain normal';
-PROC MEANS DATA=val_data N NMISS MIN MAX MEAN;
-VAR QHH1 QHH12 QINP1 QINP12;
+TITLE2 'expected row percents: HH 6.32 at 0 and 5.15 at 100, INP 3.77 at 0 and 0.01 at 100 (paper Section 3.1)';
+PROC FREQ DATA=cens_long;
+TABLES outcome*bound / NOCOL NOPERCENT;
 RUN;
 
 TITLE 'QC 4. Simulated class sizes on the validation data';
@@ -1174,7 +1199,7 @@ DELETE sim_long sim_wide _y1_w _y2_w parameter data_pred pred_temp pred pred2
        t2_beta t2_w t2_rank truth_rank t2_pi t2_coef traj_coef traj_props
        trajj_o1 trajj_o2 trajj_both trajj_rk t2j_beta t2j_w t2j_rk
        t2_post t2_long t2_obs t2_pred t2_panel p_y1
-       traj_stat_g traj_coef2 traj_long traj_obs2 traj_pred2 traj_panel;
+       traj_stat_g traj_coef2 traj_long traj_obs2 traj_pred2 traj_panel cens_long;
 QUIT;
 
 /*##########################################################################################################################

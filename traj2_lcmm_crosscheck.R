@@ -3,11 +3,12 @@
 #https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;
 ##########################################################################################################################
 # PROJECT NAME: Traj2 Ordinal Cross-Check, R Side
-# LAST UPDATED DATE: 24 JUL 2026
+# LAST UPDATED DATE: 30 SEP 2026 (lcmm proportions from the mixing parameters; Figure 5 axis labels)
 # DATA SOURCES: two CSV files written by traj2_replication_ordinal.sas STEP 4. No other input
 # PURPOSE: Companion to traj2_replication_ordinal.sas. Produces the lcmm side of the
-# cross-implementation comparison in Traj2: A Native Macro Library for Single and Multi-Outcome
-# Group-Based Trajectory Modeling in SAS, Zafar, Xia, Lin, Jarrin, Journal of Statistical Software.
+# cross-implementation comparison in Traj2: Censored-normal and ordinal-probit group-based trajectory
+# modeling in SAS for restricted data environments, Zafar, Xia, Lin, Jarrin, MethodsX, Section 3.2,
+# Table 14 and Figure 5.
 # (a)fits the same three-class ordinal model in lcmm
 # (b)reports lcmm class proportions and maximised log likelihood
 # (c)matches classes across the two programs and reports fitted-trajectory agreement
@@ -33,12 +34,6 @@
 
 ##########################################################################################################################
 # STEP 0: PATHS AND RUN CONTROLS
-##########################################################################################################################
-# NOTE ON THE PUBLISHED TABLE 15: the paper reports lcmm proportions of 50.4, 33.0 and 16.6 percent
-# against Traj2 values of 49.7, 33.5 and 16.8, with -2 log L of 68,520 and 68,517. The current SAS
-# cross-check run does NOT return those Traj2 values, so the published pair came from an earlier
-# configuration. Regenerate BOTH columns of Table 15 from one run rather than trying to reproduce
-# the published figures, and recompute the agreement summary from the new comparison.
 ##########################################################################################################################
 
 library(lcmm)
@@ -99,14 +94,15 @@ summary(m3)
 ##########################################################################################################################
 # STEP 3: LCMM CLASS PROPORTIONS AND LOG LIKELIHOOD
 ##########################################################################################################################
-# CAUTION: pi_lcmm below is the proportion of subjects ASSIGNED to each class by maximum posterior
-# probability, not the estimated mixing parameter. The Traj2 column of Table 15 reports the model
-# mixing proportions from the softmax of alpha0_*. The two agree closely when classes are well
-# separated but they are not the same quantity, so state in the table note which one is reported,
-# or take lcmm's estimated mixing proportions from summary(m3) instead.
+# pi_lcmm is lcmm's estimated mixing proportion, from the class-membership intercepts, so it is the
+# same quantity as the Traj2 column (softmax of alpha0_*). The class-membership intercepts are the
+# first KTRUE-1 entries of m3$best, with the last class as reference. An earlier version of this
+# script used the share of subjects ASSIGNED to each class by maximum posterior, which is a
+# different quantity.
 ##########################################################################################################################
 
-pi_lcmm <- as.numeric(table(m3$pprob$class)) / nrow(m3$pprob)
+b_int <- m3$best[1:(KTRUE - 1)]
+pi_lcmm <- exp(c(b_int, 0)) / sum(exp(c(b_int, 0)))
 
 loglik_lcmm  <- m3$loglik
 m2loglik_lcmm <- -2 * loglik_lcmm
@@ -169,7 +165,7 @@ cmp <- do.call(rbind, lapply(1:KTRUE, function(k) {
 }))
 cmp$absdiff <- abs(cmp$EY_traj2 - cmp$EY_lcmm)
 
-cat("\n--- Table 15: fitted E[Y_t | class] agreement ---\n")
+cat("\n--- Table 14: fitted E[Y_t | class] agreement ---\n")
 cat("max absolute difference:", round(max(cmp$absdiff), 4), "\n")
 cat("mean absolute difference:", round(mean(cmp$absdiff), 4), "\n")
 cat("across", KTRUE * TT, "class-by-time points\n")
@@ -187,8 +183,8 @@ write.csv(cmp, file.path(outpath, "table15_EY_comparison.csv"), row.names = FALS
 
 pdf(file.path(outpath, "fig2_ordinal_traj2_vs_lcmm.pdf"), width = 7, height = 5)
 plot(range(cmp$t), range(c(cmp$EY_traj2, cmp$EY_lcmm)), type = "n",
-     xlab = "Time", ylab = "E[Y | class] (0-3 scale)",
-     main = "Ordinal GBTM: Traj2 (solid) vs lcmm (dashed)")
+     xlab = "Quarter (t)", ylab = "E[Y | class] (0 to 3 scale)", xaxt = "n")
+axis(1, at = 1:TT)
 cols <- c("darkgreen", "orange3", "purple3")
 for (k in 1:KTRUE) {
   s <- cmp[cmp$class == k, ]
@@ -196,10 +192,8 @@ for (k in 1:KTRUE) {
   lines(s$t, s$EY_lcmm,  col = cols[k], lwd = 2, lty = 2)
   points(s$t, s$EY_traj2, col = cols[k], pch = 16, cex = 0.6)
 }
-legend("bottomright", legend = paste("Class", 1:KTRUE),
-       col = cols, lwd = 2, bty = "n")
-legend("topleft", legend = c("Traj2 (solid)", "lcmm (dashed)"),
-       lty = c(1, 2), bty = "n")
+legend(x = 1, y = 2.0, legend = paste("Class", 1:KTRUE), col = cols, lwd = 2, bty = "n")
+legend("topleft", legend = c("Traj2 (solid)", "lcmm (dashed)"), lty = c(1, 2), bty = "n")
 dev.off()
 
 cat("\nWrote table15_EY_comparison.csv and fig2_ordinal_traj2_vs_lcmm.pdf to",
@@ -212,7 +206,7 @@ cat("\nWrote table15_EY_comparison.csv and fig2_ordinal_traj2_vs_lcmm.pdf to",
 # table15_EY_comparison.csv        one row per class and time point. EY_traj2, EY_lcmm, absdiff
 # fig2_ordinal_traj2_vs_lcmm.pdf   the Traj2 versus lcmm overlay
 #
-# CONSOLE OUTPUT TO CARRY INTO TABLE 15
+# CONSOLE OUTPUT TO CARRY INTO TABLE 14
 #   lcmm class proportions, reported in Traj2 class order
 #   lcmm -2 log L
 #   maximum and mean absolute difference in fitted E[Y | class]

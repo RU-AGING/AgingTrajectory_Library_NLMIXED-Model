@@ -587,11 +587,28 @@ b0=BETA0; b1=BETA1; b2=BETA2;
 KEEP grp outc b0 b1 b2;
 RUN;
 
+*OUTSTAT2= does not return outcome 2. PROC TRAJ writes outcome 1 into
+ it a second time, so reading trajj_stat2 puts the HH coefficients in
+ the INP rows and Table 12 prints INP differences of about 20, 9.9 and
+ -3.0 when the two programs in fact agree to four decimal places.
+ Outcome 2 is read from trajj_est instead. Its coefficient columns are
+ named INTERC<outcome><group>, LINEAR<outcome><group> and
+ QUADRA<outcome><group>, and only the _TYPE_=PARMS row holds the
+ estimates: the STDERR and COV rows must be dropped or they multiply
+ the table;
 DATA trajj_o2;
-SET trajj_stat2;
-grp=_N_;
+SET trajj_est;
+WHERE _TYPE_='PARMS';
+ARRAY EB0[3] INTERC21 INTERC22 INTERC23;
+ARRAY EB1[3] LINEAR21 LINEAR22 LINEAR23;
+ARRAY EB2[3] QUADRA21 QUADRA22 QUADRA23;
+DO grp=1 TO &class.;
 outc=2;
-b0=BETA0; b1=BETA1; b2=BETA2;
+b0=EB0[grp];
+b1=EB1[grp];
+b2=EB2[grp];
+OUTPUT;
+END;
 KEEP grp outc b0 b1 b2;
 RUN;
 

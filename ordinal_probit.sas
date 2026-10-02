@@ -2,15 +2,17 @@
 Released under the MIT License. Full text in LICENSE at
 https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;
 *PROJECT NAME: Traj2 Ordinal-Probit Group-Based Trajectory Macros
-LAST UPDATED DATE: 23 JUL 2026
+LAST UPDATED DATE: 01 OCT 2026
 DATA SOURCES: NONE. This file defines macros only. Input is either the optional simulator or a user table
 PURPOSE: Single-outcome ordinal-probit latent class trajectory modelling in base SAS. Provides
 (a)an optional data simulator for worked examples
 (b)a wide-format data-prep helper
 (c)one PROC NLMIXED fit at a fixed number of latent classes
-(d)class-proportion and predicted-trajectory plots
+(d)posterior class membership, modal assignment, class sizes with APP and OCC
+(e)class-proportion and predicted-trajectory plots
 IDENTIFICATION: the first threshold is fixed at 0 and the class intercept beta_*0 is freely estimated.
-The free threshold parameters are the increments i*2, i*3 and onward. There is no i*1.
+The free threshold parameters are the increments i*2, i*3 and onward. There is no i*1. The increments are
+held positive by a BOUNDS statement, so the thresholds stay strictly ordered within each class.
 AUTHOR: Haiqun Lin, Weiyi Xia, Anum Zafar
 ##########################################################################################################################
 *Execution Environment: SAS 9.4 or later, PROC NLMIXED from SAS/STAT. No compiled components         *
@@ -21,7 +23,8 @@ AUTHOR: Haiqun Lin, Weiyi Xia, Anum Zafar
 #STEP 2:Data prep. BUILD_BASE_FROM_SIMWIDE builds BASE_FILE_SRS with quar1 to quarT holding 1 to T
 #STEP 3:Helper macros. Class letters, override indexing, default PARMS construction
 #STEP 4:Model fit. ORDPROB_MIX_FIT_ONE runs one NLMIXED fit at a fixed class count
-#STEP 5:Plots. ORDPROB_MIX_PLOT_ONE draws class proportions and predicted mean trajectories
+#STEP 5:Post-estimation. ORDPROB_MIX_POST_ONE computes posteriors, modal class, class sizes, APP and OCC
+#STEP 6:Plots. ORDPROB_MIX_PLOT_ONE draws class proportions and predicted mean trajectories
 ##########################################################################################################################;
 */
 /*##########################################################################################################################
@@ -129,6 +132,11 @@ start_values so the defaults do not emit them twice. _MAKE_DEFAULT_PARMS builds 
 The PARMS list holds the mixing intercepts alpha0_* for classes 2 upward, the polynomial coefficients
 beta_*0 to beta_*deg, and the threshold increments i*2 to i*(m-1). The first threshold is fixed at 0 and
 is therefore NOT a parameter, so i*1 is never emitted.
+
+The increments default to 1 rather than 0 because they are bounded below by zero in STEP 4 and a start of
+zero would sit on the boundary. Starting every increment at 1 places the first threshold at 0, the second
+at 1, the third at 2 and so on, which is the same starting point in threshold space that the earlier
+exponential-increment version reached from a start of zero.
 ##########################################################################################################################*/
 *Class index to letter, A through O;
 %MACRO CL(c); %SCAN(A B C D E F G H I J K L M N O, &c., %STR( )) %MEND CL;
@@ -160,8 +168,9 @@ is therefore NOT a parameter, so i*1 is never emitted.
 %IF NOT %SYMEXIST(OV_beta_&l.0) %THEN %LET s=&s beta_&l.0=0;
 %IF &deg>=1 %THEN %DO; %IF NOT %SYMEXIST(OV_beta_&l.1) %THEN %LET s=&s beta_&l.1=0; %END;
 %IF &deg>=2 %THEN %DO j=2 %TO &deg; %IF NOT %SYMEXIST(OV_beta_&l.&j) %THEN %LET s=&s beta_&l.&j.=0; %END;
-%*threshold increments i*2 to i*(m-1). The first threshold is fixed at 0;
-%IF &m1>=2 %THEN %DO j=2 %TO &m1; %IF NOT %SYMEXIST(OV_i&l.&j) %THEN %LET s=&s i&l.&j.=0; %END;
+%*threshold increments i*2 to i*(m-1). The first threshold is fixed at 0. Started at 1, not 0,
+ because the increments are bounded below by zero in the fitting macro;
+%IF &m1>=2 %THEN %DO j=2 %TO &m1; %IF NOT %SYMEXIST(OV_i&l.&j) %THEN %LET s=&s i&l.&j.=1; %END;
 %END;
 &s
 %MEND _make_default_parms;
@@ -171,7 +180,11 @@ is therefore NOT a parameter, so i*1 is never emitted.
 ##########################################################################################################################
 One PROC NLMIXED run at a fixed class count k. Class A mixing intercept is fixed at 0, class weights come
 from a softmax over alpha0_*, and each class contributes a cumulative-probit likelihood with thresholds
-built from exponential increments so monotonicity holds without constrained optimization.
+built as cumulative sums of increments, th1 = 0 and thj = th(j-1) + i*j, where every increment is held
+positive by a generated BOUNDS statement so the thresholds stay strictly ordered within each class.
+
+Time points whose outcome value does not match any entry in ycodes, including missing values, contribute
+nothing to the likelihood. The subject still contributes every time point that does match.
 
 SAMPLE DATA OUTPUT DATASETS (prefix and k as supplied):
 ordprob_single_EST_K3    Parameter   Estimate   StandardError   Probt
@@ -183,11 +196,11 @@ ordprob_single_ESTS_K3   Label       Estimate   StandardError
   yvars=Y1_1-Y1_12, tvars=quar1-quar12, ttotal=12,
   m=4, ycodes=0 1 2 3, deg=2,
   k=4, qpoints=40, maxiter=1000, tech=dbldog,
-  start_values=,                     /* e.g., %str(alpha0_B=-0.5 beta_a0=0.1 ia2=0 ia3=0) */
+  start_values=,                     /* e.g., %str(alpha0_B=-0.5 beta_a0=0.1 ia2=1 ia3=1) */
   bounds=,                           /* e.g., %str(-6 < beta_a0 beta_b0 beta_c0 beta_d0 < 6)    */
   outestlib=work, prefix=ordprob_single
 );
-%LOCAL m1 d j;
+%LOCAL m1 d j _ibnd _bc _bj _bl;
 %LET m1=%EVAL(&m-1);
 %LET d=&deg;
 
@@ -216,6 +229,16 @@ QUIT;
 *Index the user overrides so the defaults skip them;
 %IF %LENGTH(&start_values) %THEN %_index_override_pairs(%SUPERQ(start_values));
 
+*Build the increment bounds i*2>0 to i*(m-1)>0 for every class;
+%LET _ibnd=;
+%DO _bc=1 %TO &k;
+%LET _bl=%LOWCASE(%CL(&_bc));
+%IF &m1>=2 %THEN %DO _bj=2 %TO &m1;
+%IF %LENGTH(&_ibnd) %THEN %LET _ibnd=&_ibnd,;
+%LET _ibnd=&_ibnd i&_bl.&_bj.>0;
+%END;
+%END;
+
 ODS LISTING;
 ODS OUTPUT
 ParameterEstimates  =&outestlib..&prefix._EST_K&k
@@ -230,8 +253,16 @@ ARRAY tv[&ttotal] &tvars;
 PARMS %_make_default_parms(&k, &m, &deg)
       %SUPERQ(start_values);
 
-*Optional bounds;
-%IF %LENGTH(&bounds) %THEN %DO; BOUNDS &bounds; %END;
+*Threshold increments must stay positive so the thresholds remain ordered. Generated here and combined
+ with anything the user supplies through bounds=;
+%IF %LENGTH(&_ibnd) %THEN %DO;
+BOUNDS &_ibnd
+%IF %LENGTH(&bounds) %THEN %DO; , &bounds %END;
+;
+%END;
+%ELSE %IF %LENGTH(&bounds) %THEN %DO;
+BOUNDS &bounds;
+%END;
 
 *Fix the class A mixing intercept;
 alpha0_A = 0;
@@ -248,6 +279,7 @@ DO t=1 TO &ttotal;
 tval = tv[t];
 cat = .; %DO j=1 %TO &m; IF yv[t] = &&ycode&j THEN cat=&j; %END;
 
+*cat stays missing when the value is blank or is not one of the ycodes, so that time point is skipped;
 IF cat>0 THEN DO;
 %DO c=1 %TO &k;
 %LET U=%CL(&c); %LET L=%LOWCASE(&U);
@@ -257,11 +289,11 @@ eta_&U = beta_&L.0;
 %IF &d>=1 %THEN %DO; eta_&U = eta_&U + beta_&L.1*(tval); %END;
 %IF &d>=2 %THEN %DO j=2 %TO &d; eta_&U = eta_&U + beta_&L.&j.*((tval)**&j); %END;
 
-*Ordered thresholds. th1 is fixed at 0, thj = th(j-1) + exp(iLj);
+*Ordered thresholds. th1 is fixed at 0, thj = th(j-1) + iLj with iLj held positive by BOUNDS;
 th1_&U = 0;
 %IF &m1>=2 %THEN %DO j=2 %TO &m1;
-%IF &j=2 %THEN %DO; th&j._&U = th1_&U + EXP(i&L.&j); %END;
-%ELSE %DO;          th&j._&U = th%EVAL(&j-1)_&U + EXP(i&L.&j); %END;
+%IF &j=2 %THEN %DO; th&j._&U = th1_&U + i&L.&j; %END;
+%ELSE %DO;          th&j._&U = th%EVAL(&j-1)_&U + i&L.&j; %END;
 %END;
 
 *Category probabilities;
@@ -288,11 +320,11 @@ dummy=0;
 MODEL dummy ~ GENERAL(LOG(mix));
 
 *Thresholds on the natural scale. threshold1 is fixed at 0 and is not estimated, so report
- threshold2 to threshold(m-1) where threshold_jj = exp(iL2) + ... + exp(iL_jj);
+ threshold2 to threshold(m-1) where threshold_jj = iL2 + ... + iL_jj;
 %DO c=1 %TO &k; %LET U=%CL(&c); %LET L=%LOWCASE(&U);
 %IF &m1>=2 %THEN %DO _jj=2 %TO &m1;
-%LOCAL _expr; %LET _expr = EXP(i&L.2);
-%DO j=3 %TO &_jj; %LET _expr = &_expr + EXP(i&L.&j); %END;
+%LOCAL _expr; %LET _expr = i&L.2;
+%DO j=3 %TO &_jj; %LET _expr = &_expr + i&L.&j; %END;
 ESTIMATE "threshold&_jj._&L" &_expr;
 %END;
 %END;
@@ -302,7 +334,181 @@ ODS OUTPUT CLOSE;
 %MEND ordprob_mix_fit_one;
 
 /*##########################################################################################################################
-*STEP 5: PLOTS
+*STEP 5: POST-ESTIMATION
+##########################################################################################################################
+Posterior class-membership probabilities for every subject, modal class assignment, and the class table
+with average posterior probability (APP) and odds of correct classification (OCC). Reads the parameter
+estimates written by STEP 4 and recomputes each class log-likelihood on the same data with the same
+likelihood and the same skipping rule for blanks, so the posteriors are consistent with the fit.
+
+APP_j is the mean posterior probability of class j over the subjects assigned to class j. Nagin recommends
+APP of at least 0.7. OCC_j = [APP_j/(1-APP_j)] / [pie_j/(1-pie_j)] and is recommended to be at least 5.
+
+SAMPLE DATA OUTPUT DATASETS (prefix and k as supplied):
+ordprob_single_POST_K3    BENE_ID   post1   post2   post3   maxpost   classnum   class
+ordprob_single_CLASS_K3   class     n       percent   pie     app       occ
+##########################################################################################################################*/
+%MACRO ordprob_mix_post_one(
+  data=BASE_FILE_SRS, id=BENE_ID,
+  yvars=Y1_1-Y1_12, tvars=quar1-quar12, ttotal=12,
+  m=4, ycodes=0 1 2 3, deg=2, k=4,
+  outestlib=work, prefix=ordprob_single
+);
+%LOCAL m1 d j;
+%LET m1=%EVAL(&m-1);
+%LET d=&deg;
+
+*Hard stop if either input is missing;
+%IF NOT %SYSFUNC(EXIST(&data)) %THEN %DO;
+%PUT ERROR: DATA=&data not found.;
+%RETURN;
+%END;
+%IF NOT %SYSFUNC(EXIST(&outestlib..&prefix._EST_K&k)) %THEN %DO;
+%PUT ERROR: &outestlib..&prefix._EST_K&k not found. Run ORDPROB_MIX_FIT_ONE first with the same prefix and k.;
+%RETURN;
+%END;
+
+*Category codes to macro variables;
+%DO j=1 %TO &m; %GLOBAL ycode&j; %LET ycode&j=%SCAN(&ycodes,&j,%STR( )); %END;
+
+*--- Parameter estimates to one wide row -------------------------------------;
+DATA _pest;
+SET &outestlib..&prefix._EST_K&k;
+KEEP Parameter Estimate;
+RUN;
+
+PROC TRANSPOSE DATA=_pest OUT=_pwide(DROP=_NAME_);
+ID Parameter;
+VAR Estimate;
+RUN;
+
+*Class A has no alpha0_ in ParameterEstimates because it is fixed at 0, so create it and set it to 0;
+DATA _pwide;
+SET _pwide;
+%DO c=1 %TO &k;
+%LET U=%CL(&c);
+IF 0 THEN alpha0_&U=0;
+IF MISSING(alpha0_&U) THEN alpha0_&U=0;
+%END;
+RUN;
+
+*--- Estimated mixing proportions, one row per class -------------------------;
+DATA _pi;
+SET _pwide;
+LENGTH class $1;
+denom=0;
+%DO c=1 %TO &k; %LET U=%CL(&c); denom = denom + EXP(alpha0_&U); %END;
+%DO c=1 %TO &k; %LET U=%CL(&c);
+class="&U"; pie=EXP(alpha0_&U)/denom; OUTPUT;
+%END;
+KEEP class pie;
+RUN;
+
+*--- Class log-likelihoods, posteriors, modal assignment ---------------------;
+DATA &outestlib..&prefix._POST_K&k;
+IF _N_=1 THEN SET _pwide;
+SET &data;
+ARRAY yv[&ttotal] &yvars;
+ARRAY tv[&ttotal] &tvars;
+%DO c=1 %TO &k; %LET U=%CL(&c);
+ARRAY z&U[&m] %DO j=1 %TO &m; z&j._&U %END;;
+%END;
+ARRAY pst[&k] %DO c=1 %TO &k; post&c %END;;
+
+*Class log-likelihoods;
+%DO c=1 %TO &k; llik&c=0; %END;
+
+DO t=1 TO &ttotal;
+tval = tv[t];
+cat = .; %DO j=1 %TO &m; IF yv[t] = &&ycode&j THEN cat=&j; %END;
+
+*cat stays missing when the value is blank or is not one of the ycodes, so that time point is skipped;
+IF cat>0 THEN DO;
+%DO c=1 %TO &k;
+%LET U=%CL(&c); %LET L=%LOWCASE(&U);
+
+eta_&U = beta_&L.0;
+%IF &d>=1 %THEN %DO; eta_&U = eta_&U + beta_&L.1*(tval); %END;
+%IF &d>=2 %THEN %DO j=2 %TO &d; eta_&U = eta_&U + beta_&L.&j.*((tval)**&j); %END;
+
+th1_&U = 0;
+%IF &m1>=2 %THEN %DO j=2 %TO &m1;
+%IF &j=2 %THEN %DO; th&j._&U = th1_&U + i&L.&j; %END;
+%ELSE %DO;          th&j._&U = th%EVAL(&j-1)_&U + i&L.&j; %END;
+%END;
+
+%DO j=1 %TO &m;
+%IF &j=1 %THEN %DO;
+z&j._&U = PROBNORM(th1_&U - eta_&U);
+%END; %ELSE %IF &j<&m %THEN %DO;
+z&j._&U = PROBNORM(th&j._&U - eta_&U) - PROBNORM(th%EVAL(&j-1)_&U - eta_&U);
+%END; %ELSE %DO;
+z&j._&U = 1 - PROBNORM(th%EVAL(&m1)_&U - eta_&U);
+%END;
+%END;
+
+llik&c = llik&c + LOG(MAX(1e-12, z&U[cat]));
+%END;
+END;
+END;
+
+*Softmax mixing weights, matching the fit;
+denom=0;
+%DO c=1 %TO &k; %LET U=%CL(&c); pin&c = EXP(alpha0_&U); denom + pin&c; %END;
+%DO c=1 %TO &k; pie&c = pin&c/denom; %END;
+
+*Posterior class membership;
+mix=0; %DO c=1 %TO &k; mix + pie&c*EXP(llik&c); %END;
+mix=MAX(mix,1e-300);
+%DO c=1 %TO &k; post&c = pie&c*EXP(llik&c)/mix; %END;
+
+*Modal assignment;
+maxpost  = LARGEST(1, OF pst[*]);
+classnum = WHICHN(maxpost, OF pst[*]);
+LENGTH class $1;
+class = BYTE(64+classnum);
+
+KEEP &id %DO c=1 %TO &k; post&c %END; maxpost classnum class;
+RUN;
+
+*--- Class sizes, APP and OCC ------------------------------------------------;
+PROC SQL;
+CREATE TABLE _csize AS
+SELECT class,
+       COUNT(*) AS n,
+       100*COUNT(*)/(SELECT COUNT(*) FROM &outestlib..&prefix._POST_K&k) AS percent FORMAT=6.2,
+       MEAN(maxpost) AS app FORMAT=6.3
+FROM &outestlib..&prefix._POST_K&k
+GROUP BY class;
+QUIT;
+
+PROC SORT DATA=_csize; BY class; RUN;
+PROC SORT DATA=_pi;    BY class; RUN;
+
+DATA &outestlib..&prefix._CLASS_K&k;
+MERGE _csize _pi;
+BY class;
+FORMAT pie 6.3 occ 8.1;
+IF 0<app<1 AND 0<pie<1 THEN occ = (app/(1-app)) / (pie/(1-pie));
+ELSE occ = .;
+RUN;
+
+*--- QC ----------------------------------------------------------------------;
+PROC PRINT DATA=&outestlib..&prefix._CLASS_K&k NOOBS;
+VAR class n percent pie app occ;
+TITLE "Class sizes, average posterior probability and odds of correct classification";
+TITLE2 "&k. classes. APP should be at least 0.7 and OCC at least 5";
+RUN;
+TITLE;
+TITLE2;
+
+PROC DATASETS LIB=work NOLIST NOWARN;
+DELETE _pest _pwide _pi _csize;
+QUIT;
+%MEND ordprob_mix_post_one;
+
+/*##########################################################################################################################
+*STEP 6: PLOTS
 ##########################################################################################################################
 Class proportions recovered from the alpha0_* estimates, and predicted mean outcome by class and time.
 Class A is absent from ParameterEstimates because its mixing intercept is fixed, so it is added back with
@@ -443,6 +649,13 @@ TYPICAL WORKFLOW
     prefix=ordprob_T1C3
   );
 
+  %ordprob_mix_post_one(
+    data=BASE_FILE_SRS, id=BENE_ID,
+    yvars=Y1_1-Y1_12, tvars=quar1-quar12, ttotal=12,
+    m=4, ycodes=0 1 2 3, deg=2, k=3,
+    outestlib=work, prefix=ordprob_T1C3
+  );
+
   %ordprob_mix_plot_one(
     outestlib=work, prefix=ordprob_T1C3,
     k=3, ttotal=12, m=4, ycodes=0 1 2 3
@@ -453,12 +666,21 @@ TO USE YOUR OWN DATA INSTEAD OF THE SIMULATOR
   tvars = quar1-quar12 holding the numeric time values 1 to T. Create them if needed
   id    = your subject identifier, or rename it to BENE_ID
 
+MISSING AND OUT-OF-RANGE VALUES
+  A time point whose outcome value is blank, or is not one of the values listed in ycodes, contributes
+  nothing to the likelihood. The subject still contributes every time point that does match. Values that
+  are present but outside ycodes are dropped silently, so check the coding of the outcome before fitting.
+
 IDENTIFICATION
   The first threshold is fixed at 0 and the class intercept beta_*0 is free. The free threshold
-  parameters are the INCREMENTS i*2, i*3 and onward. There is no i*1. If you supply start values for
-  thresholds, start from i*2, for example
+  parameters are the INCREMENTS i*2, i*3 and onward. There is no i*1. Each increment is held positive by
+  a BOUNDS statement that the macro generates, so the thresholds stay strictly ordered within a class.
+  If you supply start values for thresholds, start from i*2 and use positive values, for example
 
-    start_values=%str(alpha0_B=-0.5 beta_a0=0.1 ib2=0 ib3=0)
+    start_values=%str(alpha0_B=-0.5 beta_a0=0.1 ib2=1 ib3=1)
+
+  A start value of 0 for an increment sits on the boundary and should not be used. When start_values= is
+  left blank the increments default to 1, which places the thresholds at 0, 1, 2 and so on.
 
   Never supply alpha0_A. It is fixed at 0 for identification.
 
@@ -468,6 +690,8 @@ OUTPUT DATASETS
   <prefix>_EST_K<k>         parameter estimates
   <prefix>_FIT_K<k>         fit statistics including BIC
   <prefix>_ESTS_K<k>        thresholds on the natural scale
+  <prefix>_POST_K<k>        posterior class-membership probabilities and modal class, one row per subject
+  <prefix>_CLASS_K<k>       class sizes, estimated proportions, APP and OCC
   mix_props                 estimated class proportions
   pred_long                 predicted mean outcome by class and time
 ##########################################################################################################################*/

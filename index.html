@@ -171,13 +171,13 @@ footer a{color:#64748b;text-decoration:none}
       <div><h2>Group-Based Trajectory Modeling</h2><div class="mexp-sub">Nagin (1999) · Finite Mixture Model · Maximum Likelihood via PROC NLMIXED</div></div>
     </div>
     <p>Group-based trajectory modeling (GBTM) is a finite mixture model that stratifies the sample into a small number of latent groups, gives each group its own polynomial time trend, and jointly estimates the class shapes and mixing weights by maximum likelihood (Nagin 1999). Rather than estimating a single average trajectory for everyone, which typically fails to capture the heterogeneity visible in longitudinal data: GBTM partitions the population into C latent classes, each characterized by its own trajectory shape estimated as a polynomial function of time. These classes represent <strong>patterns rather than a typology</strong>: they are longitudinal strata, not sharply bounded natural categories.</p>
-    <p>Each subject's observed longitudinal sequence contributes to the likelihood through two components: the <strong>class-membership probability</strong> π<sub>j</sub> (multinomial, constrained to sum to 1, with a clear interpretation as the expected class proportion) and the <strong>class-conditional distribution</strong> of the observed data given membership. Parameters are estimated jointly by maximum likelihood using the SAS internal optimizers of PROC NLMIXED (dual quasi-Newton and Newton-Raphson). The polynomial order can be linear, quadratic, cubic, or any order, and can differ between classes.</p>
+    <p>Each subject's observed longitudinal sequence contributes to the likelihood through two components: the <strong>class-membership probability</strong> π<sub>j</sub> (multinomial, constrained to sum to 1, with a clear interpretation as the expected class proportion) and the <strong>class-conditional distribution</strong> of the observed data given membership. Parameters are estimated jointly by maximum likelihood in PROC NLMIXED. The ordinal-probit macro defaults to the double-dogleg method (tech=dbldog) because the threshold increments are bounded below by zero and quasi-Newton methods can stop short of the maximum on this likelihood. The polynomial order can be linear, quadratic, cubic, or any order, and can differ between classes.</p>
     <div class="eq">P(Y) = Σ_{j=1..C} π_j · Π_{k=1..K} Π_{t=1..T} p(Y_t^k | X = j)
 
 where X is the latent class (1..C), K ∈ {1,2} outcomes, T time points,
 and p(Y_t^k | X=j) is the class-conditional density
 (censored normal or cumulative ordinal probit in this release)</div>
-    <p><strong>Assumptions.</strong> (1) Conditional independence over time: given class membership, responses at different time points are independent. (2) Conditional independence across outcomes: given class membership, there is no association between the two outcomes. Skipping missing time points in the likelihood is valid under ignorable missingness (missing at random); data missing not at random would require an explicit missingness model (Dodge et al. 2008).</p>
+    <p><strong>Assumptions.</strong> (1) Conditional independence over time: given class membership, responses at different time points are independent. (2) Conditional independence across outcomes: given class membership, there is no association between the two outcomes. Skipping missing time points in the likelihood is valid under ignorable missingness (missing at random); data missing not at random would require an explicit missingness model (Dodge et al. 2021).</p>
     <p>The current release implements <strong>two outcome families</strong>: bounded ordinal scales (class-specific cumulative probit with thresholds built as cumulative sums of positive increments) and continuous measures with bounded support (class-specific censored normal, with built-in estimation of joint two-outcome trajectories following the multi-trajectory framework of Nagin et al. 2018). Zero-inflated count prototypes (ZIP and ZINB) are in the repository and undergoing quality assurance: see Planned Extensions below.</p>
   </div>
 
@@ -216,7 +216,8 @@ and p(Y_t^k | X=j) is the class-conditional density
     <div class="pb">%sim_data / %sim_data_cont<small>Optional simulators</small></div><div class="pa">→</div>
     <div class="pb">BASE_FILE_SRS<small>Wide input table</small></div><div class="pa">→</div>
     <div class="pb">PROC NLMIXED<small>Fit C-class model</small></div><div class="pa">→</div>
-    <div class="pb">Estimates + fit stats<small>Posterior probabilities</small></div><div class="pa">→</div>
+    <div class="pb">Estimates + fit stats<small>PROC NLMIXED output</small></div><div class="pa">→</div>
+    <div class="pb">%ordprob_mix_post_one / %plot_prep<small>Posterior probabilities</small></div><div class="pa">→</div>
     <div class="pb">%plot_prep / %ordprob_mix_plot_one<small>ODS Graphics</small></div>
   </div>
 
@@ -230,6 +231,8 @@ and p(Y_t^k | X=j) is the class-conditional density
     <tr><td><strong>Time index</strong></td><td class="mo">quar1, ..., quar12</td><td>Numeric time indices (1, ..., T).</td></tr>
     <tr><td><strong>Default T</strong></td><td class="mo">12</td><td>Twelve quarterly time points (three years).</td></tr>
     <tr><td><strong>Missing values</strong></td><td class="mo">Allowed (.)</td><td>Likelihood contribution is skipped at missing time points (assumes missing at random).</td></tr>
+    <tr><td><strong>Out-of-range values (ordinal)</strong></td><td class="mo">Skipped</td><td>A value that does not match one of the numbers listed in <span class="mo">ycodes</span> is skipped like a missing value, so check the coding of the outcome before fitting.</td></tr>
+  </table></div></div>
   </table></div></div>
 
   <div class="sec"><h2>Validation Highlights</h2><div class="rule"></div></div>
@@ -246,12 +249,12 @@ and p(Y_t^k | X=j) is the class-conditional density
     </div>
     <div class="ov">
       <div class="oi">📐</div><h3>Ordinal-Probit Recovery</h3>
-      <p>Over 200 replications (N = 2,500, T = 12, true C = 3), worst-class trajectory RMSE is 0.029 on the 0–3 scale; class assignment agrees with truth 91.4% of the time (vs. a 45% majority-class baseline); and BIC selected the true C = 3 in 100% of replications. All 200 replications returned fully estimable standard errors for every free parameter.</p>
-      <span class="ob" style="background:#ede9fe;color:#5b21b6">Shape · Class · C recovered</span>
+            <p>Over 200 replications (N = 2,500, T = 12, true C = 3) generated with class-specific thresholds, the match between fitted and true classes was one to one in 196. Across those, the largest absolute bias in a threshold was 0.010 and Wald 95% confidence-interval coverage ranged from 0.913 to 0.964. On a separate single data set, worst-class trajectory RMSE was 0.019 on the 0 to 3 scale.</p>
+      <span class="ob" style="background:#ede9fe;color:#5b21b6">thresholds recovered.</span>
     </div>
     <div class="ov">
       <div class="oi">🔁</div><h3>Cross-Implementation Check (lcmm)</h3>
-     <p>Because PROC TRAJ lacks a cumulative-probit family, the ordinal model was checked against the R package lcmm on a matched design: fitted E[Y | class] trajectories agree to a maximum absolute difference of 0.015 (mean 0.005) across 36 class-by-time points, class proportions differ by at most 2 percentage points, and −2 log L is essentially identical (47,071 vs. 47,076).</p>
+     <p>Because PROC TRAJ lacks a cumulative-probit family, the ordinal model was checked against the R package lcmm on a matched design: fitted E[Y | class] trajectories agree to a maximum absolute difference of 0.015 (mean 0.005) across 36 class-by-time points, class proportions differ by at most 1 percentage point, and −2 log L is essentially identical (47,071 vs. 47,076).</p>
       <span class="ob" style="background:#ede9fe;color:#5b21b6">Independent implementation</span>
     </div>
   </div>
@@ -263,7 +266,7 @@ and p(Y_t^k | X=j) is the class-conditional density
       <div><h2>2019 Medicare Decedent Cohort · CMS VRDC</h2><div class="mexp-sub">Lin, April-Sanders, Zafar &amp; Jarrín (2026), manuscript submitted for publication</div></div>
     </div>
     <p>Using the ordinal-probit pipeline (<strong>%ordprob_mix_fit_one</strong>), cognitive function during the final five years of life was classified in a 10% random sample (<strong>N = 181,463</strong>) of Medicare beneficiaries aged 50 and older who died in 2019. Assessments were quarterly over <strong>T = 20 quarters</strong>, in four categories of cognitive impairment (none, memory loss, mild, moderate-to-severe/dementia), with each class trajectory fitted as a quadratic function of time on the cumulative-probit scale.</p>
-    <p>Models with 2–11 classes were fit; by BIC, a <strong>ten-class solution</strong> was preferred. Recovered trajectories ranged from a large group with near-stable cognition (35.9% of the sample) to a group severely impaired for the entire duration (12.1%). Reproducibility was confirmed by refitting over several different 10% random samples, each returning the same ten-class solution. The entire analysis was carried out <strong>inside the restricted CMS VRDC</strong>, where PROC TRAJ's compiled binary is unavailable, precisely the setting that motivated Traj2, and demonstrates scalability: 181,463 subjects, 20 time points, ten latent classes (59 parameters), fit in ~53 minutes wall-clock.</p>
+        <p>The number of trajectory classes and the ten-class solution are described in the companion article. Recovered trajectories ranged from a large group with near-stable cognition (35.9% of the sample) to a group severely impaired for the entire duration (12.1%). The entire analysis was carried out <strong>inside the restricted CMS VRDC</strong>, where PROC TRAJ's compiled binary is unavailable, precisely the setting that motivated Traj2, and demonstrates scalability: 181,463 subjects, 20 time points, ten latent classes (59 parameters), fit in ~53 minutes wall-clock.</p>
   </div>
 
   <div class="sec"><h2>Planned Extensions (Under Testing)</h2><div class="rule"></div></div>
@@ -304,7 +307,7 @@ and p(Y_t^k | X=j) is the class-conditional density
   σ_j⁻¹ φ((Y_t − μ_jt)/σ_j)    if L < Y_t < U   (observed exactly)
   Φ((L − μ_jt)/σ_j)            if Y_t = L        (lower-censored)
   1 − Φ((U − μ_jt)/σ_j)        if Y_t = U        (upper-censored)</div>
-    <p>The density over the interior is <strong>not renormalized</strong> over [L, U]; the bounds carry positive probability mass, as opposed to a truncated normal, which would renormalize the interior density and give the bounds no mass. This matches the <strong>CNORM family in PROC TRAJ</strong>. Censoring is determined by an <em>exact equality</em> of Y<sub>t</sub> to a bound: the user-supplied cap vector must exactly match the ceiling of the data. If a cap value is lower than any actual observed outcome, cases at that cap are treated as interior and contribute no censored component, always validate the cap values against the maximum of the sample.</p>
+    <p>The density over the interior is <strong>not renormalized</strong> over [L, U]; the bounds carry positive probability mass, as opposed to a truncated normal, which would renormalize the interior density and give the bounds no mass. This matches the <strong>CNORM family in PROC TRAJ</strong>. Censoring is determined by an <em>exact equality</em> of Y<sub>t</sub> to a bound: the user-supplied max_values list must exactly match the ceiling of the data. If a cap value is lower than any actual observed outcome, cases at that cap are treated as interior and contribute no censored component, always validate the cap values against the maximum of the sample.</p>
     <p>The <strong>joint two-outcome</strong> model links two co-evolving continuous measures through a shared latent-class structure, following the multi-trajectory framework of Nagin et al. (2018): the latent class is a subject-level attribute, and each class has one trajectory per outcome. The model assumes conditional independence over time and across the two outcomes, given class membership.</p>
     <p><strong>Why warm starts matter.</strong> The joint optimization is more prone to convergence failure because of its sensitivity to starting values. Traj2 therefore uses a warm-start pipeline: the two outcomes are first fit separately with <code>%nlmixed_1</code>, their parameter estimates are stacked (dropping the mixing intercepts) into <code>work.nlm_2y_starting</code>, and <code>%nlmixed_MultiTraj</code> reads these per-parameter starting values via the <code>/ data=</code> clause on the PARMS statement, while <code>%starting_value_alpha</code> provides neutral starting values for the mixing intercepts.</p>
     <div class="use">
@@ -454,7 +457,7 @@ and p(Y_t^k | X=j) is the class-conditional density
     <tr><td>Subjects (N)</td><td>500</td></tr>
   </table><p style="font-size:12px;color:var(--muted)">Joint two-outcome example: C = 3, T = 12, second-order polynomial, simulated data. Full warm-start pipeline runs in ~11 s (the joint fit alone takes ~5.6 s).</p></div></div>
 
-  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>Validate your cap vector.</strong> Censored observations are recognized by exact equality with the supplied upper and lower bounds. If a cap value is lower than any actual observed outcome, cases at that cap are presumed to lie in the interior of the support and contribute no censored component. Always validate the cap values against the maximum of the sample for each outcome.</div></div>
+  <div class="al al-warn"><div class="al-icon">⚠️</div><div class="al-body"><strong>alidate your max_values list.</strong> Censored observations are recognized by exact equality with the supplied upper and lower bounds. If a cap value is lower than any actual observed outcome, cases at that cap are presumed to lie in the interior of the support and contribute no censored component. Always validate the cap values against the maximum of the sample for each outcome.</div></div>
 
 </div></div>
 
@@ -476,7 +479,7 @@ Thresholds (cumulative sums of increments, each held positive by BOUNDS):
   τ_j,1 = 0                            [FIXED]
   τ_j,m = τ_j,m−1 + i_j,m,  m = 2, ..., M−1/div>
     <p>Building the thresholds as <strong>cumulative sums of increments</strong> ensures the ordering τ<sub>j,m</sub> &gt; τ<sub>j,m−1</sub>. Each increment i<sub>j,m</sub> is held strictly positive by a <code>BOUNDS</code> statement that the macro generates, so the thresholds stay ordered within every class.</p>
-    <p><strong>Identification.</strong> The lowest threshold is fixed at τ<sub>j,1</sub> = 0 and the class intercept β<sub>j0</sub> is estimated freely; this identifies the location of each class's latent index, so the free threshold parameters are only the increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub>. Users wishing to provide their own starting values need only enter the increments and need not provide a value for the first threshold. The Class A mixing logit is likewise fixed to zero for identification, never include it in start_values. Fixing τ<sub>j,1</sub> = 0 removes the location aliasing between β<sub>j0</sub> and the first threshold, so the model is fully identified and standard errors are estimable: in validation, all 200 Monte Carlo replications returned non-missing, positive standard errors for every free parameter.</p>
+    <p><strong>Identification.</strong> The lowest threshold is fixed at τ<sub>j,1</sub> = 0 and the class intercept β<sub>j0</sub> is estimated freely; this identifies the location of each class's latent index, so the free threshold parameters are only the increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub>. Users wishing to provide their own starting values need only enter the increments and need not provide a value for the first threshold. The Class A mixing logit is likewise fixed to zero for identification, never include it in start_values. Fixing τ<sub>j,1</sub> = 0 removes the location aliasing between β<sub>j0</sub> and the first threshold, so the model is fully identified and standard errors are estimable.</p>
     <div class="use">
       <span class="use-item">ADL / IADL functional status</span>
       <span class="use-item">Frailty index grades</span>
@@ -544,8 +547,15 @@ coefficients start at 0 and the threshold increments start at 1. */</span>
   m=<span class="n">4</span>, ycodes=<span class="n">0 1 2 3</span>, deg=<span class="n">2</span>, k=<span class="n">3</span>,
   prefix=ordprob_T1C3
 );
+<span class="c">/* 4. Posterior class membership, APP and OCC */</span>
+<span class="f">%ordprob_mix_post_one</span>(
+  data=BASE_FILE_SRS, id=BENE_ID,
+  yvars=Y1_1-Y1_12, tvars=quar1-quar12, ttotal=<span class="n">12</span>,
+  m=<span class="n">4</span>, ycodes=<span class="n">0 1 2 3</span>, deg=<span class="n">2</span>, k=<span class="n">3</span>,
+  prefix=ordprob_T1C3
+);
 
-<span class="c">/* 4. Plot class proportions + predicted trajectories */</span>
+<span class="c">/* 5. Plot class proportions + predicted trajectories */</span>
 <span class="f">%ordprob_mix_plot_one</span>(
   outestlib=work, prefix=ordprob_T1C3,
   k=<span class="n">3</span>, ttotal=<span class="n">12</span>, m=<span class="n">4</span>, ycodes=<span class="n">0 1 2 3</span>
@@ -811,7 +821,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   <div class="grid g2">
     <div class="card">
       <div class="ch"><div class="ci ci-pu">🖥</div><div class="cm"><h3>Ordinal-Probit Model</h3><span class="fn">ordinal_probit.sas</span></div><span class="badge b-sas">SAS · Released</span></div>
-      <div class="cb"><p>Cumulative ordinal-probit latent-class GBTM with exp-incremented thresholds (τ<sub>j,1</sub> fixed at 0, β<sub>j0</sub> free). Load with <code style="font-size:11px">%include</code>. Authors: Haiqun Lin, Anum Zafar.</p></div>
+      <div class="cb"><p>Cumulative ordinal-probit latent-class GBTM thresholds built as cumulative sums of positive increments (τ<sub>j,1</sub> fixed at 0, β<sub>j0</sub> free). Load with <code style="font-size:11px">%include</code>. Authors: Haiqun Lin, Anum Zafar.</p></div>
       <div class="cf"><a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/ordinal_probit.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/blob/main/ordinal_probit.sas" target="_blank">View on GitHub</a><a class="vw" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/Data_Dictionary_ordinal_probit.pdf" download>Data Dictionary (PDF)</a></div>
     </div>
     <div class="card">

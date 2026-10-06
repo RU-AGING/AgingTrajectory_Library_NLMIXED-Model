@@ -296,7 +296,7 @@ OPTIONS NONOTES NOSOURCE NOSOURCE2 NOMPRINT;
   data=BASE_FILE_SRS, id=&IDVAR.,
   yvars=Y1_1-Y1_&T., tvars=quar1-quar&T., ttotal=&T.,
   m=&MCAT., ycodes=0 1 2 3, deg=&DEG., k=&KTRUE.,
-  tech=quanew, maxiter=2000, prefix=oa
+  tech=dbldog, maxiter=2000, prefix=oa
 );
 
 %IF %SYSFUNC(EXIST(work.oa_EST_K&KTRUE.)) %THEN %DO;
@@ -442,7 +442,7 @@ PROC APPEND BASE=mc_metrics DATA=_row FORCE; RUN;
   data=BASE_FILE_SRS, id=&IDVAR.,
   yvars=Y1_1-Y1_&T., tvars=quar1-quar&T., ttotal=&T.,
   m=&MCAT., ycodes=0 1 2 3, deg=&DEG., k=&kk.,
-  tech=quanew, maxiter=2000, prefix=oak&kk.
+  tech=dbldog, maxiter=2000, prefix=oak&kk.
 );
 %IF %SYSFUNC(EXIST(work.oak&kk._FIT_K&kk.)) %THEN %DO;
 DATA _bicrow;
@@ -562,7 +562,7 @@ OPTIONS NONOTES;
   data=BASE_FILE_SRS, id=&IDVAR.,
   yvars=Y1_1-Y1_&T., tvars=quar1-quar&T., ttotal=&T.,
   m=&MCAT., ycodes=0 1 2 3, deg=&DEG., k=&KTRUE.,
-  tech=quanew, maxiter=2000, prefix=cc
+  tech=dbldog, maxiter=2000, prefix=cc
 );
 OPTIONS NOTES;
 ODS EXCLUDE NONE;

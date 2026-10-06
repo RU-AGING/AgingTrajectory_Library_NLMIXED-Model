@@ -178,7 +178,7 @@ where X is the latent class (1..C), K ∈ {1,2} outcomes, T time points,
 and p(Y_t^k | X=j) is the class-conditional density
 (censored normal or cumulative ordinal probit in this release)</div>
     <p><strong>Assumptions.</strong> (1) Conditional independence over time: given class membership, responses at different time points are independent. (2) Conditional independence across outcomes: given class membership, there is no association between the two outcomes. Skipping missing time points in the likelihood is valid under ignorable missingness (missing at random); data missing not at random would require an explicit missingness model (Dodge et al. 2008).</p>
-    <p>The current release implements <strong>two outcome families</strong>: bounded ordinal scales (class-specific cumulative probit with exp-incremented thresholds) and continuous measures with bounded support (class-specific censored normal, with built-in estimation of joint two-outcome trajectories following the multi-trajectory framework of Nagin et al. 2018). Zero-inflated count prototypes (ZIP and ZINB) are in the repository and undergoing quality assurance: see Planned Extensions below.</p>
+    <p>The current release implements <strong>two outcome families</strong>: bounded ordinal scales (class-specific cumulative probit with thresholds built as cumulative sums of positive increments) and continuous measures with bounded support (class-specific censored normal, with built-in estimation of joint two-outcome trajectories following the multi-trajectory framework of Nagin et al. 2018). Zero-inflated count prototypes (ZIP and ZINB) are in the repository and undergoing quality assurance: see Planned Extensions below.</p>
   </div>
 
   <div class="sec"><h2>Why a Native Implementation?</h2><div class="rule"></div></div>
@@ -190,7 +190,7 @@ and p(Y_t^k | X=j) is the class-conditional density
   <div class="grid g2">
     <div class="ov">
       <div class="oi">🔢</div><h3>Ordinal-Probit</h3>
-      <p>For bounded, ordered scales such as activities of daily living (ADL), frailty indices, and cognitive screening scores. Class-specific cumulative probits use exp-incremented thresholds, which ensure monotonicity without constrained optimization. Identified by fixing the first threshold at 0 with the class intercept freely estimated.</p>
+      <p>For bounded, ordered scales such as activities of daily living (ADL), frailty indices, and cognitive screening scores. Class-specific cumulative probits build the thresholds as cumulative sums of increments that a BOUNDS statement holds positive, which keeps the categories ordered within each class.</p>
       <span class="ob" style="background:#ede9fe;color:#5b21b6">Released · Ordered Categories</span>
     </div>
     <div class="ov">
@@ -472,10 +472,10 @@ and p(Y_t^k | X=j) is the class-conditional density
 P(Y_t = m | X = j) = Φ(τ_j,m+1 − η_jt) − Φ(τ_j,m − η_jt)
 with τ_j,0 = −∞, τ_j,M = +∞, and Φ the standard normal CDF.
 
-Thresholds (built from exponential increments):
-  τ_j,1 = 0                                   [FIXED]
-  τ_j,m = τ_j,m−1 + exp(i_j,m),  m = 2, ..., M−1</div>
-    <p>Building the thresholds from <strong>exponential increments</strong> ensures the ordering τ<sub>j,m</sub> &gt; τ<sub>j,m−1</sub> in a way that standard nonlinear optimizers can handle: exp(·) &gt; 0 guarantees strict monotonicity without constrained optimization.</p>
+Thresholds (cumulative sums of increments, each held positive by BOUNDS):
+  τ_j,1 = 0                            [FIXED]
+  τ_j,m = τ_j,m−1 + i_j,m,  m = 2, ..., M−1/div>
+    <p>Building the thresholds as <strong>cumulative sums of increments</strong> ensures the ordering τ<sub>j,m</sub> &gt; τ<sub>j,m−1</sub>. Each increment i<sub>j,m</sub> is held strictly positive by a <code>BOUNDS</code> statement that the macro generates, so the thresholds stay ordered within every class.</p>
     <p><strong>Identification.</strong> The lowest threshold is fixed at τ<sub>j,1</sub> = 0 and the class intercept β<sub>j0</sub> is estimated freely; this identifies the location of each class's latent index, so the free threshold parameters are only the increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub>. Users wishing to provide their own starting values need only enter the increments and need not provide a value for the first threshold. The Class A mixing logit is likewise fixed to zero for identification, never include it in start_values. Fixing τ<sub>j,1</sub> = 0 removes the location aliasing between β<sub>j0</sub> and the first threshold, so the model is fully identified and standard errors are estimable: in validation, all 200 Monte Carlo replications returned non-missing, positive standard errors for every free parameter.</p>
     <div class="use">
       <span class="use-item">ADL / IADL functional status</span>
@@ -491,13 +491,17 @@ Thresholds (built from exponential increments):
       <div class="ch"><div class="ci ci-pu">📄</div><div class="cm"><h3>Ordinal-Probit SAS Program</h3><span class="fn">ordinal_probit.sas</span></div><span class="badge b-sas">SAS Code</span></div>
       <div class="cb">
         <ul class="kl">
-          <li><strong>Setup:</strong> <code>%include "/path/to/traj2/ordinal_probit.sas";</code>, no compilation required; runs identically in desktop SAS and the CMS VRDC</li>
-          <li><code>%sim_data</code> provides 3 data-generating processes: BIN4 and TPOIS4 (class-specific trajectory structure) and CAT5 (categories drawn uniformly); optional unbalanced missingness via <code>miss_pattern=</code>; <code>cap=</code> sets the highest category index</li>
-          <li><code>%build_base_from_simwide(T=)</code> builds BASE_FILE_SRS with BENE_ID, time indices quar1–quarT (1, ..., T), and Y1_1–Y1_T</li>
-          <li><code>%ordprob_mix_fit_one</code> runs the fit: Class A mixing logit fixed to 0, first threshold fixed at 0 (β<sub>j0</sub> free), exp-incremented thresholds guarantee ordered categories</li>
-          <li>The fit produces a ParameterEstimates dataset containing class-specific threshold and polynomial coefficients, posterior class-membership probabilities for each subject, and fit statistics for comparing candidate C values</li>
-          <li><code>%ordprob_mix_plot_one</code> draws the class-proportion barplot and predicted E[Y<sub>t</sub> | class] trajectory curves</li>
-        </ul>
+  <li><strong>Setup:</strong> <code>%include "/path/to/traj2/ordinal_probit.sas";</code>, no compilation required; runs identically in desktop SAS and the CMS VRDC</li>
+  <li><code>%sim_data</code> provides 3 data-generating processes: BIN4 and TPOIS4 (class-specific trajectory structure) and CAT5 (categories drawn uniformly); optional unbalanced missingness via <code>miss_pattern=</code>; <code>cap=</code> sets the highest category index</li>
+  <li><code>%build_base_from_simwide(T=)</code> builds BASE_FILE_SRS with BENE_ID, time indices quar1-quarT (1, ..., T), and the wide outcome columns Y1_1-Y1_T</li>
+  <li><code>%ordprob_mix_fit_one</code> runs the fit: Class A mixing logit fixed to 0, first threshold fixed at 0 (β<sub>j0</sub> free), and thresholds built as cumulative sums of increments that a <code>BOUNDS</code> statement holds positive, so the categories stay ordered within each class</li>
+  <li>The default optimization technique is the double-dogleg method (<code>tech=dbldog</code>) because the threshold increments are bounded below by zero and quasi-Newton methods can stop short of the maximum on this likelihood</li>
+  <li>Classes are labeled A through O, so <code>k=</code> can be at most 15</li>
+  <li>The fit writes <code>&lt;prefix&gt;_EST_K&lt;k&gt;</code> (parameter estimates), <code>&lt;prefix&gt;_FIT_K&lt;k&gt;</code> (fit statistics including BIC) and <code>&lt;prefix&gt;_ESTS_K&lt;k&gt;</code> (thresholds on the natural scale)</li>
+  <li><code>%ordprob_mix_post_one</code> is run after the fit with the same <code>prefix=</code> and <code>k=</code>. It writes <code>&lt;prefix&gt;_POST_K&lt;k&gt;</code> (posterior class-membership probabilities and modal class, one row per subject) and <code>&lt;prefix&gt;_CLASS_K&lt;k&gt;</code> (class sizes, estimated proportions, APP and OCC)</li>
+  <li>A time point whose outcome value is blank, or is not one of the values listed in <code>ycodes</code>, contributes nothing to the likelihood. The subject still contributes every time point that does match. Values that are present but outside <code>ycodes</code> are dropped silently, so check the coding of the outcome before fitting</li>
+  <li><code>%ordprob_mix_plot_one</code> draws the class-proportion barplot and predicted E[Y<sub>t</sub> | class] trajectory curves</li>
+</ul>
       </div>
       <div class="cf">
         <a class="dl" href="https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model/raw/main/ordinal_probit.sas" download><svg class="ico" viewBox="0 0 16 16"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"/></svg>Download Code</a>
@@ -510,7 +514,7 @@ Thresholds (built from exponential increments):
       <div class="cb">
         <ul class="kl">
           <li>Full argument reference: data, id, yvars, tvars, ttotal, m, ycodes, deg, k, maxiter, tech, start_values, bounds, outestlib, prefix</li>
-          <li>Model equations with derivation: η<sub>jt</sub>, exp-increment threshold construction with τ<sub>j,1</sub> = 0 fixed, P(Y=m) as Φ differences</li>
+          <li>Model equations with derivation: η<sub>jt</sub>, cumulative-sum threshold construction with τ<sub>j,1</sub> = 0 fixed, P(Y=m) as Φ differences</li>
           <li>Identification section: τ<sub>j,1</sub> fixed at 0 with β<sub>j0</sub> free; supply only increments i<sub>j,2</sub>, ..., i<sub>j,M−1</sub> in starting values; never include the Class A mixing logit</li>
           <li>Minimal data prep: converting any wide dataset to include quar1–quarT = 1, ..., T</li>
           <li>Pre-run checklist before fitting on real CMS data (data types, category coding vs. ycodes, missing pattern)</li>
@@ -532,7 +536,8 @@ Thresholds (built from exponential increments):
 <span class="f">%build_base_from_simwide</span>(T=<span class="n">12</span>);
 
 <span class="c">/* 3. Fit the C=3 quadratic ordinal-probit model.
-      start_values= left blank: all parameters start at zero. */</span>
+      start_values= left blank: mixing intercepts and polynomial
+coefficients start at 0 and the threshold increments start at 1. */</span>
 <span class="f">%ordprob_mix_fit_one</span>(
   data=BASE_FILE_SRS, id=BENE_ID,
   yvars=Y1_1-Y1_12, tvars=quar1-quar12, ttotal=<span class="n">12</span>,
@@ -562,7 +567,7 @@ Thresholds (built from exponential increments):
     <tr><td class="mo">k</td><td>integer, default=4</td><td>Number of latent classes (C).</td></tr>
     <tr><td class="mo">maxiter</td><td>integer, default=1000</td><td>Maximum optimizer iterations.</td></tr>
     <tr><td class="mo">tech</td><td>name, default=dbldog</td><td>PROC NLMIXED optimization technique.</td></tr>
-    <tr><td class="mo">start_values</td><td>text <span class="opt">OPTIONAL</span></td><td>User-specified parameter starting values (increments only; blank = all zero).</td></tr>
+    <tr><td class="mo">start_values</td><td>text <span class="opt">OPTIONAL</span></td><td>User-specified parameter starting values increments only, strictly positive; blank = intercepts and coefficients at 0, increments at 1).</td></tr>
     <tr><td class="mo">bounds</td><td>text <span class="opt">OPTIONAL</span></td><td>Parameter bounds for stability (e.g., %str(-6 &lt; beta_a0 &lt; 6)).</td></tr>
     <tr><td class="mo">outestlib</td><td>libref, default=work</td><td>Library for the output datasets.</td></tr>
     <tr><td class="mo">prefix</td><td>name, default=ordprob_single</td><td>Prefix for output dataset names.</td></tr>

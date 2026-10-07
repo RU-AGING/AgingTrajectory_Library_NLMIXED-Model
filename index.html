@@ -177,7 +177,7 @@ footer a{color:#64748b;text-decoration:none}
 where X is the latent class (1..C), K ∈ {1,2} outcomes, T time points,
 and p(Y_t^k | X=j) is the class-conditional density
 (censored normal or cumulative ordinal probit in this release)</div>
-    <p><strong>Assumptions.</strong> (1) Conditional independence over time: given class membership, responses at different time points are independent. (2) Conditional independence across outcomes: given class membership, there is no association between the two outcomes. Skipping missing time points in the likelihood is valid under ignorable missingness (missing at random); data missing not at random would require an explicit missingness model (Dodge et al. 2021).</p>
+    <p><strong>Assumptions.</strong> (1) Conditional independence over time: given class membership, responses at different time points are independent. (2) Conditional independence across outcomes: given class membership, there is no association between the two outcomes. Skipping missing time points in the likelihood is valid under ignorable missingness (missing at random); data missing not at random would require an explicit missingness model (Dodge et al. 2008).</p>
     <p>The current release implements <strong>two outcome families</strong>: bounded ordinal scales (class-specific cumulative probit with thresholds built as cumulative sums of positive increments) and continuous measures with bounded support (class-specific censored normal, with built-in estimation of joint two-outcome trajectories following the multi-trajectory framework of Nagin et al. 2018). Zero-inflated count prototypes (ZIP and ZINB) are in the repository and undergoing quality assurance: see Planned Extensions below.</p>
   </div>
 

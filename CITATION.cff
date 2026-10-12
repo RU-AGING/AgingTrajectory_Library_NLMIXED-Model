@@ -17,7 +17,7 @@ abstract: >-
   runs in secure research environments such as the CMS Virtual Research Data
   Center where PROC TRAJ cannot be installed. The current release covers two
   outcome families: bounded ordinal scales via a class-specific cumulative
-  probit with exp-incremented thresholds, and continuous measures with bounded
+  probit with ordered class-specific thresholds, and continuous measures with bounded
   support via a class-specific censored normal, including joint two-outcome
   trajectory estimation.
 keywords:

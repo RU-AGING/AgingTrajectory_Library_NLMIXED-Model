@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "Traj2: A Native Macro Library for Single and Multi-Outcome Group-Based Trajectory Modeling in SAS"
+title: "Traj2: A Native Macro Library for Single and Joint Two-Outcome Group-Based Trajectory Modeling in SAS"
 message: "If you use this software, please cite it using the metadata below."
 type: software
 version: 1.0.0

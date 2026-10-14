@@ -70,9 +70,11 @@ All results are based on simulated data with fixed random-number seeds, so they 
 
 | Paper section | Run | Output |
 |---|---|---|
-| MethodsX Sections 2.9 and 3.1 (censored-normal, agreement with `PROC TRAJ`) | `traj2_replication_continuous.sas` | Tables 10 to 13, Figures 3 and 4 |
-| MethodsX Sections 2.8 and 3.2 (ordinal, agreement with R `lcmm`) | `traj2_replication_ordinal.sas`, then `traj2_lcmm_crosscheck.R` | Table 14, Figures 1, 2 and 5 |
-| MethodsX Section 3.3 (class-specific thresholds) | `traj2_threshold_check.sas`, then `traj2_threshold_lcmm.R` | Tables 15 and 16, Figure 6 |
+| MethodsX Sections 2.9, 2.10 and 3.1 (censored-normal, agreement with `PROC TRAJ`) | `traj2_replication_continuous.sas` | Tables 10 to 14, Figures 3 and 4 |
+| MethodsX Sections 2.9 and 3.2 (ordinal, agreement with R `lcmm`) | `traj2_replication_ordinal.sas`, then `traj2_lcmm_crosscheck.R` | Table 15, Figures 1, 2 and 5 |
+| MethodsX Section 3.3 (class-specific thresholds) | `traj2_threshold_check.sas`, then `traj2_threshold_lcmm.R` | Tables 16 and 17, Figure 6 |
+| CMPB Section 3.1.2 (parameter recovery, Monte Carlo coverage) | `traj2_replication_continuous.sas` (STEPs 3 and 4) | Tables 1 and 2 |
+| CMPB Section 3.1.3 (ordinal-probit recovery, 200 replications) | `traj2_replication_ordinal.sas` (STEP 3) | Table 3 |
 
 The `PROC TRAJ` comparison needs the compiled `PROC TRAJ` binary; set `RUN_TRAJ=0` where it is not installed. The R scripts need R 4.x and the `lcmm` package.
 

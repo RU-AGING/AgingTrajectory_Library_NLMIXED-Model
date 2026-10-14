@@ -82,8 +82,8 @@ Example — fit a 4-class ordinal model:
 
 Citation:
   Zafar, A., Xia, W., Lin, H., & Jarrín, O. F. (2026).
-  Traj2: A Native Macro Library for Single and Multi-Outcome Group-Based
-  Trajectory Modeling in SAS. JSS (in preparation).
+  Traj2: A Native Macro Library for Single and Joint Two-Outcome Group-Based
+  Trajectory Modeling in SAS. Computer Methods and Programs in Biomedicine
 
 EOF
 }

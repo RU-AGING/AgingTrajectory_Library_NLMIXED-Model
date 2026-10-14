@@ -8,15 +8,15 @@ RUTGERS, THE STATE UNIVERSITY OF NEW JERSEY
 *************************************************************************************************************************
 *************************************************************************************************************************
 *PROJECT NAME: Traj2 Class-Specific Threshold Check, Ordinal-Probit Outcome Family
-LAST UPDATED DATE: 30 SEP 2026 (threshold arrays renamed TT2/TT3, TAU2/TAU3 clashed with variables tau2/tau3)
+LAST UPDATED DATE: 14 OCT 2026 (optimizer changed from quanew to dbldog, the macro default)
 DATA SOURCES: NONE. All input is simulated in STEP 2 from the data generating process declared in STEP 0
-PURPOSE: Reproduces Section 3.3 (Tables 15 and 16, Figure 6) of Traj2: Censored-normal and ordinal-probit
+PURPOSE: Reproduces MethodsX Section 3.3 (Tables 16 and 17, Figure 6) of Traj2: Censored-normal and ordinal-probit
 group-based trajectory modeling in SAS for restricted data environments, Zafar, Xia, Lin, Jarrin, MethodsX.
 The lcmm cross-check of Section 3.2 uses a DGP with class-common thresholds. This script uses a DGP in
 which the threshold SPACING differs by class, and produces
-(a)STEP 3, Table 16 and Figure 6, single data set, SEED_CC=20260930. Traj2 fit exported for traj2_threshold_lcmm.R, which fits the
+(a)STEP 3, MethodsX Table 17 and Figure 6, and CMPB Table 4, single data set, SEED_CC=20260930. Traj2 fit exported for traj2_threshold_lcmm.R, which fits the
    same data in lcmm (class-common thresholds) and compares both programs against the truth
-(b)STEP 4, Table 15, threshold recovery over NREP replications, SEED_MC=20261000. Mean, bias, RMSE and 95 percent
+(b)STEP 4, MethodsX Table 16, threshold recovery over NREP replications, SEED_MC=20261000. Mean, bias, RMSE and 95 percent
    interval coverage for the class-specific thresholds and the class proportions
 COMPANION: traj2_threshold_lcmm.R. Run this script first so the CSV files exist, then run the R script.
 IDENTIFICATION: Traj2 fixes the first threshold at 0 in every class and estimates the class intercept freely,
@@ -330,7 +330,7 @@ OPTIONS NONOTES;
   data=BASE_FILE_SRS, id=&IDVAR.,
   yvars=Y1_1-Y1_&T., tvars=quar1-quar&T., ttotal=&T.,
   m=&MCAT., ycodes=0 1 2 3, deg=&DEG., k=&KTRUE.,
-  tech=quanew, maxiter=2000, prefix=cs
+  tech=dbldog, maxiter=2000, prefix=cs
 );
 OPTIONS NOTES;
 ODS EXCLUDE NONE;
@@ -423,7 +423,7 @@ OPTIONS NONOTES NOSOURCE NOSOURCE2 NOMPRINT;
   data=BASE_FILE_SRS, id=&IDVAR.,
   yvars=Y1_1-Y1_&T., tvars=quar1-quar&T., ttotal=&T.,
   m=&MCAT., ycodes=0 1 2 3, deg=&DEG., k=&KTRUE.,
-  tech=quanew, maxiter=2000, prefix=cm
+  tech=dbldog, maxiter=2000, prefix=cm
 );
 
 %IF %SYSFUNC(EXIST(work.cm_EST_K&KTRUE.)) %THEN %DO;

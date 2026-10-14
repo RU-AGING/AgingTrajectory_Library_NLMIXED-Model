@@ -2,7 +2,7 @@
 Released under the MIT License. Full text in LICENSE at
 https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;
 *PROJECT NAME: Traj2 Replication, Continuous Censored-Normal Outcome Family
-LAST UPDATED DATE: 30 SEP 2026 (Figure 4 title removed, censoring rates added to QC 3)
+LAST UPDATED DATE: 14 OCT 2026 (table and figure references renumbered to the CMPB and MethodsX submissions)
 DATA SOURCES: NONE. All input is simulated in STEP 2 from the data generating process declared in STEP 0
 PURPOSE: Single standalone script reproducing the continuous-outcome results in Traj2: Censored-normal
 and ordinal-probit group-based trajectory modeling in SAS for restricted data environments, Zafar, Xia,
@@ -54,7 +54,7 @@ AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 %LET NSUB=2500;          *subjects per Monte Carlo replication;
 %LET SEED_MC=770000;     *replication r uses seed SEED_MC+r, so 770001 through 770200;
 
-*Data generating process for STEP 3 and STEP 4, described in paper Section 4.1.
+*Data generating process for STEP 3 and STEP 4, described in CMPB Section 3.1.1.
  Coefficients are listed class by class as b0 b1 b2;
 %LET DGP_LC=3;                                                    *latent classes;
 %LET DGP_DEG=2;                                                   *polynomial degree, quadratic;
@@ -106,7 +106,7 @@ OPTIONS NODLCREATEDIR;
 *STEP 1: LOAD THE LIBRARY AND DEFINE THE FIGURE STYLE
 
   TRAJ2_RUN_DEMO=0 loads the macro definitions and runs nothing,
-  which is the behaviour paper Section 5.1 describes.
+  which is the behaviour MethodsX Section 2.8 describes.
 
   The WORK template store is session temporary, so defining
   styles.jss here keeps the script self contained. For colour
@@ -134,8 +134,8 @@ RUN;
 /*##########################################################################################################################
 *STEP 2: SHARED SIMULATOR
 
-  %sim_cont_dgp builds the paper Section 4.1 validation DGP in the
-  wide contract of Table 1, CAP columns included. One generator now
+  %sim_cont_dgp builds the CMPB Section 3.1.1 validation DGP in the
+  wide contract of MethodsX Table 1, CAP columns included. One generator now
   feeds both the validation run and the Monte Carlo study, instead
   of the DGP being written out again in each script.
 
@@ -246,13 +246,13 @@ RUN;
 
 
 /*##########################################################################################################################
-*STEP 3: TABLES 9, 11, 12, 13 AND FIGURES 3 AND 4
+*STEP 3: MethodsX TABLES 12, 13 AND 14 AND FIGURE 4; CMPB TABLE 1 AND FIGURE 1
   The validation run, N=10,000, seed 20260609.
 
   PART A   Traj2 single outcome fit on HH, recovery against truth
-  PART B   PROC TRAJ on the same outcome, coefficient and proportion agreement
-  PART C   joint two-outcome fit via the warm start pipeline, Table 9, Figure 3
-  PART D   PROC TRAJ multi-trajectory, Table 12
+  PART B   PROC TRAJ on the same outcome, MethodsX Tables 12 and 14, Figure 4
+  PART C   joint two-outcome fit via the warm start pipeline, CMPB Table 1, Figure 1
+  PART D   PROC TRAJ multi-trajectory, MethodsX Table 13
   PART E   twin predicted versus observed panel, supplementary
 
   Classes are matched between engines by intercept rank throughout,
@@ -378,7 +378,7 @@ TITLE;
 
 /*##########################################################################################################################
   PART B: PROC TRAJ on the same outcome, then agreement.
-  This is paper Table 11 (coefficients), Table 13 (proportions)
+  This is MethodsX Table 12 (coefficients), Table 14 (proportions)
   and Figure 4 (fitted class trajectories).
 
   PROC TRAJ output schema, confirmed:
@@ -416,7 +416,7 @@ d1=b1_t2-b1_tr;
 d2=b2_t2-b2_tr;
 RUN;
 
-TITLE 'Table 11. Coefficient agreement: Traj2 vs PROC TRAJ (classes matched by intercept)';
+TITLE 'MethodsX Table 12. Coefficient agreement: Traj2 vs PROC TRAJ (classes matched by intercept)';
 PROC PRINT DATA=coef_cmp NOOBS LABEL;
 VAR rk b0_t2 b0_tr d0 b1_t2 b1_tr d1 b2_t2 b2_tr d2;
 LABEL rk='Class' b0_t2='b0 Traj2' b0_tr='b0 TRAJ' d0='diff'
@@ -438,7 +438,7 @@ MERGE prop_cmp traj_props;
 BY rk;
 RUN;
 
-TITLE 'Table 13. Class proportions (by intercept rank): truth vs Traj2 vs PROC TRAJ';
+TITLE 'MethodsX Table 14. Class proportions (by intercept rank): truth vs Traj2 vs PROC TRAJ';
 PROC PRINT DATA=prop_all NOOBS LABEL;
 VAR rk pi_true pi_fit pi_traj;
 LABEL rk='Rank' pi_true='pi(true)' pi_fit='pi(Traj2)' pi_traj='pi(PROC TRAJ)';
@@ -460,7 +460,7 @@ FORMAT bic 12.1;
 RUN;
 TITLE;
 
-*Figure 4, fitted class trajectories on the latent scale.
+*MethodsX Figure 4, fitted class trajectories on the latent scale.
  Wide form, one row per class and quarter with one column per source,
  because WHERE is not valid on a SERIES or SCATTER statement;
 PROC SORT DATA=truth_rank; BY rk; RUN;
@@ -499,7 +499,7 @@ TITLE2;
 
 /*##########################################################################################################################
   PART C: joint two-outcome fit via the warm start pipeline.
-  This is paper Table 9 and Figure 3.
+  This is CMPB Table 1 and Figure 1.
 ##########################################################################################################################*/
 %nlmixed_1(T=&T., LC=&class., Y=2, starting=&START_Y2.,
            output=fit_y2, order=&order_model., equal_sigma=&equal.);
@@ -514,7 +514,7 @@ RUN;
                    starting=%starting_value_alpha(class=&class.) / data=nlm_2y_starting,
                    output=fit_joint, order=&order_model., equal_sigma=&equal.);
 
-*Table 9, joint estimates beside the generating values;
+*CMPB Table 1, joint estimates beside the generating values;
 PROC SQL;
 CREATE TABLE table9 AS
 SELECT t.ord, t.Parameter, t.true_val, e.Estimate, e.StandardError,
@@ -523,12 +523,12 @@ FROM dgp_truth t LEFT JOIN fit_joint e ON t.Parameter = e.Parameter
 ORDER BY t.ord;
 QUIT;
 
-*Figure 3, predicted versus posterior weighted observed, both outcomes;
+*CMPB Figure 1, predicted versus posterior weighted observed, both outcomes;
 ODS GRAPHICS ON / IMAGENAME="fig_plotprep";
 %plot_prep(T=&T., LC=&class., result=fit_joint,
            order=&order_model., equal_sigma=&equal.);
 
-*mixing proportions from the joint fit, for the Table 9 footnote;
+*mixing proportions from the joint fit, for the CMPB Table 1 footnote;
 PROC SQL NOPRINT;
 SELECT estimate INTO :jB TRIMMED FROM fit_joint WHERE parameter='alpha0_B';
 SELECT estimate INTO :jC TRIMMED FROM fit_joint WHERE parameter='alpha0_C';
@@ -557,7 +557,7 @@ TITLE;
 
 /*##########################################################################################################################
   PART D: PROC TRAJ multi-trajectory on both outcomes.
-  This is paper Table 12.
+  This is MethodsX Table 13.
 
   Note the statement pattern: the FIRST outcome uses the unnumbered
   VAR / INDEP / MODEL / MIN / MAX / ORDER statements and the SECOND
@@ -596,7 +596,7 @@ RUN;
 
 *OUTSTAT2= does not return outcome 2. PROC TRAJ writes outcome 1 into
  it a second time, so reading trajj_stat2 puts the HH coefficients in
- the INP rows and Table 12 prints INP differences of about 20, 9.9 and
+ the INP rows and Table 13 prints INP differences of about 20, 9.9 and
  -3.0 when the two programs in fact agree to four decimal places.
  Outcome 2 is read from trajj_est instead. Its coefficient columns are
  named INTERC<outcome><group>, LINEAR<outcome><group> and
@@ -671,7 +671,7 @@ d1=b1_t2-b1_tr;
 d2=b2_t2-b2_tr;
 RUN;
 
-TITLE 'Table 12. Joint two-outcome coefficient agreement: Traj2 vs PROC TRAJ';
+TITLE 'MethodsX Table 13. Joint two-outcome coefficient agreement: Traj2 vs PROC TRAJ';
 TITLE2 'classes matched by the outcome 1 intercept rank';
 PROC PRINT DATA=table12 NOOBS LABEL;
 VAR outcome rk b0_t2 b0_tr d0 b1_t2 b1_tr d1 b2_t2 b2_tr d2;
@@ -880,7 +880,7 @@ ODS LISTING;
 
 
 /*##########################################################################################################################
-*STEP 4: TABLE 10
+*STEP 4: CMPB TABLE 2
   Monte Carlo bias and empirical 95 percent CI coverage.
 
   NREP independent data sets from the same DGP as STEP 3, each at
@@ -1014,7 +1014,7 @@ ORDER BY s.ord;
 QUIT;
 
 ODS PDF FILE="&OUTPATH.\traj2_mc_coverage.pdf" STARTPAGE=NO;
-TITLE 'Table 10. Traj2 Monte Carlo recovery and coverage (joint two-outcome model)';
+TITLE 'CMPB Table 2. Traj2 Monte Carlo recovery and coverage (joint two-outcome model)';
 TITLE2 "&NREP. replications, N=&NSUB. per replication; empirical 95% CI coverage";
 PROC PRINT DATA=table10 NOOBS LABEL;
 VAR Parameter true_val mean_est mean_bias coverage n_reps n_noSE;
@@ -1025,7 +1025,7 @@ FORMAT true_val mean_est mean_bias 8.4 coverage 6.3;
 RUN;
 
 TITLE 'Convergence status across replications';
-TITLE2 'every replication behind Table 10 must show Status=0';
+TITLE2 'every replication behind CMPB Table 2 must show Status=0';
 PROC FREQ DATA=mc_conv;
 TABLES Status*Reason / LIST MISSING;
 RUN;
@@ -1042,17 +1042,18 @@ RUN;
 
 
 /*##########################################################################################################################
-*STEP 5: TABLE 17 AND FIGURE 7
-  The worked example of paper Sections 5.2 and 5.3, N=500.
+*STEP 5: MethodsX TABLE 11 AND FIGURE 3
+  The worked example of MethodsX Section 2.10, N=500.
 
   This section uses the library simulator %sim_data_cont through
-  %build_base_file_srs, which is the code path Table 16 documents,
-  and the neutral starting values paper Section 5.2 describes.
-  Keeping the published starting values is what lets Table 17
-  reproduce.
+  %build_base_file_srs, which is the code path the simulator
+  argument tables document, and the neutral starting values
+  MethodsX Section 2.8 describes. Keeping the published starting
+  values is what lets MethodsX Table 11 reproduce.
 
   %build_base_file_srs hard codes seed=1 in its call to
-  %sim_data_cont. That seed is what pins Table 17 and Figure 7.
+  %sim_data_cont. That seed is what pins MethodsX Table 11 and
+  Figure 3.
 ##########################################################################################################################*/
 %MACRO run_example;
 %IF &RUN_EXAMPLE. NE 1 %THEN %RETURN;
@@ -1097,11 +1098,11 @@ IF parameter=:'alpha' THEN DELETE;
 KEEP parameter estimate;
 RUN;
 
-*Table 17 is the fit statistics table PROC NLMIXED prints for this call;
+*MethodsX Table 11 is the fit statistics table PROC NLMIXED prints for this call;
 %nlmixed_MultiTraj(T=&T., LC=&class.,
                    starting=%starting_value_alpha(class=&class.) / data=work.nlm_2y_starting,
                    output=nlm_fix_T1_T2C3, order=&order_model., equal_sigma=&equal.);
-*Figure 7 and the averaged posterior class membership summary;
+*MethodsX Figure 3 and the averaged posterior class membership summary;
 %plot_prep(T=&T., LC=&class., result=nlm_fix_T1_T2C3,
            order=&order_model., equal_sigma=&equal.);
 
@@ -1119,14 +1120,14 @@ ODS LISTING;
 
 %IF &RUN_VALIDATION. = 1 %THEN %DO;
 
-TITLE 'QC 1. Table 9. Recovery of the generating values, joint fit, N=10,000';
+TITLE 'QC 1. CMPB Table 1. Recovery of the generating values, joint fit, N=10,000';
 TITLE2 'expected: intercepts within about 0.12, sigma near 6.02 and 6.03';
 PROC PRINT DATA=table9 NOOBS;
 VAR Parameter true_val Estimate StandardError deviation;
 FORMAT true_val Estimate StandardError deviation 10.4;
 RUN;
 
-TITLE 'QC 2. Table 9. Fitted mixing proportions from the joint fit';
+TITLE 'QC 2. CMPB Table 1. Fitted mixing proportions from the joint fit';
 TITLE2 'expected: 0.388, 0.362, 0.250 against generating 0.400, 0.350, 0.250';
 PROC PRINT DATA=joint_pi NOOBS;
 FORMAT pi 6.4;
@@ -1150,7 +1151,7 @@ KEEP outcome bound;
 RUN;
 
 TITLE 'QC 3. Censoring check on the validation data';
-TITLE2 'expected row percents: HH 6.32 at 0 and 5.15 at 100, INP 3.77 at 0 and 0.01 at 100 (paper Section 3.1)';
+TITLE2 'expected row percents: HH 6.32 at 0 and 5.15 at 100, INP 3.77 at 0 and 0.01 at 100';
 PROC FREQ DATA=cens_long;
 TABLES outcome*bound / NOCOL NOPERCENT;
 RUN;
@@ -1165,14 +1166,14 @@ RUN;
 
 %IF &RUN_MC. = 1 %THEN %DO;
 
-TITLE 'QC 5. Table 10. Monte Carlo bias and coverage';
+TITLE 'QC 5. CMPB Table 2. Monte Carlo bias and coverage';
 TITLE2 'n reps should equal NREP and n reps with no SE should be 0 for every parameter';
 PROC PRINT DATA=table10 NOOBS;
 VAR Parameter true_val mean_est mean_bias coverage n_reps n_noSE;
 FORMAT true_val mean_est mean_bias 8.4 coverage 6.3;
 RUN;
 
-TITLE 'QC 6. Table 10. Replications that did not converge';
+TITLE 'QC 6. CMPB Table 2. Replications that did not converge';
 TITLE2 'this table must be empty for the paper claim that all replications met GCONV';
 PROC PRINT DATA=mc_conv NOOBS;
 WHERE Status NE 0;
@@ -1205,12 +1206,12 @@ QUIT;
 *END
 ##########################################################################################################################
 OUTPUT FILES
-traj2_comparison_results.pdf   STEP 3. Tables 9, 11, 12, 13 and the PROC TRAJ comparison, written to OUTPATH
-traj2_mc_coverage.pdf          STEP 4. Table 10 bias and coverage, written to OUTPATH
+traj2_comparison_results.pdf   STEP 3. CMPB Table 1, MethodsX Tables 12, 13 and 14, written to OUTPATH
+traj2_mc_coverage.pdf          STEP 4. CMPB Table 2 bias and coverage, written to OUTPATH
 mc_coverage_summary.csv        STEP 4. The same coverage summary as a flat file
-traj2_example_results.pdf      STEP 5. Table 17 and Figure 7, written to OUTPATH
-fig_traj_overlay.png           STEP 3. Figure 4, written to FIGPATH
-fig_plotprep.png               STEP 3. Figure 3, written to FIGPATH
+traj2_example_results.pdf      STEP 5. MethodsX Table 11 and Figure 3, written to OUTPATH
+fig_traj_overlay.png           STEP 3. MethodsX Figure 4, written to FIGPATH
+fig_plotprep.png               STEP 3. CMPB Figure 1, written to FIGPATH
 fig_proportions.png            STEP 3. Estimated class proportions, written to FIGPATH
-fig_twin_panel.png             STEP 4. Monte Carlo twin panel, written to FIGPATH
+fig_twin_panel.png             STEP 3. Supplementary twin panel, PART E, written to FIGPATH
 ##########################################################################################################################*/

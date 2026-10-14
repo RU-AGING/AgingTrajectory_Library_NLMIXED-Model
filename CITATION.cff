@@ -3,7 +3,7 @@ title: "Traj2: A Native Macro Library for Single and Joint Two-Outcome Group-Bas
 message: "If you use this software, please cite it using the metadata below."
 type: software
 version: 1.0.0
-date-released: 2026-07-24
+date-released: 2026-10-14
 license: MIT
 repository-code: "https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model"
 url: "https://ru-aging.github.io/AgingTrajectory_Library_NLMIXED-Model/"

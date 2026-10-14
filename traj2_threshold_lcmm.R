@@ -3,9 +3,9 @@
 #https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;
 ##########################################################################################################################
 # PROJECT NAME: Traj2 Class-Specific Threshold Check, R Side
-# LAST UPDATED DATE: 30 SEP 2026 (pi fix, wider gridsearch, duplicate-class check, Figure 6 layout)
+# LAST UPDATED DATE: 14 OCT 2026 (table references renumbered; R and lcmm versions pinned)
 # DATA SOURCES: four CSV files written by traj2_threshold_check.sas STEP 2 and STEP 3. No other input
-# PURPOSE: Companion to traj2_threshold_check.sas. Reproduces Table 16 and Figure 6 of Traj2:
+# PURPOSE: Companion to traj2_threshold_check.sas. Reproduces Table 17 and Figure 6 of Traj2:
 # Censored-normal and ordinal-probit group-based trajectory modeling in SAS for restricted data
 # environments, Zafar, Xia, Lin, Jarrin, MethodsX, Section 3.3. Fits the same data in lcmm, whose
 # ordinal link uses one threshold set for all classes, and compares Traj2 and lcmm against the TRUTH:
@@ -15,7 +15,7 @@
 # (d)overlay figure: truth, Traj2 and lcmm by class
 # AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 ##########################################################################################################################
-# Execution Environment: R 4.x with lcmm version 1.9 or later. No other packages required        #
+# Execution Environment: R 4.6.1 with lcmm 2.2.2. No other packages                              #
 # Run traj2_threshold_check.sas FIRST with RUN_SINGLE=1                                          #
 # outpath below must match OUTPATH in the SAS script                                             #
 ##########################################################################################################################
@@ -172,7 +172,7 @@ cst_table <- data.frame(
   rmse_lcmm  = round(rmse_lcmm, 4)
 )
 
-cat("\n--- Table 16: class-specific thresholds, Traj2 versus lcmm against the truth ---\n")
+cat("\n--- MethodsX Table 17: class-specific thresholds, Traj2 versus lcmm against the truth ---\n")
 print(cst_table, row.names = FALSE)
 cat("\n-2 log L  Traj2:", round(m2ll_traj2, 1), "  lcmm:", round(m2ll_lcmm, 1), "\n")
 cat("LRT (lcmm nested in Traj2):", round(lrt, 1), "on", df_lrt, "df, p =", signif(p_lrt, 3), "\n")

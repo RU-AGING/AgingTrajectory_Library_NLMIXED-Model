@@ -8,7 +8,7 @@ https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;*/
 *          Includes: (1) single-outcome models (2) joint model (3) plotting + posterior summaries                                         *
 * Data:    Wide format: 1 row/person with repeated measures for each outcome across T time points                                        *
 * Outputs: work.nlm_fix_T1&class, work.nlm_fix_T2&class, work.nlm_fix_T1_T2&class, plots, avg_membership                                  *                                                                                           *
-LAST UPDATED DATE: 23 JUL 2026
+LAST UPDATED DATE: 14 OCT 2026 (paper cross-references updated to MethodsX numbering)
 DATA SOURCES: NONE. This file defines macros only. INPUT IS the optional simulator OR your own wide TABLE
 PURPOSE: GROUP-based trajectory modelling for ONE OR TWO continuous outcomes under a censored-normal
 Tobit likelihood, estimated BY PROC NLMIXED. Provides
@@ -41,8 +41,8 @@ AUTHOR: Weiyi Xia, Haiqun Lin, Anum Zafar
 
   TRAJ2_RUN_DEMO controls whether sourcing this file also RUNS the
   built-in demo (the Step 2 build plus the Step 4 pipeline). The default
-  is 0, i.e. define macros only, which is the behaviour Section 5.1 of
-  the paper describes. Set it to 1 BEFORE %include to get the old
+  is 0, i.e. define macros only, which is the behaviour MethodsX
+  Section 2.8 describes. Set it to 1 BEFORE %include to get the old
   auto-run behaviour back.
 ##########################################################################################################################*/
 %MACRO _traj2_demo_default;
@@ -328,7 +328,7 @@ e&outcome._&class_. = Y&outcome.[I] - mu&class_.&outcome.[I];
    BEFORE the density is evaluated. This is what stops exp(PROD) from
    underflowing to zero for classes that sit far from an observation, which
    would make l_latclass = 0 and log(0) missing. It is a deviation from the
-   exact likelihood written in Section 2.3 of the paper and should be stated
+   exact likelihood written in MethodsX Section 2.1.1 and should be stated
    there. A log-sum-exp evaluation of l_latclass would remove the need for
    it; see the ZIP prototype for that pattern.                              */
 %MACRO float_control(float,class,outcome,equal_sigma);
@@ -350,13 +350,9 @@ e&outcome._&class_. = MIN(MAX(e&outcome._&class_.,
 %LET class_=%SCAN(&class_names,&s);
 %IF %UPCASE(&equal_sigma)=T %THEN %LET class2_=;
 %ELSE %LET class2_=&class_;
-
-    /* A missing time point must contribute nothing to the likelihood.
-       Without this guard PROD goes missing for any subject with a gap,
-       which silently removes that subject from the fit. Table 1 of the
-       paper promises the contribution is skipped, and miss_pattern=
-       unbalanced in %sim_data_cont produces exactly this situation.
-       For complete data the result is bit-identical to the old code.   */
+   /* PI holds the LOG density, so 0 here contributes 1 to the product and
+       skips the time point. Without this, any subject with a gap drops out
+       of the fit silently.   */
 IF Y&outcome.[I] = . THEN PI&class_.&outcome.[I] = 0;
 ELSE DO;
 PI&class_.&outcome.[I] = LOGPDF('NORMAL', e&outcome._&class_. / sigma&outcome._&class2_.)

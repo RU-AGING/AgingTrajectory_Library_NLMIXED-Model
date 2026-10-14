@@ -8,7 +8,7 @@ RUTGERS, THE STATE UNIVERSITY OF NEW JERSEY
 *************************************************************************************************************************
 *************************************************************************************************************************
 *PROJECT NAME: Traj2 Replication, Ordinal-Probit Outcome Family
-LAST UPDATED DATE: 23 JUL 2026
+LAST UPDATED DATE: 14 OCT 2026
 DATA SOURCES: NONE. All input is simulated in STEP 2 from the data generating process declared in STEP 0
 PURPOSE: Single standalone script reproducing the ordinal-outcome results of both Traj2 articles,
 Zafar, Xia, Lin, Jarrin. Produces
@@ -33,7 +33,7 @@ AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 #STEP 2:Shared ordinal simulator and the shape-recovery truth
 #STEP 3:CMPB Table 3. Ordinal-probit DGP recovery
 #STEP 4:MethodsX Table 15 and Figure 5. Cross-implementation check against lcmm
-#STEP 5:Figures 5 and 6. Worked example
+#STEP 5:MethodsX Figures 1 and 2. Worked example
 #STEP 6:Check output
 #STEP 7:Clean up the WORK library
 ##########################################################################################################################;
@@ -47,7 +47,7 @@ AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 
 %LET RUN_RECOVERY=1;   *1=run STEP 3, CMPB Table 3;
 %LET RUN_CROSSCHECK=1; *1=run STEP 4, the SAS half of MethodsX Table 15 and Figure 5;
-%LET RUN_EXAMPLE=1;    *1=run STEP 5, Figures 5 and 6;
+%LET RUN_EXAMPLE=1;    *1=run STEP 5, MethodsX Figures 1 and 2;
 
 %LET NREP=200;         *replications for CMPB Table 3. Use 5 for a smoke test first;
 %LET NSIM=2500;        *subjects per replication;
@@ -611,7 +611,7 @@ TITLE2;
 
 
 /*##########################################################################################################################
-*STEP 5: FIGURES 5 AND 6
+*STEP 5: MethodsX FIGURES 1 AND 2
   The worked example of MethodsX Section 2.9, N=500.
 
   cap=3 makes the outcome take the four values 0 1 2 3, which
@@ -632,7 +632,7 @@ TITLE2;
   prefix=ordprob_T1C3
 );
 
-*Figure 5 is the predicted mean trajectory plot and Figure 6 the
+*Figure 1 is the predicted mean trajectory plot and Figure 2 the
  estimated class proportions;
 %ordprob_mix_plot_one(
   outestlib=work, prefix=ordprob_T1C3,

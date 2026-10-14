@@ -76,7 +76,9 @@ All results are based on simulated data with fixed random-number seeds, so they 
 | CMPB Section 3.1.2 (parameter recovery, Monte Carlo coverage) | `traj2_replication_continuous.sas` (STEPs 3 and 4) | Tables 1 and 2 |
 | CMPB Section 3.1.3 (ordinal-probit recovery, 200 replications) | `traj2_replication_ordinal.sas` (STEP 3) | Table 3 |
 
-The `PROC TRAJ` comparison needs the compiled `PROC TRAJ` binary; set `RUN_TRAJ=0` where it is not installed. The R scripts need R 4.x and the `lcmm` package.
+The `PROC TRAJ` comparison needs the compiled `PROC TRAJ` binary; set `RUN_TRAJ=0` where it is not installed. The R scripts were run with `lcmm` 2.2.2 under R 4.6.1.
+
+The Medicare application (CMPB Section 3.3) is not reproducible from this repository. Those claims data reside in the CMS Virtual Research Data Center under a data-use agreement that prevents redistribution.
 
 ## Citation
 

@@ -3,12 +3,12 @@
 #https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;
 ##########################################################################################################################
 # PROJECT NAME: Traj2 Ordinal Cross-Check, R Side
-# LAST UPDATED DATE: 30 SEP 2026 (lcmm proportions from the mixing parameters; Figure 5 axis labels)
+# LAST UPDATED DATE: 14 OCT 2026 (table references renumbered; R and lcmm versions pinned)
 # DATA SOURCES: two CSV files written by traj2_replication_ordinal.sas STEP 4. No other input
 # PURPOSE: Companion to traj2_replication_ordinal.sas. Produces the lcmm side of the
 # cross-implementation comparison in Traj2: Censored-normal and ordinal-probit group-based trajectory
 # modeling in SAS for restricted data environments, Zafar, Xia, Lin, Jarrin, MethodsX, Section 3.2,
-# Table 14 and Figure 5.
+# Table 15 and Figure 5.
 # (a)fits the same three-class ordinal model in lcmm
 # (b)reports lcmm class proportions and maximised log likelihood
 # (c)matches classes across the two programs and reports fitted-trajectory agreement
@@ -18,7 +18,7 @@
 # regression coefficients are NOT compared, because the two programs parameterise them differently.
 # AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 ##########################################################################################################################
-# Execution Environment: R 4.x with lcmm version 1.9 or later. No other packages required        #
+# Execution Environment: R 4.6.1 with lcmm 2.2.2. No other packages                              #
 # Run traj2_replication_ordinal.sas FIRST. This script reads the two CSV files it writes         #
 # outpath below must match OUTPATH in the SAS script                                             #
 ##########################################################################################################################
@@ -165,7 +165,7 @@ cmp <- do.call(rbind, lapply(1:KTRUE, function(k) {
 }))
 cmp$absdiff <- abs(cmp$EY_traj2 - cmp$EY_lcmm)
 
-cat("\n--- Table 14: fitted E[Y_t | class] agreement ---\n")
+cat("\n--- MethodsX Table 15: fitted E[Y_t | class] agreement ---\n")
 cat("max absolute difference:", round(max(cmp$absdiff), 4), "\n")
 cat("mean absolute difference:", round(mean(cmp$absdiff), 4), "\n")
 cat("across", KTRUE * TT, "class-by-time points\n")
@@ -206,7 +206,7 @@ cat("\nWrote table15_EY_comparison.csv and fig2_ordinal_traj2_vs_lcmm.pdf to",
 # table15_EY_comparison.csv        one row per class and time point. EY_traj2, EY_lcmm, absdiff
 # fig2_ordinal_traj2_vs_lcmm.pdf   the Traj2 versus lcmm overlay
 #
-# CONSOLE OUTPUT TO CARRY INTO TABLE 14
+# CONSOLE OUTPUT TO CARRY INTO METHODSX TABLE 15
 #   lcmm class proportions, reported in Traj2 class order
 #   lcmm -2 log L
 #   maximum and mean absolute difference in fitted E[Y | class]

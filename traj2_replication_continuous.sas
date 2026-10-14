@@ -7,15 +7,14 @@ DATA SOURCES: NONE. All input is simulated in STEP 2 from the data generating pr
 PURPOSE: Single standalone script reproducing the continuous-outcome results in Traj2: Censored-normal
 and ordinal-probit group-based trajectory modeling in SAS for restricted data environments, Zafar, Xia,
 Lin, Jarrin, MethodsX, and in its companion article.
-TABLE NUMBERING: the table and figure numbers below follow an earlier draft. In the MethodsX article,
-STEP 3 gives Section 3.1 (Tables 11, 12, 13 and Figure 4, censoring rates in QC 3) and STEP 5 gives
-Section 2.9 (Table 10 and Figure 3). STEP 4 and the Table 9 output belong to the companion article.
 Produces
-(a)STEP 3, Tables 9, 11, 12, 13 and Figures 3 and 4. Validation run, N=10,000, SEED_VAL=20260609
-(b)STEP 4, Table 10. Monte Carlo bias and coverage, 200 replications, N=2,500, SEED_MC=770000
-(c)STEP 5, Table 17 and Figure 7. Worked example of paper Sections 5.2 and 5.3, N=500
-NOT COVERED: the ordinal-probit results, paper Sections 3.6, 4.4, 4.5, Tables 14 and 15, Figures 1, 2, 5, 6.
-Those belong to the companion script traj2_replication_ordinal.sas
+(a)STEP 3, MethodsX Tables 12, 13 and 14 and Figure 4, Section 3.1, and CMPB Table 1 and Figure 1,
+   Section 3.1.2. Validation run, N=10,000, SEED_VAL=20260609, censoring rates in QC 3
+(b)STEP 4, CMPB Table 2, Section 3.1.2. Monte Carlo bias and coverage, 200 replications, N=2,500,
+   SEED_MC=770000
+(c)STEP 5, MethodsX Table 11 and Figure 3, Section 2.10. Worked example, N=500
+NOT COVERED: the ordinal-probit results, CMPB Section 3.1.3 and Table 3, MethodsX Sections 3.2 and 3.3,
+Tables 15, 16 and 17, Figures 1, 2, 5 and 6. Those belong to traj2_replication_ordinal.sas
 AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 ##########################################################################################################################
 *Execution Environment: SAS 9.4 or later with SAS/STAT PROC NLMIXED and SAS/IML. No compiled components*
@@ -28,9 +27,9 @@ AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 #STEP 0:Parameters. Edit only this block
 #STEP 1:Load the macro library and define the figure style
 #STEP 2:Shared simulator and the generating values
-#STEP 3:Tables 9, 11, 12, 13 and Figures 3 and 4. Validation run against PROC TRAJ
-#STEP 4:Table 10. Monte Carlo bias and coverage
-#STEP 5:Table 17 and Figure 7. Worked example
+#STEP 3:MethodsX Tables 12, 13 and 14, Figure 4; CMPB Table 1, Figure 1. Validation vs PROC TRAJ
+#STEP 4:CMPB Table 2. Monte Carlo bias and coverage
+#STEP 5:MethodsX Table 11 and Figure 3. Worked example
 #STEP 6:Check output
 #STEP 7:Clean up the WORK library
 ##########################################################################################################################;
@@ -43,12 +42,12 @@ AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 %LET OUTPATH=T:\datasets_t\replication;    *folder for the PDF and CSV output;
 %LET FIGPATH=T:\datasets_t\figs;           *folder for the standalone vector figures;
 
-%LET RUN_VALIDATION=1;   *1=run STEP 3, Tables 9 11 12 13 and Figures 3 and 4;
+%LET RUN_VALIDATION=1;   *1=run STEP 3, MethodsX Tables 12 13 14 Figure 4, CMPB Table 1 Figure 1;
 %LET RUN_TRAJ=1;         *1=also run the PROC TRAJ half of STEP 3. Set to 0 inside the VRDC;
-%LET RUN_MC=0;           *1=run STEP 4, Table 10. This is the slow one;
-%LET RUN_EXAMPLE=0;      *1=run STEP 5, Table 17 and Figure 7;
+%LET RUN_MC=0;           *1=run STEP 4, CMPB Table 2. This is the slow one;
+%LET RUN_EXAMPLE=0;      *1=run STEP 5, MethodsX Table 11 and Figure 3;
 
-%LET SEED_VAL=20260609;  *seed behind Tables 9 11 12 13 and Figures 3 and 4;
+%LET SEED_VAL=20260609;  *seed behind the STEP 3 tables and figures;
 %LET NVAL=10000;         *subjects in the validation data set;
 
 %LET NREP=200;           *Monte Carlo replications. Use 5 for a smoke test first;

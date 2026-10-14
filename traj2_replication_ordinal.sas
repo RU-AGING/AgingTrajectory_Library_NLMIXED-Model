@@ -10,15 +10,15 @@ RUTGERS, THE STATE UNIVERSITY OF NEW JERSEY
 *PROJECT NAME: Traj2 Replication, Ordinal-Probit Outcome Family
 LAST UPDATED DATE: 23 JUL 2026
 DATA SOURCES: NONE. All input is simulated in STEP 2 from the data generating process declared in STEP 0
-PURPOSE: Single standalone script reproducing the ordinal-outcome tables and figures in
-Traj2: A Native Macro Library for Single and Multi-Outcome Group-Based Trajectory Modeling in SAS
-Zafar, Xia, Lin, Jarrin, Journal of Statistical Software. Produces
-(a)STEP 3, Table 14. Ordinal DGP recovery, 200 replications, N=2,500, SEED_MC=20260000
-(b)STEP 4, Table 15 and Figure 2. Cross-implementation check against the R package lcmm, SEED_CC=20260601
-(c)STEP 5, Figures 5 and 6. Worked example of paper Section 5.2, N=500, seed 2026
+PURPOSE: Single standalone script reproducing the ordinal-outcome results of both Traj2 articles,
+Zafar, Xia, Lin, Jarrin. Produces
+(a)STEP 3, CMPB Table 3, Section 3.1.3. Ordinal DGP recovery, 200 replications, N=2,500, SEED_MC=20260000
+(b)STEP 4, MethodsX Table 15 and Figure 5, Section 3.2. Cross-implementation check against the R package
+   lcmm, SEED_CC=20260601
+(c)STEP 5, MethodsX Figures 1 and 2, Section 2.9. Worked example, N=500, seed 2026
 COMPANION: traj2_lcmm_crosscheck.R supplies the lcmm half of STEP 4. Run this script first so the two CSV
-files exist, then run the R script, then read its output into the Table 15 shell printed at the end of STEP 4.
-NOT REPRODUCIBLE: Figure 1 and paper Section 3.6, the 2019 Medicare decedent cohort of 181,463 subjects.
+files exist, then run the R script, then read its output into the MethodsX Table 15 shell printed at the end of STEP 4.
+NOT REPRODUCIBLE: CMPB Figure 2 and Section 3.3, the 2019 Medicare decedent cohort of 181,463 subjects.
 Those claims data live inside the CMS VRDC under a data use agreement and cannot be distributed.
 AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 ##########################################################################################################################
@@ -31,8 +31,8 @@ AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 #STEP 0:Parameters. Edit only this block
 #STEP 1:Load the macro library
 #STEP 2:Shared ordinal simulator and the shape-recovery truth
-#STEP 3:Table 14. Ordinal-probit DGP recovery
-#STEP 4:Table 15 and Figure 2. Cross-implementation check against lcmm
+#STEP 3:CMPB Table 3. Ordinal-probit DGP recovery
+#STEP 4:MethodsX Table 15 and Figure 5. Cross-implementation check against lcmm
 #STEP 5:Figures 5 and 6. Worked example
 #STEP 6:Check output
 #STEP 7:Clean up the WORK library
@@ -45,11 +45,11 @@ AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 %LET SRCPATH=T:\datasets_t;                *folder holding ordinal_probit.sas;
 %LET OUTPATH=T:\datasets_t\replication;    *folder for the PDF and CSV output. Must already exist;
 
-%LET RUN_RECOVERY=1;   *1=run STEP 3, Table 14;
-%LET RUN_CROSSCHECK=1; *1=run STEP 4, the SAS half of Table 15 and Figure 2;
+%LET RUN_RECOVERY=1;   *1=run STEP 3, CMPB Table 3;
+%LET RUN_CROSSCHECK=1; *1=run STEP 4, the SAS half of MethodsX Table 15 and Figure 5;
 %LET RUN_EXAMPLE=1;    *1=run STEP 5, Figures 5 and 6;
 
-%LET NREP=200;         *replications for Table 14. Use 5 for a smoke test first;
+%LET NREP=200;         *replications for CMPB Table 3. Use 5 for a smoke test first;
 %LET NSIM=2500;        *subjects per replication;
 %LET SEED_MC=20260000; *replication r uses seed SEED_MC+r, so 20260001 through 20260200;
 %LET SEED_CC=20260601; *single seed for the lcmm cross-check;
@@ -62,7 +62,7 @@ AUTHOR: Anum Zafar, Weiyi Xia, Haiqun Lin, Olga F. Jarrin
 %LET DEG=2;            *polynomial degree, quadratic;
 %LET IDVAR=BENE_ID;    *subject identifier;
 
-*Cumulative probit DGP, described in paper Section 4.4. Class-specific
+*Cumulative probit DGP, described in CMPB Section 3.1.3. Class-specific
  quadratic mean trajectories on the latent scale, class-common thresholds,
  no subject-level random effect, and non-uniform class proportions so the
  run also tests recovery of the mixing weights;
@@ -104,7 +104,7 @@ OPTIONS NODLCREATEDIR;
 /*##########################################################################################################################
 *STEP 2: SHARED ORDINAL SIMULATOR AND TRUTH
 
-  %sim_ord_dgp generates one replication of the Section 4.4 DGP in
+  %sim_ord_dgp generates one replication of the CMPB Section 3.1.3 DGP in
   the wide contract of Table 1. It draws one uniform for the class
   and then one uniform per time point, so a given seed always yields
   the same data set. STEP 3 and STEP 4 differ only in the seed.
@@ -248,7 +248,7 @@ RUN;
 
 
 /*##########################################################################################################################
-*STEP 3: TABLE 14
+*STEP 3: CMPB Table 3
   Ordinal probit DGP recovery over NREP replications.
 
   Three quantities are recorded per replication:
@@ -487,7 +487,7 @@ SELECT SUM(clean_hess=1), COUNT(clean_hess) INTO :nclean TRIMMED, :nse TRIMMED F
 QUIT;
 
 ODS PDF FILE="&OUTPATH.\traj2_ordinal_validation.pdf" STARTPAGE=NO;
-TITLE "Table 14. Traj2 ordinal probit DGP recovery (&NREP. reps, N=&NSIM., T=&T., true C=&KTRUE.)";
+TITLE "CMPB Table 3. Traj2 ordinal probit DGP recovery (&NREP. reps, N=&NSIM., T=&T., true C=&KTRUE.)";
 TITLE2 'worst-class RMSE is on the 0-3 outcome scale; agreement baseline is the 45 percent majority class';
 PROC MEANS DATA=mc_metrics(WHERE=(valid=1)) N MEAN STD MIN MAX MAXDEC=4;
 VAR max_rmse agree;
@@ -519,7 +519,7 @@ RUN;
 
 
 /*##########################################################################################################################
-*STEP 4: TABLE 15 AND FIGURE 2
+*STEP 4: MethodsX Table 15 and Figure 5
   Cross-implementation check against the R package lcmm, SAS half.
 
   One data set from the same DGP as STEP 3 at a single fixed seed.
@@ -533,7 +533,7 @@ RUN;
   program parameterises the model. Raw thresholds and betas are NOT
   compared, because the two use different conventions.
 
-  Run traj2_lcmm_crosscheck.R next, then fill the Table 15 shell.
+  Run traj2_lcmm_crosscheck.R next, then fill the MethodsX Table 15 shell.
 ##########################################################################################################################*/
 %MACRO run_crosscheck;
 %IF &RUN_CROSSCHECK. NE 1 %THEN %RETURN;
@@ -594,12 +594,12 @@ PROC EXPORT DATA=traj2_EY
   DBMS=CSV REPLACE;
 RUN;
 
-TITLE 'Table 15, Traj2 column. Fit statistics for the cross-check';
+TITLE 'MethodsX Table 15, Traj2 column. Fit statistics for the cross-check';
 TITLE2 'read -2 log L from here and the lcmm value from the R output';
 PROC PRINT DATA=work.cc_FIT_K&KTRUE. NOOBS;
 RUN;
 
-TITLE 'Table 15, Traj2 column. Class proportions';
+TITLE 'MethodsX Table 15, Traj2 column. Class proportions';
 PROC SQL;
 SELECT classnum, MEAN(pi_traj2) AS pi_traj2 FORMAT=6.3
 FROM traj2_EY GROUP BY classnum;
@@ -612,12 +612,12 @@ TITLE2;
 
 /*##########################################################################################################################
 *STEP 5: FIGURES 5 AND 6
-  The worked example of paper Section 5.2, N=500.
+  The worked example of MethodsX Section 2.9, N=500.
 
   cap=3 makes the outcome take the four values 0 1 2 3, which
   matches m=4 and ycodes=0 1 2 3. The BIN4 process gives each class
   a distinct mean trajectory. Leaving start_values= blank starts
-  every parameter at zero, which is what Section 5.2 describes.
+  every parameter at zero, which is what MethodsX Section 2.9 describes.
 ##########################################################################################################################*/
 %MACRO run_example;
 %IF &RUN_EXAMPLE. NE 1 %THEN %RETURN;
@@ -649,27 +649,27 @@ TITLE2;
 
 %IF &RUN_RECOVERY. = 1 %THEN %DO;
 
-TITLE 'QC 1. Table 14. Shape recovery and classification agreement';
+TITLE 'QC 1. CMPB Table 3. Shape recovery and classification agreement';
 TITLE2 'expected: worst-class RMSE mean near 0.029, agreement mean near 0.910';
 PROC MEANS DATA=mc_metrics(WHERE=(valid=1)) N MEAN STD MIN MAX MAXDEC=4;
 VAR max_rmse agree;
 RUN;
 
-TITLE 'QC 2. Table 14. Replications that failed the validity filter';
+TITLE 'QC 2. CMPB Table 3. Replications that failed the validity filter';
 TITLE2 'this table must be empty for the paper claim that all 200 simulations satisfied the constraints';
 PROC PRINT DATA=mc_metrics NOOBS;
 WHERE valid NE 1;
 VAR rep bijective max_rmse agree valid clean_hess;
 RUN;
 
-TITLE 'QC 3. Table 14. Replications with an unusable standard error';
+TITLE 'QC 3. CMPB Table 3. Replications with an unusable standard error';
 TITLE2 'this table must be empty for the paper claim about fully estimable standard errors';
 PROC PRINT DATA=mc_metrics NOOBS;
 WHERE clean_hess NE 1;
 VAR rep valid clean_hess;
 RUN;
 
-TITLE 'QC 4. Table 14. BIC model selection';
+TITLE 'QC 4. CMPB Table 3. BIC model selection';
 TITLE2 "every replication should choose C=&KTRUE.";
 PROC FREQ DATA=_bestk;
 TABLES kfit / NOCUM;
@@ -679,7 +679,7 @@ RUN;
 
 %IF &RUN_CROSSCHECK. = 1 %THEN %DO;
 
-TITLE 'QC 5. Table 15. Traj2 fitted E[Y_t | class] on the 0-3 scale';
+TITLE 'QC 5. MethodsX Table 15. Traj2 fitted E[Y_t | class] on the 0-3 scale';
 TITLE2 'compare against the lcmm column produced by traj2_lcmm_crosscheck.R';
 PROC PRINT DATA=traj2_EY NOOBS;
 VAR classnum t EY_traj2;
@@ -708,13 +708,13 @@ QUIT;
 *END
 ##########################################################################################################################
 OUTPUT FILES
-traj2_ordinal_validation.pdf   STEP 3. Table 14 recovery, model selection and estimability, written to OUTPATH
-ordinal_recovery_metrics.csv   STEP 3. One row per replication, the per-replication metrics behind Table 14
+traj2_ordinal_validation.pdf   STEP 3. CMPB Table 3 recovery, model selection and estimability, written to OUTPATH
+ordinal_recovery_metrics.csv   STEP 3. One row per replication, the per-replication metrics behind CMPB Table 3
 ordinal_data_for_R.csv         STEP 4. Long-format simulated data, input to traj2_lcmm_crosscheck.R
-traj2_EY_by_class.csv          STEP 4. Traj2 fitted E[Y_t | class] on the 0 to 3 scale, for the Table 15 comparison
+traj2_EY_by_class.csv          STEP 4. Traj2 fitted E[Y_t | class] on the 0 to 3 scale, for the MethodsX Table 15 comparison
 
 RUN ORDER FOR STEP 4
   1. run this script with RUN_CROSSCHECK=1
   2. run traj2_lcmm_crosscheck.R against ordinal_data_for_R.csv
-  3. read the lcmm column back into the Table 15 shell printed at the end of STEP 4
+  3. read the lcmm column back into the MethodsX Table 15 shell printed at the end of STEP 4
 ##########################################################################################################################*/

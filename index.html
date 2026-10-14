@@ -120,10 +120,10 @@ footer a{color:#64748b;text-decoration:none}
     <h1>Traj2 <span>GBTM Macro Library</span> · Documentation Portal</h1>
     <p>A native macro library for single and joint two-outcome group-based trajectory modeling in SAS. The current release implements censored-normal continuous (single- and joint two-outcome) and ordinal-probit pipelines via PROC NLMIXED, with no externally compiled code: runs as-is in the CMS VRDC and other secure SAS environments. ZIP/ZINB count-outcome prototypes are in the repository and undergoing quality assurance.</p>
     <div class="chips">
-      <span class="chip">📅 July 2026</span>
+      <span class="chip">📅 October 2026</span>
       <span class="chip">👩‍💻 Anum Zafar · Weiyi Xia · Haiqun Lin · Olga F. Jarrín</span>
       <span class="chip">🏷 SAS 9.4+ · PROC NLMIXED · ODS Graphics</span>
-      <span class="chip">📦 2 Released Models · 2 Prototypes · 54 QA Tests</span>
+      <span class="chip">📦 2 Released Models · 2 Prototypes · 54 QA Tests Defined</span>
       <span class="chip">⚖️ MIT License (code) · CC-BY 4.0 (docs)</span>
     </div>
   </div>
@@ -233,7 +233,6 @@ and p(Y_t^k | X=j) is the class-conditional density
     <tr><td><strong>Missing values</strong></td><td class="mo">Allowed (.)</td><td>Likelihood contribution is skipped at missing time points (assumes missing at random).</td></tr>
     <tr><td><strong>Out-of-range values (ordinal)</strong></td><td class="mo">Skipped</td><td>A value that does not match one of the numbers listed in <span class="mo">ycodes</span> is skipped like a missing value, so check the coding of the outcome before fitting.</td></tr>
   </table></div></div>
-  </table></div></div>
 
   <div class="sec"><h2>Validation Highlights</h2><div class="rule"></div></div>
   <div class="grid g2">
@@ -247,14 +246,19 @@ and p(Y_t^k | X=j) is the class-conditional density
       <p>Over 200 independent replications from the three-class censored-normal DGP (N = 2,500 each), the joint two-outcome model shows a maximum absolute bias of ≈ 0.011 on a 0–100 scale, and empirical 95% CI coverage from 0.930 to 0.975 (mean 0.953), consistent with nominal coverage. A Monte Carlo scaffold with the design and seed is distributed with the package.</p>
       <span class="ob" style="background:#d1fae5;color:#065f46">Near-nominal coverage</span>
     </div>
+       <div class="ov">
+      <div class="oi">📐</div><h3>Ordinal-Probit Recovery (Common Thresholds)</h3>
+      <p>Over 200 replications (N = 2,500, T = 12, true C = 3) generated with one common set of thresholds, BIC selected the correct three-class solution in all 200. Worst-class trajectory RMSE was 0.029 on the 0 to 3 scale, and agreement between modal-posterior class assignment and true class was 0.914.</p>
+      <span class="ob" style="background:#ede9fe;color:#5b21b6">Correct C in 200 of 200</span>
+    </div>
     <div class="ov">
-      <div class="oi">📐</div><h3>Ordinal-Probit Recovery</h3>
-            <p>Over 200 replications (N = 2,500, T = 12, true C = 3) generated with class-specific thresholds, the match between fitted and true classes was one to one in 196. Across those, the largest absolute bias in a threshold was 0.010 and Wald 95% confidence-interval coverage ranged from 0.913 to 0.964. On a separate single data set, worst-class trajectory RMSE was 0.019 on the 0 to 3 scale.</p>
-      <span class="ob" style="background:#ede9fe;color:#5b21b6">thresholds recovered.</span>
+      <div class="oi">📏</div><h3>Ordinal-Probit Recovery (Class-Specific Thresholds)</h3>
+      <p>Over a separate 200 replications (N = 2,500, T = 12, true C = 3) generated with class-specific thresholds, the match between fitted and true classes was one to one in 196. Across those, the largest absolute bias in a threshold was 0.010 and Wald 95% confidence-interval coverage ranged from 0.913 to 0.964. On a single data set from this design, worst-class trajectory RMSE was 0.019.</p>
+      <span class="ob" style="background:#ede9fe;color:#5b21b6">196 of 200 one to one</span>
     </div>
     <div class="ov">
       <div class="oi">🔁</div><h3>Cross-Implementation Check (lcmm)</h3>
-     <p>Because PROC TRAJ lacks a cumulative-probit family, the ordinal model was checked against the R package lcmm on a matched design: fitted E[Y | class] trajectories agree to a maximum absolute difference of 0.015 (mean 0.005) across 36 class-by-time points, class proportions differ by at most 1 percentage point, and −2 log L is essentially identical (47,071 vs. 47,076).</p>
+           <p>Because PROC TRAJ lacks a cumulative-probit family, the ordinal model was checked against the R package lcmm 2.2.2 under R 4.6.1 on a matched design: fitted E[Y | class] trajectories agree to a maximum absolute difference of 0.015 (mean 0.005) across 36 class-by-time points, class proportions differ by at most 1 percentage point, and −2 log L is essentially identical (47,071 vs. 47,076).</p>
       <span class="ob" style="background:#ede9fe;color:#5b21b6">Independent implementation</span>
     </div>
   </div>
@@ -275,8 +279,6 @@ and p(Y_t^k | X=j) is the class-conditional density
       <li><strong>Zero-inflated count outcomes:</strong> ZIP and ZINB trajectory models for count healthcare-utilization measures. Prototype macros (<code>%ct_zip_pois_nlmixed</code>, <code>%ct_zinb_nlmixed</code>) with a numerically stable log-sum-exp evaluation of the zero-mass probability are already in the repository and undergoing quality assurance.</li>
       <li><strong>Random effects:</strong> class-specific random intercepts and slopes to allow correlation of outcomes over time and unexplained within-class heterogeneity.</li>
       <li><strong>Covariate adjustment:</strong> time-invariant and time-varying covariates in both the class-assignment logit and the trajectory functions.</li>
-      <li><strong>Distal-outcome analysis:</strong> the BCH correction for associations between latent-class membership and a distal outcome.</li>
-      <li><strong>Trajectory mediation:</strong> trajectory-class membership as a mediator between baseline risk factors and downstream outcomes.</li>
       <li><strong>Distribution:</strong> a SAS catalog release bundling all macros into a single loadable unit; the current source-code release remains available.</li>
     </ul>
   </div></div>
@@ -1006,7 +1008,7 @@ Var(Y | k) = μₖ + μₖ² / kₖ   [vs. Var = μ for Poisson]</div>
   <a href="https://doi.org/10.17605/OSF.IO/6FG5J" target="_blank">Archival Release (OSF)</a> ·
   MIT License (source code) · CC-BY 4.0 (documentation)<br>
   Research reported here was funded by the National Institute on Aging of the National Institutes of Health under award numbers R01AG066139 and R33AG068931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the NIH.<br>
-  Last updated July 2026
+  Last updated October 2026
 </footer>
 
 <script>

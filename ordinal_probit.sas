@@ -2,7 +2,7 @@
 Released under the MIT License. Full text in LICENSE at
 https://github.com/RU-AGING/AgingTrajectory_Library_NLMIXED-Model;
 *PROJECT NAME: Traj2 Ordinal-Probit Group-Based Trajectory Macros
-LAST UPDATED DATE: 01 OCT 2026
+LAST UPDATED DATE: 14 OCT 2026 (STEP 3 note trimmed; no functional change)
 DATA SOURCES: NONE. This file defines macros only. Input is either the optional simulator or a user table
 PURPOSE: Single-outcome ordinal-probit latent class trajectory modelling in base SAS. Provides
 (a)an optional data simulator for worked examples
@@ -135,8 +135,7 @@ is therefore NOT a parameter, so i*1 is never emitted.
 
 The increments default to 1 rather than 0 because they are bounded below by zero in STEP 4 and a start of
 zero would sit on the boundary. Starting every increment at 1 places the first threshold at 0, the second
-at 1, the third at 2 and so on, which is the same starting point in threshold space that the earlier
-exponential-increment version reached from a start of zero.
+at 1, the third at 2 and so on.
 ##########################################################################################################################*/
 *Class index to letter, A through O;
 %MACRO CL(c); %SCAN(A B C D E F G H I J K L M N O, &c., %STR( )) %MEND CL;

@@ -181,7 +181,7 @@ write.csv(cmp, file.path(outpath, "table15_EY_comparison.csv"), row.names = FALS
 # Traj2 as solid lines with markers, lcmm as dashed, one colour per matched class pair.
 ##########################################################################################################################
 
-pdf(file.path(outpath, "fig2_ordinal_traj2_vs_lcmm.pdf"), width = 7, height = 5)
+pdf(file.path(outpath, "fig5_ordinal_traj2_vs_lcmm.pdf"), width = 7, height = 5)
 plot(range(cmp$t), range(c(cmp$EY_traj2, cmp$EY_lcmm)), type = "n",
      xlab = "Quarter (t)", ylab = "E[Y | class] (0 to 3 scale)", xaxt = "n")
 axis(1, at = 1:TT)
@@ -196,7 +196,7 @@ legend(x = 1, y = 2.0, legend = paste("Class", 1:KTRUE), col = cols, lwd = 2, bt
 legend("topleft", legend = c("Traj2 (solid)", "lcmm (dashed)"), lty = c(1, 2), bty = "n")
 dev.off()
 
-cat("\nWrote table15_EY_comparison.csv and fig2_ordinal_traj2_vs_lcmm.pdf to",
+cat("\nWrote table15_EY_comparison.csv and fig5_ordinal_traj2_vs_lcmm.pdf to",
     outpath, "\n")
 
 ##########################################################################################################################
@@ -204,7 +204,7 @@ cat("\nWrote table15_EY_comparison.csv and fig2_ordinal_traj2_vs_lcmm.pdf to",
 ##########################################################################################################################
 # OUTPUT FILES, both written to outpath
 # table15_EY_comparison.csv        one row per class and time point. EY_traj2, EY_lcmm, absdiff
-# fig2_ordinal_traj2_vs_lcmm.pdf   the Traj2 versus lcmm overlay
+# fig5_ordinal_traj2_vs_lcmm.pdf   the Traj2 versus lcmm overlay
 #
 # CONSOLE OUTPUT TO CARRY INTO METHODSX TABLE 15
 #   lcmm class proportions, reported in Traj2 class order

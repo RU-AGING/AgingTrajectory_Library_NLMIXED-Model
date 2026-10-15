@@ -194,7 +194,7 @@ ordprob_single_ESTS_K3   Label       Estimate   StandardError
   data=BASE_FILE_SRS, id=BENE_ID,
   yvars=Y1_1-Y1_12, tvars=quar1-quar12, ttotal=12,
   m=4, ycodes=0 1 2 3, deg=2,
-  k=4, qpoints=40, maxiter=1000, tech=dbldog,
+  k=4, maxiter=1000, tech=dbldog,
   start_values=,                     /* e.g., %str(alpha0_B=-0.5 beta_a0=0.1 ia2=1 ia3=1) */
   bounds=,                           /* e.g., %str(-6 < beta_a0 beta_b0 beta_c0 beta_d0 < 6)    */
   outestlib=work, prefix=ordprob_single
@@ -244,7 +244,7 @@ ParameterEstimates  =&outestlib..&prefix._EST_K&k
 FitStatistics       =&outestlib..&prefix._FIT_K&k
 AdditionalEstimates =&outestlib..&prefix._ESTS_K&k;
 
-PROC NLMIXED DATA=&data QPOINTS=&qpoints NOAD MAXITER=&maxiter TECH=&tech;
+PROC NLMIXED DATA=&data MAXITER=&maxiter TECH=&tech;
 ARRAY yv[&ttotal] &yvars;
 ARRAY tv[&ttotal] &tvars;
 

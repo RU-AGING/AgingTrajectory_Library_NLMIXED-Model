@@ -1,5 +1,4 @@
 # Traj2 Docker Compose example.
-# Copy to your working directory, edit the SAS_HOME path, and run:
 #   GBTM_MODEL=ordinal GBTM_NCLASS=4 docker compose run --rm gbtm
 #
 # This file is for END USERS. The build-and-push workflow uses Dockerfile directly.

@@ -59,6 +59,7 @@ Each file is self-contained, includes an optional simulator, and follows a `set 
 | `Data_Dictionary_continuous_2outcomes.pdf`, `Data_Dictionary_ordinal_probit.pdf`, `Data_Dictionary_zinb.pdf`, `Data_Dictionary_zip_poisson.pdf` | Data Dictionary |
 | `continuous_2outcomes_user_guide.pdf`, `ordinal_probit_user_guide.pdf`, `zip_poisson_user_guide.pdf`, `zinb_user_guide.pdf` | User guides |
 | `traj2_replication_continuous.sas`, `traj2_replication_ordinal.sas`, `traj2_lcmm_crosscheck.R`, `traj2_threshold_check.sas`, `traj2_threshold_lcmm.R` | Scripts that reproduce the published results (see below) |
+| `cst_recovery_metrics.csv` | Per-replication threshold recovery metrics behind MethodsX Table 16 |
 | `TRAJ2_QA_test_cases.xlsx` | QA test cases |
 | `Dockerfile`, `docker-compose.yml`, `docker/entrypoint.sh` | Docker image build files |
 | `BUILD_AND_PUSH.md` | Instructions for rebuilding and publishing the Docker image |
@@ -70,9 +71,9 @@ All results are based on simulated data with fixed random-number seeds, so they 
 
 | Paper section | Run | Output |
 |---|---|---|
-| MethodsX Sections 2.9, 2.10 and 3.1 (censored-normal, agreement with `PROC TRAJ`) | `traj2_replication_continuous.sas` | Tables 10 to 14, Figures 3 and 4 |
+| MethodsX Sections 2.9, 2.10 and 3.1 (censored-normal, agreement with `PROC TRAJ`) | `traj2_replication_continuous.sas` | Tables 11 to 14, Figures 3 and 4 |
 | MethodsX Sections 2.9 and 3.2 (ordinal, agreement with R `lcmm`) | `traj2_replication_ordinal.sas`, then `traj2_lcmm_crosscheck.R` | Table 15, Figures 1, 2 and 5 |
-| MethodsX Section 3.3 (class-specific thresholds) | `traj2_threshold_check.sas`, then `traj2_threshold_lcmm.R` | | MethodsX Tables 16 and 17 and Figure 6; CMPB Table 4 |
+| MethodsX Section 3.3 (class-specific thresholds) | `traj2_threshold_check.sas`, then `traj2_threshold_lcmm.R` | MethodsX Tables 16 and 17 and Figure 6; CMPB Table 4 |
 | CMPB Section 3.1.2 (parameter recovery, Monte Carlo coverage) | `traj2_replication_continuous.sas` (STEPs 3 and 4) | Tables 1 and 2 |
 | CMPB Section 3.1.3 (ordinal-probit recovery, 200 replications) | `traj2_replication_ordinal.sas` (STEP 3) | Table 3 |
 
